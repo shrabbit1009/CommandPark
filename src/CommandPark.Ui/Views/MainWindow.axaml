@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:CommandPark.Ui.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -18,9 +18,10 @@
         CanMinimize="False"
         TransparencyLevelHint="AcrylicBlur, Mica, Blur, None"
         ExtendClientAreaToDecorationsHint="True"
-        TransparencyBackgroundFallback="Black"
+        TransparencyBackgroundFallback="{DynamicResource SystemAltHighColor}"
         Background="Transparent"
-        Topmost="True">
+        Topmost="True"
+        KeyUp="InputElement_OnKeyUp">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -30,8 +31,7 @@
 
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
-        <Border Background="{StaticResource SystemAltHighColor}"
-                Opacity=".25"/>
+        <Border Background="{DynamicResource Background25}"/>
         <ContentPresenter Content="{Binding InnerView}"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"/>

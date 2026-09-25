@@ -1,0 +1,42 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:CommandPark.Ui.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="630"
+             MinHeight="122"
+             x:Class="CommandPark.Ui.Views.HintItem"
+             x:DataType="viewModels:HintItemViewModel">
+    
+    <Button BorderBrush="{DynamicResource Foreground25}"
+            Background="{DynamicResource Background25}"
+            CornerRadius="{StaticResource XlCornerRadius}"
+            Padding="0"
+            Classes="Ghost"
+            Width="{Binding $parent[UserControl].Bounds.Width}"
+            Height="{Binding $parent[UserControl].Bounds.Height}">
+        
+        <Grid ColumnDefinitions="122, *"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Width="{Binding $parent[UserControl].Bounds.Width}"
+              Height="{Binding $parent[UserControl].Bounds.Height}">
+            <Image Grid.Column="0" Source="{Binding Icon}"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                   Margin="6"/>
+            <StackPanel Grid.Column="1"
+                        Orientation="Vertical"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center">
+                <TextBlock Text="{Binding Name, FallbackValue=Unknow}"
+                           Classes="h4"
+                           FontFamily="{StaticResource JetBrainsMono}"/>
+                <TextBlock Text="{Binding Description, FallbackValue=Unknow}"
+                           Classes="p"
+                           FontFamily="{StaticResource JetBrainsMono}" />
+            </StackPanel>
+        </Grid>
+    </Button>
+    
+</UserControl>
