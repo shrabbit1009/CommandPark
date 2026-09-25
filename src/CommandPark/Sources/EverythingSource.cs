@@ -9,6 +9,27 @@ public class EverythingSource : IHintSource
     private static SearchClient? _everything;
     
     /// <summary>
+    /// 去掉前缀 "#" 或 "et:"；返回是否带前缀（PrefixMode 用它判断要不要跑 Everything）。
+    /// </summary>
+    private static bool TryStripPrefix(string query, out string rawQuery)
+    {
+        if (query.StartsWith("et:", StringComparison.OrdinalIgnoreCase))
+        {
+            rawQuery = query[3..].Trim();
+            return true;
+        }
+
+        if (query.StartsWith('#'))
+        {
+            rawQuery = query[1..].Trim();
+            return true;
+        }
+
+        rawQuery = query;
+        return false;
+    }
+
+    /// <summary>
     /// 每一批结果的数量。
     /// </summary>
     public uint BatchSize { get; set; } = 4;
@@ -20,13 +41,12 @@ public class EverythingSource : IHintSource
 
     public async IAsyncEnumerable<IHint> SearchAsync(string query, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // 前缀模式剔除前缀后搜索，非前缀模式保留不动。
-        var rawQuery = PrefixMode ? query.TrimStart('#')
-                            .TrimStart("et:")
-                            .ToString() : query;
+        // 剔除前缀（# 或 et:）。注意必须按"前缀"去掉，不能用 TrimStart(char[])——
+        // "et:" 会被当成字符集合，把 ext: 开头的查询里的 e 也吃掉。
+        var hasPrefix = TryStripPrefix(query, out var rawQuery);
 
         // 检测前缀模式：无前缀则不运行搜索
-        if (PrefixMode && !(query.StartsWith('#') || query.StartsWith("et:")))
+        if (PrefixMode && !hasPrefix)
         {
             Console.WriteLine("EverythingBypass");
             yield break;
@@ -62,11 +82,18 @@ public class EverythingSource : IHintSource
                 
                 Console.WriteLine($"Everything {i}..{i+len}");
                 
-                var results    = everything
-                   .Search(rawQuery,
-                           i + len, 
-                           i, 
-                           SearchClient.BehaviorWhenBusy.Continue);
+                Result results;
+                try
+                {
+                    results = everything.Search(rawQuery, i + len, i, SearchClient.BehaviorWhenBusy.Continue);
+                }
+                catch (ResultsNotReceivedException)
+                {
+                    // Everything 在"没有匹配结果"（或翻页超过结果范围）时会抛这个异常，而不是返回 0 条，
+                    // 这里按"没有更多结果"收尾，避免用户搜不到东西时弹出错误。
+                    Console.WriteLine("EverythingNoResults");
+                    yield break;
+                }
 
                 if (results.TotalItems == 0)
                 {
@@ -93,7 +120,8 @@ public class EverythingSource : IHintSource
                     
                     yield return new EverythingHint("everything:searchResult", hint, path, sim, ct => OnRun(path, ct))
                     {
-                        Payload = item
+                        Payload = item,
+                        Icon    = CreateIcon(item, path),
                     };
                     await Task.Yield();
                 }
@@ -106,6 +134,22 @@ public class EverythingSource : IHintSource
         }
     }
 
+    /// <summary>
+    /// 按结果类型挑图标：
+    /// 程序 → 自带图标（取最大那张）；文件夹/驱动器 → 系统图标；
+    /// 其它文件 → 优先预览缩略图（界面层判断能否取到，取不到自动回落文件图标）。
+    /// </summary>
+    private static IHintIcon CreateIcon(Result.Item item, string path)
+    {
+        if (item.Flags.HasFlag(Result.ItemFlags.Folder) || item.Flags.HasFlag(Result.ItemFlags.Drive))
+        {
+            return new FileIconHintIcon(path);
+        }
+
+        return string.Equals(Path.GetExtension(path), ".exe", StringComparison.OrdinalIgnoreCase)
+            ? new ExecutableHintIcon(path)
+            : new ThumbnailHintIcon(path);
+    }
     private static Task OnRun(string filename, CancellationToken cancellationToken)
     {
         if (Path.GetExtension(filename) != ".exe")

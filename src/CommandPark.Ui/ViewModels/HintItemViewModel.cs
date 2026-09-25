@@ -44,9 +44,9 @@ public partial class HintItemViewModel : ViewModelBase
 
     /// <summary>
     /// 条目图标（<see cref="IHintIcon"/>）。HintItem 按实现类型选择控件渲染：
-    /// <see cref="LucideHintIcon"/> → LucideIcon，<see cref="LocalImageHintIcon"/> 与
-    /// <see cref="ExecutableHintIcon"/> → Image（都在线程池上解码/提取）。
-    /// 设为 null 时整列图标收起。
+    /// <see cref="LucideHintIcon"/> → LucideIcon；<see cref="LocalImageHintIcon"/>、
+    /// <see cref="ExecutableHintIcon"/>、<see cref="FileIconHintIcon"/>、<see cref="ThumbnailHintIcon"/>
+    /// → Image（都在线程池上解码/提取）。设为 null 时整列图标收起。
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LucideKind))]
@@ -127,24 +127,32 @@ public partial class HintItemViewModel : ViewModelBase
         switch (value)
         {
             case LocalImageHintIcon localImage:
-                _ = LoadIconImageAsync(localImage.Path, fromExecutable: false);
+                _ = LoadIconImageAsync($"image:{localImage.Path}", localImage.Path, TryDecodeImageFile);
                 break;
 
             case ExecutableHintIcon executable:
-                _ = LoadIconImageAsync(executable.Path, fromExecutable: true);
+                _ = LoadIconImageAsync($"exe:{executable.Path}", executable.Path, ProgramIconExtractor.TryExtract);
+                break;
+
+            case FileIconHintIcon fileIcon:
+                _ = LoadIconImageAsync($"icon:{fileIcon.Path}", fileIcon.Path, path => ShellIconExtractor.TryGetIcon(path));
+                break;
+
+            case ThumbnailHintIcon thumbnail:
+                _ = LoadIconImageAsync($"thumb:{thumbnail.Path}", thumbnail.Path, LoadThumbnailOrIcon);
                 break;
         }
     }
 
     /// <summary>
-    /// 统一的图标加载：本地图片直接解码，程序图标走 Win32 提取"最大的那张"。
-    /// 解码/提取在线程池上做，完成后切回 UI 线程赋值。
+    /// 统一的图标加载：由 <paramref name="load"/> 决定怎么取（本地图片解码 / 程序图标 / 系统图标 / 缩略图），
+    /// 都在线程池上完成，再切回 UI 线程赋值。结果按 <paramref name="cacheKey"/> 缓存。
     /// </summary>
-    private async Task LoadIconImageAsync(string path, bool fromExecutable)
+    private async Task LoadIconImageAsync(string cacheKey, string path, Func<string, Bitmap?> load)
     {
         try
         {
-            if (IconCache.TryGetValue(path, out var cached))
+            if (IconCache.TryGetValue(cacheKey, out var cached))
             {
                 IconImage = cached;
                 return;
@@ -155,9 +163,7 @@ public partial class HintItemViewModel : ViewModelBase
             Bitmap? bitmap;
             try
             {
-                bitmap = await Task.Run(() => fromExecutable
-                    ? ProgramIconExtractor.TryExtract(path)
-                    : TryDecodeImageFile(path)).ConfigureAwait(false);
+                bitmap = await Task.Run(() => load(path)).ConfigureAwait(false);
             }
             finally
             {
@@ -166,11 +172,11 @@ public partial class HintItemViewModel : ViewModelBase
 
             if (bitmap is not null)
             {
-                // 并发加载同一路径时只保留先放进去的那张
-                if (!IconCache.TryAdd(path, bitmap))
+                // 并发加载同一目标时只保留先放进去的那张
+                if (!IconCache.TryAdd(cacheKey, bitmap))
                 {
                     bitmap.Dispose();
-                    bitmap = IconCache[path];
+                    bitmap = IconCache[cacheKey];
                 }
             }
 
@@ -182,6 +188,12 @@ public partial class HintItemViewModel : ViewModelBase
             await Dispatcher.UIThread.InvokeAsync(() => IconImage = null);
         }
     }
+
+    /// <summary>优先取预览缩略图；该文件没有缩略图（或类型不适合）时回落到系统图标。</summary>
+    private static Bitmap? LoadThumbnailOrIcon(string path) =>
+        ShellIconExtractor.SupportsThumbnail(path)
+            ? ShellIconExtractor.TryGetThumbnail(path) ?? ShellIconExtractor.TryGetIcon(path)
+            : ShellIconExtractor.TryGetIcon(path);
 
     private static Bitmap? TryDecodeImageFile(string path)
     {
