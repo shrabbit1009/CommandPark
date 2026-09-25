@@ -1,0 +1,69 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:CommandPark.Ui.ViewModels"
+        xmlns:lucide="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
+        x:Class="CommandPark.Ui.Views.ErrorWindow"
+        x:DataType="viewModels:ErrorWindowViewModel"
+        Title="命令执行失败"
+        Width="560"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        WindowDecorations="BorderOnly"
+        TransparencyLevelHint="AcrylicBlur, Mica, Blur, None"
+        ShowInTaskbar="False"
+        CanResize="False"
+        ExtendClientAreaToDecorationsHint="True"
+        TransparencyBackgroundFallback="{DynamicResource SystemAltHighColor}"
+        Topmost="True"
+        KeyDown="Window_OnKeyDown">
+
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto" Margin="20">
+        <!-- 标题行 -->
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <lucide:LucideIcon Kind="CircleAlert"
+                               Size="24"
+                               StrokeWidth="1.8"
+                               Foreground="{DynamicResource ErrorColor}"
+                               VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding Title}"
+                       Classes="h4"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource ForegroundColor}"/>
+        </StackPanel>
+
+        <!-- 说明（人话版原因） -->
+        <TextBlock Grid.Row="1"
+                   Text="{Binding Message}"
+                   TextWrapping="Wrap"
+                   Margin="0,14,0,0"
+                   Foreground="{DynamicResource ForegroundColor}"/>
+
+        <!-- 可选的堆栈跟踪：Expander 头部可用 Tab 聚焦、空格/回车展开 -->
+        <Expander Grid.Row="2"
+                  Header="显示堆栈跟踪"
+                  Margin="0,14,0,0"
+                  HorizontalAlignment="Stretch"
+                  IsVisible="{Binding HasDetails}">
+            <TextBox Text="{Binding Details}"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="NoWrap"
+                     MinHeight="96"
+                     MaxHeight="240"
+                     FontFamily="{StaticResource JetBrainsMono}"
+                     FontSize="12"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+        </Expander>
+
+        <Button Grid.Row="3"
+                x:Name="OkButton"
+                Content="确定（Enter / ESC）"
+                HorizontalAlignment="Right"
+                Margin="0,16,0,0"
+                IsDefault="True"
+                IsCancel="True"
+                Classes="Primary"
+                Click="Ok_OnClick"/>
+    </Grid>
+</Window>

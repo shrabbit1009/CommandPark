@@ -16,12 +16,21 @@ public record Hint : IHint
         OnRun = onRun;
     }
 
+    public Hint(string id, string name, string description, float similarity, HintRun onRun) : this(id, name, description)
+    {
+        OnRun      = onRun;
+        Similarity = similarity;
+    }
+
     public Hint(string id, string name, string description)
     {
         Id = id;
         Name = name;
         Description = description;
     }
+
+    /// <inheritdoc />
+    public IHintIcon? Icon { get; set; }
 
     public HintRun OnRun { get; set; } = _ => Task.CompletedTask;
 

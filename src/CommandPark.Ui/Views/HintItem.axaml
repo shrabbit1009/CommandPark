@@ -3,28 +3,71 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:CommandPark.Ui.ViewModels"
+             xmlns:lucide="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
              mc:Ignorable="d" d:DesignWidth="630"
-             MinHeight="122"
+             MinHeight="92"
              x:Class="CommandPark.Ui.Views.HintItem"
              x:DataType="viewModels:HintItemViewModel">
+
+    <UserControl.Styles>
+        <!-- 卡片底色（写成样式而不是控件属性，选中态才能覆盖它） -->
+        <Style Selector="Button.Ghost">
+            <Setter Property="Background" Value="{DynamicResource Background25}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Foreground25}"/>
+        </Style>
+
+        <!-- 选中时卡片让位，露出容器的 InfoColor 背景 -->
+        <Style Selector="ListBoxItem:selected Button.Ghost">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+
+        <!-- 图标默认颜色（写成样式而不是控件上的属性，这样选中态才能覆盖它） -->
+        <Style Selector="lucide|LucideIcon">
+            <Setter Property="Foreground" Value="{DynamicResource Foreground50}"/>
+        </Style>
+
+        <!-- 选中时前景变白：文字 + Lucide 图标（程序图标是位图，不参与） -->
+        <Style Selector="ListBoxItem:selected TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected lucide|LucideIcon">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Styles>
     
-    <Button BorderBrush="{DynamicResource Foreground25}"
-            Background="{DynamicResource Background25}"
+    <Button Command="{Binding RunCommand}"
             CornerRadius="{StaticResource XlCornerRadius}"
             Padding="0"
             Classes="Ghost"
             Width="{Binding $parent[UserControl].Bounds.Width}"
             Height="{Binding $parent[UserControl].Bounds.Height}">
         
-        <Grid ColumnDefinitions="122, *"
+        <Grid ColumnDefinitions="Auto, *"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch"
               Width="{Binding $parent[UserControl].Bounds.Width}"
               Height="{Binding $parent[UserControl].Bounds.Height}">
-            <Image Grid.Column="0" Source="{Binding Icon}"
-                   HorizontalAlignment="Stretch"
-                   VerticalAlignment="Stretch"
-                   Margin="6"/>
+            <!--
+                图标：绑定 IHintIcon，按实现类型切换控件
+                  LucideHintIcon     → LucideIcon（默认 Terminal）
+                  LocalImageHintIcon → Image（本地图片，解码在线程池完成）
+                Icon 为 null 时整列收起
+            -->
+            <Panel Grid.Column="0"
+                   IsVisible="{Binding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
+                   VerticalAlignment="Center"
+                   Margin="24,0,16,0">
+                <lucide:LucideIcon Kind="{Binding LucideKind}"
+                                   Size="24"
+                                   StrokeWidth="1.8"
+                                   IsVisible="{Binding ShowLucideIcon}"/>
+                <Image Source="{Binding IconImage}"
+                       Width="24"
+                       Height="24"
+                       Stretch="Uniform"
+                       IsVisible="{Binding ShowImageIcon}"/>
+            </Panel>
             <StackPanel Grid.Column="1"
                         Orientation="Vertical"
                         HorizontalAlignment="Stretch"
