@@ -7,7 +7,20 @@
         x:Class="CommandPark.Ui.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="CommandPark.Ui">
+        Title="CommandPark.Ui"
+        Width="706"
+        Height="760"
+        WindowStartupLocation="CenterScreen"
+        WindowDecorations="BorderOnly"
+        ShowInTaskbar="False"
+        CanResize="False"
+        CanMaximize="False"
+        CanMinimize="False"
+        TransparencyLevelHint="AcrylicBlur, Mica, Blur, None"
+        ExtendClientAreaToDecorationsHint="True"
+        TransparencyBackgroundFallback="Black"
+        Background="Transparent"
+        Topmost="True">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -15,8 +28,13 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <TextBox Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <Border Background="{StaticResource SystemAltHighColor}"
+                Opacity=".25"/>
+        <ContentPresenter Content="{Binding InnerView}"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"/>
+    </Grid>
 
 </Window>

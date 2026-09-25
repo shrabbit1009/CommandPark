@@ -1,4 +1,4 @@
-<Application xmlns="https://github.com/avaloniaui"
+﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="CommandPark.Ui.App"
              RequestedThemeVariant="Default">
@@ -7,4 +7,19 @@
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <!--
+                        内嵌字体，不依赖目标机器是否安装。
+                        URI 格式：avares://程序集名/资源目录#字体内部家族名
+                        （末尾的 # 家族名不能省略，否则会静默回退到默认字体）
+                    -->
+                    <FontFamily x:Key="JetBrainsMono">avares://CommandPark.Ui/Assets/Fonts#JetBrains Mono</FontFamily>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

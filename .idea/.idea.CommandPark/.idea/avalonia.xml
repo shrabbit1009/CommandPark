@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="src/CommandPark.Ui/App.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
+        <entry key="src/CommandPark.Ui/Views/ParkMainView.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
+      </map>
+    </option>
+  </component>
+</project>
