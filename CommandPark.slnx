@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="src/CommandPark.Background/CommandPark.Background.csproj" />
+  <Project Path="src/CommandPark.Tests/CommandPark.Tests.csproj" />
   <Project Path="src/CommandPark.Ui/CommandPark.Ui.csproj" />
   <Project Path="src/CommandPark/CommandPark.csproj" />
 </Solution>

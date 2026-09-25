@@ -49,6 +49,6 @@ public class HintProvider
             
             await Task.Delay(batchSendTime, cancellationToken);
             
-        } while (masterTask.IsCompleted);
+        } while (!masterTask.IsCompleted);
     }
 }

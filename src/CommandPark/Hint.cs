@@ -1,6 +1,6 @@
 ﻿namespace CommandPark;
 
-public class Hint : IHint
+public record Hint : IHint
 {
     public string Id { get; set; }
     public string Name { get; set; }
