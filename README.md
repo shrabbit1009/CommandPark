@@ -96,11 +96,25 @@ dotnet build
 # 单元测试
 dotnet test
 
-# 发布（输出在 src/CommandPark.Ui/bin/Release/<tfm>/publish）
-dotnet publish src/CommandPark.Ui -c Release
+# 发布（推荐：ReadyToRun 预编译，启动更快）
+dotnet publish src/CommandPark.Ui -c Release -r win-x64 -p:PublishReadyToRun=true --self-contained true -o src/CommandPark.Ui/bin/Release/r2r-win-x64
 ```
 
-首次启动需要 JIT 预热，会稍慢；之后从进程启动到窗口出现约 **0.7 秒**（实测 714–763ms，Release）。
+### 启动速度
+
+下表都是「进程启动 → 窗口可见」的实测值（同一台机器，各跑 5 次）：
+
+| 构建方式 | 最快 | 中位 | 说明 |
+| --- | --- | --- | --- |
+| 框架依赖（默认发布） | 777ms | 781ms | 日常开发用的方式 |
+| self-contained（未开 R2R） | 842ms | 855ms | 自带运行库，但启动要多从磁盘加载，反而更慢 |
+| **ReadyToRun + self-contained** | **530ms** | **543ms** | 推荐发布方式，比默认发布快约 **30%** |
+
+- 提速来自 **ReadyToRun（crossgen2 预编译 IL → 本机码）**，省掉启动时的 JIT；
+  **首次运行**（文件还没进系统缓存）差距更明显：1381ms → 626ms。
+- R2R 代码要求运行时补丁版本匹配，否则运行时会静默丢掉 R2R 代码回落到 JIT（提速就白费了），因此推荐配合 `--self-contained true`。
+- **Native AOT 版本后续可能提供**：体积更小、冷启动更快，但必须在 **Windows + MSVC（VS Build Tools 的 C++ 工作负载）** 上构建——
+  纯 Linux 构建机会直接报错 `Cross-OS native compilation is not supported`。
 
 ## 项目结构
 
@@ -148,6 +162,7 @@ docs/images/                          # README 截图
 - [ ] 后台常驻 + 全局热键唤起（`CommandPark.Background` 进行中）
 - [ ] 执行失败写入本地日志，便于事后排查
 - [ ] 结果按相似度排序（`IHint.Similarity` 已预留）
+- [ ] Native AOT 版本（需要 Windows + MSVC 构建环境；体积更小、冷启动更快）
 
 ## 参与开发
 
