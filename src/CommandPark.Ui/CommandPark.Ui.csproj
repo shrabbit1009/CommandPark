@@ -26,6 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\CommandPark.Background\CommandPark.Background.csproj" />
       <ProjectReference Include="..\CommandPark\CommandPark.csproj" />
     </ItemGroup>
 </Project>

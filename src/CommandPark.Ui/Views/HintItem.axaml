@@ -73,12 +73,11 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center">
                 <TextBlock Text="{Binding Name, FallbackValue=Unknow}"
-                           Classes="h4"
+                           FontSize="16"
                            FontFamily="{StaticResource JetBrainsMono}"
                            TextTrimming="WordEllipsis"
                            ToolTip.Tip="{Binding Description}" />
                 <TextBlock Text="{Binding Description, FallbackValue=Unknow}"
-                           Classes="p"
                            FontFamily="{StaticResource JetBrainsMono}"
                            TextTrimming="WordEllipsis"
                            ToolTip.Tip="{Binding Description}">

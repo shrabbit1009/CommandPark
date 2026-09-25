@@ -37,7 +37,7 @@ public partial class HintItemViewModel : ViewModelBase
         Hint = hint;
         Name = hint.Name;
         Description = hint.Description;
-        Icon = hint.Icon ?? ResolveIcon(hint);
+        Icon = hint.Icon ?? ResolveIcon(hint) ?? ErrorIcon(hint);
     }
 
     public IHint Hint { get; init; }
@@ -199,7 +199,7 @@ public partial class HintItemViewModel : ViewModelBase
     /// 按 Hint.Id 推断图标，仅在 <see cref="IHint.Icon"/> 为空时兜底。
     /// 认不出来的一律回退到 <see cref="DefaultIcon"/>（Terminal）。
     /// </summary>
-    private static IHintIcon ResolveIcon(IHint hint) => hint.Id?.ToLowerInvariant() switch
+    private static IHintIcon? ResolveIcon(IHint hint) => hint.Id?.ToLowerInvariant() switch
     {
         "open" or "url" or "link" or "browse" or "external" => new LucideHintIcon(LucideIconKind.ExternalLink),
         "copy" or "clipboard" => new LucideHintIcon(LucideIconKind.Copy),
@@ -210,6 +210,14 @@ public partial class HintItemViewModel : ViewModelBase
         "run" or "exec" or "executable:env" or "terminal" or "cmd" or "shell" => new LucideHintIcon(LucideIconKind.Terminal),
         "recent" or "last" => new LucideHintIcon(LucideIconKind.Clock),
         "help" or "whats" or "what" or "ask" or "question" => new LucideHintIcon(LucideIconKind.MessageCircleQuestionMark),
-        _ => DefaultIcon,
+        _ => null,
     };
+
+    private static IHintIcon ErrorIcon(IHint hint)
+    {
+        if (hint.Id.ToLower().Contains("error"))
+            return new LucideHintIcon(LucideIconKind.X);
+        
+        return new LucideHintIcon(DefaultLucideKind);
+    }
 }

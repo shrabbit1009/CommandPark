@@ -299,8 +299,8 @@ public partial class ParkMainViewModel : ViewModelBase
         // 目前只有测试源；接入真实源时替换这里即可。
         // 注意：这里可能做 IO，所以只在第一次搜索时、在线程池上被调用。
         var provider = new HintProvider();
-        provider.Sources.Add(new TestHintSource());
         provider.Sources.Add(new EnvProgramSource());
+        provider.Sources.Add(new EverythingSource());
         return provider;
     }
 
