@@ -1,0 +1,29 @@
+﻿<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shadUi="clr-namespace:ShadUI;assembly=ShadUI"
+             x:Class="CommandPark.Ui.App"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Styles>
+        <shadUi:ShadTheme />
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- 半透明前景/背景色（黑/白 × 25%、50%、75%，随深浅主题切换） -->
+                <ResourceInclude Source="avares://CommandPark.Ui/Assets/Themes/CommandParkColors.axaml"/>
+
+                <ResourceDictionary>
+                    <!--
+                        内嵌字体，不依赖目标机器是否安装。
+                        URI 格式：avares://程序集名/资源目录#字体内部家族名
+                        （末尾的 # 家族名不能省略，否则会静默回退到默认字体）
+                    -->
+                    <FontFamily x:Key="JetBrainsMono">avares://CommandPark.Ui/Assets/Fonts#JetBrains Mono</FontFamily>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

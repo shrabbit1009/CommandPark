@@ -1,0 +1,121 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:CommandPark.Ui.ViewModels"
+             xmlns:views="clr-namespace:CommandPark.Ui.Views"
+             mc:Ignorable="d" d:DesignWidth="706" d:DesignHeight="760"
+             x:Class="CommandPark.Ui.Views.ParkMainView"
+             x:DataType="viewModels:ParkMainViewModel"
+             KeyDown="View_OnKeyDown">
+    <UserControl.Resources>
+        <!--
+            结果条目的容器主题：自己画（不再用 ShadUI 默认的 ListBoxItem 主题，
+            它在选中时会在右侧画一个对勾）。
+            选中态 = InfoColor 背景（ShadUI 自带资源）+ 白色前景。
+        -->
+        <ControlTheme x:Key="ResultItemTheme" TargetType="ListBoxItem">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="PART_Border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{StaticResource XlCornerRadius}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+
+            <Style Selector="^:selected">
+                <Setter Property="Background" Value="{DynamicResource InfoColor}"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Style>
+        </ControlTheme>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="120, Auto, *">
+        <!-- 输入框：窗口出现后立刻聚焦，输入不做任何耗时工作 -->
+        <TextBox Text="{Binding InputText}"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Center"
+                 Margin="18"
+                 FontFamily="{StaticResource JetBrainsMono}"
+                 Background="Transparent"
+                 FontSize="18"
+                 Loaded="Control_OnLoaded"/>
+
+        <!--
+            状态条（单独一行，避免与结果列表重叠）：
+            所有文本都不可见时这一行高度为 0，不占位置。
+            "搜索中" 只在搜索确实偏慢时才会出现，见 ParkMainViewModel.SlowSearchThreshold。
+        -->
+        <Panel Grid.Row="1">
+            <TextBlock Text="搜索中…"
+                       IsVisible="{Binding IsSearching}"
+                       Classes="p"
+                       Margin="18,0,18,8"
+                       Foreground="{DynamicResource Foreground50}"
+                       FontFamily="{StaticResource JetBrainsMono}"/>
+
+            <TextBlock Text="输入关键字开始搜索"
+                       IsVisible="{Binding IsIdle}"
+                       Classes="p"
+                       Margin="18,0,18,8"
+                       Foreground="{DynamicResource Foreground50}"
+                       FontFamily="{StaticResource JetBrainsMono}"/>
+
+            <TextBlock Text="没有找到匹配的结果"
+                       IsVisible="{Binding IsEmpty}"
+                       Classes="p"
+                       Margin="18,0,18,8"
+                       Foreground="{DynamicResource Foreground50}"
+                       FontFamily="{StaticResource JetBrainsMono}"/>
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       IsVisible="{Binding IsFailed}"
+                       Classes="p"
+                       Margin="18,0,18,8"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource Foreground50}"
+                       FontFamily="{StaticResource JetBrainsMono}"/>
+        </Panel>
+
+        <!-- 结果列表：首次打开时不创建任何结果控件 -->
+        <ListBox Grid.Row="2"
+                 x:Name="ResultsList"
+                 ItemsSource="{Binding Results}"
+                 SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"
+                 IsVisible="{Binding HasResults}"
+                 Focusable="False"
+                 ItemContainerTheme="{StaticResource ResultItemTheme}"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Padding="0"
+                 Margin="18,0,18,18"
+                 SelectionMode="Single"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+            <!-- 结果可能很多：用虚拟化面板，只为可见项创建 HintItem -->
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="viewModels:HintItemViewModel">
+                    <views:HintItem/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

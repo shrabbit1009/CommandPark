@@ -1,0 +1,70 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        CommandPark 半透明颜色资源
+        ==========================================================================
+        不透明度变体：25% = #40、50% = #80、75% = #BF（AARRGGBB 的 AA 通道）
+
+        1) 绝对色（不随主题变化）—— 需要明确指定黑或白时使用：
+             Black25 / Black50 / Black75    黑色 25% / 50% / 75%
+             White25 / White50 / White75    白色 25% / 50% / 75%
+
+        2) 语义色（随浅色/深色主题自动切换）—— 日常优先用这组：
+             Foreground25 / 50 / 75   前景色：浅色主题→黑，深色主题→白
+             Background25 / 50 / 75   背景色：浅色主题→白，深色主题→黑
+
+        用法（主题相关资源必须用 DynamicResource，否则切换主题时不会更新）：
+             <TextBlock Foreground="{DynamicResource Foreground50}"/>
+             <Border   Background="{DynamicResource Background25}"/>
+
+        注意：用半透明画刷代替在控件上设 Opacity，
+        因为 Opacity 会连同子元素一起变透明（文字、图标也会被淡化）。
+    -->
+
+    <!-- ==================================================================
+         绝对色：黑 / 白，与主题无关
+         ================================================================== -->
+    <SolidColorBrush x:Key="Black25" Color="#40000000"/>
+    <SolidColorBrush x:Key="Black50" Color="#80000000"/>
+    <SolidColorBrush x:Key="Black75" Color="#BF000000"/>
+
+    <SolidColorBrush x:Key="White25" Color="#40FFFFFF"/>
+    <SolidColorBrush x:Key="White50" Color="#80FFFFFF"/>
+    <SolidColorBrush x:Key="White75" Color="#BFFFFFFF"/>
+
+    <!-- ==================================================================
+         语义色：浅色主题
+         ================================================================== -->
+    <ResourceDictionary.ThemeDictionaries>
+
+        <ResourceDictionary x:Key="Light">
+            <!-- 前景：黑 -->
+            <SolidColorBrush x:Key="Foreground25" Color="#40000000"/>
+            <SolidColorBrush x:Key="Foreground50" Color="#80000000"/>
+            <SolidColorBrush x:Key="Foreground75" Color="#BF000000"/>
+
+            <!-- 背景：白 -->
+            <SolidColorBrush x:Key="Background25" Color="#40FFFFFF"/>
+            <SolidColorBrush x:Key="Background50" Color="#80FFFFFF"/>
+            <SolidColorBrush x:Key="Background75" Color="#BFFFFFFF"/>
+        </ResourceDictionary>
+
+        <!-- ==================================================================
+             语义色：深色主题
+             ================================================================== -->
+        <ResourceDictionary x:Key="Dark">
+            <!-- 前景：白 -->
+            <SolidColorBrush x:Key="Foreground25" Color="#40FFFFFF"/>
+            <SolidColorBrush x:Key="Foreground50" Color="#80FFFFFF"/>
+            <SolidColorBrush x:Key="Foreground75" Color="#BFFFFFFF"/>
+
+            <!-- 背景：黑 -->
+            <SolidColorBrush x:Key="Background25" Color="#40000000"/>
+            <SolidColorBrush x:Key="Background50" Color="#80000000"/>
+            <SolidColorBrush x:Key="Background75" Color="#BF000000"/>
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>
