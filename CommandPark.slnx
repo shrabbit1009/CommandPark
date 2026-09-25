@@ -1,1 +1,4 @@
-<Solution />
+<Solution>
+  <Project Path="src/CommandPark.Background/CommandPark.Background.csproj" />
+  <Project Path="src/CommandPark/CommandPark.csproj" />
+</Solution>
