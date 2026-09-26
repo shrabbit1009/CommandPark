@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace CommandPark.Sources;
@@ -24,7 +24,14 @@ public class EnvProgramSource : IHintSource
         string query,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        query = query.Trim();
+        if (query.Length == 0)
+        {
+            yield break;
+        }
+
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var matches = new List<ProgramMatch>();
 
         foreach (var directory in GetSearchDirectories())
         {
@@ -47,16 +54,32 @@ public class EnvProgramSource : IHintSource
                     continue;
                 }
 
-                yield return new Hint(
-                    "executable:env",
-                    $"系统程序 {name}",
-                    "位于环境变量的程序",
-                    ComputeSimilarityHelper.ComputeSimilarity(query, name),
-                    ct => OnRun(exeFile, ct))
-                {
-                    Icon = new ExecutableHintIcon(exeFile),
-                };
+                matches.Add(new ProgramMatch(
+                    exeFile,
+                    name,
+                    ComputeSimilarityHelper.ComputeSimilarity(query, name)));
             }
+        }
+
+        // PATH 的目录顺序只用于解决同名程序，不应该决定结果排序。
+        // 这里先收齐再按相关度排序，保证输入 cmd 时 cmd 永远排在 jcmd 前面。
+        foreach (var match in matches
+                     .OrderByDescending(m => m.Score)
+                     .ThenBy(m => m.Name.Length)
+                     .ThenBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
+                     .ThenBy(m => m.Path, StringComparer.OrdinalIgnoreCase))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            yield return new Hint(
+                "executable:env",
+                $"系统程序 {match.Name}",
+                "位于环境变量的程序",
+                match.Score,
+                ct => OnRun(match.Path, ct))
+            {
+                Icon = new ExecutableHintIcon(match.Path),
+            };
         }
     }
 
@@ -98,4 +121,6 @@ public class EnvProgramSource : IHintSource
         Process.Start(path);
         return Task.CompletedTask;
     }
+
+    private sealed record ProgramMatch(string Path, string Name, float Score);
 }
