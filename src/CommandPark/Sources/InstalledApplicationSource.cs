@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -469,23 +469,31 @@ public class InstalledApplicationSource : IHintWithPrefix, IConfigReader
 
     public bool ReadConfig(JsonNode json)
     {
-        // 定位配置节
-        var node = json["sources"]?["installedApplication"];
-
-        // 如果没有这个，则代表该源没有启用，直接不运行。
-        if (node is null)
+        // 定位配置节。没有这个节代表该源未启用，直接不运行。
+        if (json["sources"] is not JsonObject sources ||
+            sources["installedApplication"] is not JsonObject section)
+        {
             return false;
-        
-        // 排除项，找不到则默认
-        if (node["excludes"]?.GetValue<string[]>() is {} exc)
-            Excludes.AddRange(exc);
+        }
 
-        // 前缀模式，找不到则默认
-        PrefixMode    = node["prefixMode"]?.GetValue<bool>() ?? PrefixMode;
-        SkipNoise     = node["skipNoise"]?.GetValue<bool>() ?? SkipNoise;
-        PinyinMode    = node["pinyinMode"]?.GetValue<bool>() ?? PinyinMode;
-        MaxNameLength = node["maxLength"]?.GetValue<int>() ?? MaxNameLength;
-        
+        // excludes 是 JSON 数组，逐项读取；找不到则保留默认值。
+        if (section["excludes"] is JsonArray excludes)
+        {
+            foreach (var item in excludes)
+            {
+                if (item?.GetValue<string>() is { } exclude)
+                {
+                    Excludes.Add(exclude);
+                }
+            }
+        }
+
+        // 其它配置项找不到时保留默认值。
+        PrefixMode    = section["prefixMode"]?.GetValue<bool>() ?? PrefixMode;
+        SkipNoise     = section["skipNoise"]?.GetValue<bool>() ?? SkipNoise;
+        PinyinMode    = section["pinyinMode"]?.GetValue<bool>() ?? PinyinMode;
+        MaxNameLength = section["maxLength"]?.GetValue<int>() ?? MaxNameLength;
+
         return true;
     }
 }

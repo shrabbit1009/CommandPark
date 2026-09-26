@@ -17,6 +17,10 @@
 - **Everything 搜索**：用 `#` 或 `et:` 前缀触发，借助 [Everything](https://www.voidtools.com/)
   搜索全盘文件与文件夹（需要 Everything 处于运行状态）。
 
+### 主题
+
+支持深色、浅色和跟随系统；由 `commandpark.json` 顶层的 `theme` 控制。
+
 ### 图标
 
 - **程序**：读取可执行文件自带的图标（取系统能给出的最大尺寸）
@@ -81,6 +85,50 @@ et:report 2026           用 et: 前缀也一样
 
 > 想让所有输入都走 Everything？把 `EverythingSource.PrefixMode` 设为 `false`。
 
+### 配置文件
+
+程序目录中的 `commandpark.json` 用于配置搜索源；程序也会兼容读取同目录下的 `config.json`。
+`commandpark.schema.json` 是同一目录下的 JSON Schema，支持编辑器和 IDE 自动补全与校验。
+
+```json
+{
+  "$schema": "./commandpark.schema.json",
+  "theme": "auto",
+  "sources": {
+    "envProgram": {},
+    "everything": {
+      "prefixMode": true,
+      "batchSize": 4
+    },
+    "installedApplication": {
+      "prefixMode": false,
+      "skipNoise": true,
+      "pinyinMode": true,
+      "maxLength": 64,
+      "excludes": ["Uninstall"]
+    }
+  }
+}
+```
+
+| 深色 | 浅色 |
+| --- | --- |
+| ![深色主题](docs/images/hero.png) | ![浅色主题](docs/images/theme-light.png) |
+
+- `theme`：`auto`、`light` 或 `dark`；为 `null` 或不填写时跟随系统，默认值也是 `auto`。
+- 文件不存在时使用内置默认值，所有内置源都会启用。
+- 文件存在时，未提供配置节的 `IConfigReader` 源不会运行。
+- `envProgram`：提供空对象即启用 PATH 程序搜索。
+- `everything.prefixMode`：是否只在输入 `#`、`et:` 前缀时运行 Everything。
+- `everything.batchSize`：每次从 Everything 请求的结果数，范围 1..1000。
+- `installedApplication.prefixMode`：为 `true` 时只有输入 `$`、`ap:`、`app:` 或 `ia:` 前缀才运行该源。
+- `installedApplication.skipNoise`：是否过滤卸载、说明、网站等快捷方式。
+- `installedApplication.pinyinMode`：是否启用连续拼音和拼音首字母匹配。
+- `installedApplication.maxLength`：名称超过该长度时视为描述型噪声。
+- `installedApplication.excludes`：额外排除的名称或路径关键字。
+
+> 修改配置结构时必须同步修改 `commandpark.schema.json`，否则编辑器校验会与实际配置不一致。
+
 ### 执行失败时
 
 ![命令执行失败窗口](docs/images/error-window.png)
@@ -135,6 +183,9 @@ src/
   CommandPark/                        # 核心库：Hint 模型、搜索源、图标抽象
     IHintIcon.cs                      # 图标抽象（程序图标 / 文件图标 / 缩略图 / 本地图片）
     HintProvider.cs                   # 多源并发搜索 + 分批回填
+    ConfigFile.cs                     # 程序目录 JSON 配置读取
+    ConfigurableHintProviderFactory.cs # 按配置创建搜索 Provider
+    ThemeConfigReader.cs              # 读取主题模式配置
     Sources/EnvProgramSource.cs       # PATH 程序搜索
     Sources/EverythingSource.cs       # Everything 搜索（前缀触发）
     Sources/InstalledApplicationSource.cs       # 开始菜单已安装程序搜索
@@ -145,6 +196,8 @@ src/
     ViewModels/ParkMainViewModel.cs   # 搜索编排：防抖、取消、流式回填、选中与执行
     ViewModels/HintItemViewModel.cs   # 单条结果：图标、名称、执行命令
     Views/                            # 主窗口、搜索视图、结果条目、错误窗口
+    commandpark.json                  # 搜索源配置；发布时复制到程序目录
+    commandpark.schema.json           # 配置 JSON Schema；发布时复制到程序目录
   CommandPark.Background/             # 后台常驻与全局热键监听（进行中）
   CommandPark.Tests/                  # 单元测试
 docs/images/                          # README 截图
@@ -166,6 +219,7 @@ docs/images/                          # README 截图
 - 程序图标的「最大尺寸」是**系统能给出的最大尺寸**（`PrivateExtractIcons` 会由 Shell 放大），
   不一定等于文件里真实存在的最大尺寸；要精确需要解析 `RT_GROUP_ICON`。
 - 冷启动（首次运行、系统文件缓存未热）时 Avalonia 初始化明显变慢，与搜索逻辑无关。
+- **浅色主题对比度**：部分控件或状态下，浅色主题的文字与背景对比度仍然偏低，后续会逐项调整。
 - **快捷方式图标覆盖**：部分开始菜单快捷方式会通过 `IconLocation` 覆盖目标程序原始图标。当前优先显示快捷方式图标；后续需要增加检测或配置，让用户可以选择优先目标程序图标（[Issue #2](https://shrabbit.com:4000/gitlab/shrabbit/commandpark/-/work_items/2)）。
 
 ## 路线图

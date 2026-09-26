@@ -1,0 +1,18 @@
+{
+  "$schema": "./commandpark.schema.json",
+  "theme": "auto",
+  "sources": {
+    "envProgram": {},
+    "everything": {
+      "prefixMode": true,
+      "batchSize": 4
+    },
+    "installedApplication": {
+      "prefixMode": false,
+      "skipNoise": true,
+      "pinyinMode": true,
+      "maxLength": 64,
+      "excludes": []
+    }
+  }
+}

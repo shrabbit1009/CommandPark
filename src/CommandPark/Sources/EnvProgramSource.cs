@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
 
 namespace CommandPark.Sources;
 
@@ -11,7 +12,7 @@ namespace CommandPark.Sources;
 /// <see cref="UnauthorizedAccessException"/> 而中断整个搜索（表现为"cmd 搜得到、后面的 explorer 搜不到"）。
 /// </para>
 /// </summary>
-public class EnvProgramSource : IHintSource
+public class EnvProgramSource : IHintSource, IConfigReader
 {
     private static readonly EnumerationOptions SearchOptions = new()
     {
@@ -123,4 +124,11 @@ public class EnvProgramSource : IHintSource
     }
 
     private sealed record ProgramMatch(string Path, string Name, float Score);
+
+    public bool ReadConfig(JsonNode json)
+    {
+        // 空的 envProgram 节点即表示启用该源；不提供节点则禁用。
+        return json["sources"] is JsonObject sources &&
+               sources["envProgram"] is JsonObject;
+    }
 }

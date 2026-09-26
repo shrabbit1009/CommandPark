@@ -1,10 +1,11 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
 using EverythingSearchClient;
 
 namespace CommandPark.Sources;
 
-public class EverythingSource : IHintWithPrefix
+public class EverythingSource : IHintWithPrefix, IConfigReader
 {
     private static SearchClient? _everything;
     
@@ -146,6 +147,24 @@ public class EverythingSource : IHintWithPrefix
         
         Process.Start(filename);
         return Task.CompletedTask;
+    }
+
+    public bool ReadConfig(JsonNode json)
+    {
+        if (json["sources"] is not JsonObject sources ||
+            sources["everything"] is not JsonObject section)
+        {
+            return false;
+        }
+
+        PrefixMode = section["prefixMode"]?.GetValue<bool>() ?? PrefixMode;
+
+        if (section["batchSize"]?.GetValue<int>() is { } batchSize)
+        {
+            BatchSize = (uint)Math.Clamp(batchSize, 1, 1000);
+        }
+
+        return true;
     }
 }
 

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "commandpark.schema.json",
+  "title": "CommandPark configuration",
+  "description": "CommandPark 程序目录配置文件的 JSON Schema。",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "配置文件的 Schema 路径。"
+    },
+    "theme": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "auto",
+        "light",
+        "dark",
+        null
+      ],
+      "default": "auto",
+      "description": "主题模式：auto、light 或 dark；null 或不填时跟随系统。"
+    },
+    "sources": {
+      "type": "object",
+      "description": "各搜索源的配置。未提供配置节的 IConfigReader 源不会运行。",
+      "properties": {
+        "envProgram": {
+          "$ref": "#/$defs/envProgram"
+        },
+        "everything": {
+          "$ref": "#/$defs/everything"
+        },
+        "installedApplication": {
+          "$ref": "#/$defs/installedApplication"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "sources"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "envProgram": {
+      "type": "object",
+      "description": "PATH 程序搜索源。提供空对象即启用；不提供该节点则禁用。",
+      "additionalProperties": false
+    },
+    "everything": {
+      "type": "object",
+      "description": "Everything 文件搜索源。提供该节点即启用。",
+      "properties": {
+        "prefixMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否只在输入 # 或 et: 前缀时运行。"
+        },
+        "batchSize": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 4,
+          "description": "每次从 Everything 请求的结果数。"
+        }
+      },
+      "additionalProperties": false
+    },
+    "installedApplication": {
+      "type": "object",
+      "description": "开始菜单已安装程序搜索源。提供该节点即启用。",
+      "properties": {
+        "prefixMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "为 true 时只有输入 $、ap:、app: 或 ia: 前缀才运行。"
+        },
+        "skipNoise": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否过滤卸载、说明、网站等噪音快捷方式。"
+        },
+        "pinyinMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否启用连续拼音和拼音首字母匹配。"
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 64,
+          "description": "名称超过该长度时视为描述型噪音。"
+        },
+        "excludes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [],
+          "description": "额外排除的名称或路径关键字。"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

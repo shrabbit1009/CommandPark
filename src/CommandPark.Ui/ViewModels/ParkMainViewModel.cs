@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
-using CommandPark.Sources;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommandPark.Ui.ViewModels;
@@ -296,13 +295,9 @@ public partial class ParkMainViewModel : ViewModelBase
 
     private static IHintProvider CreateDefaultProvider()
     {
-        // 目前只有测试源；接入真实源时替换这里即可。
-        // 注意：这里可能做 IO，所以只在第一次搜索时、在线程池上被调用。
-        var provider = new HintProvider();
-        provider.Sources.Add(new EnvProgramSource());
-        provider.Sources.Add(new EverythingSource());
-        provider.Sources.Add(new InstalledApplicationSource());
-        return provider;
+        // 配置文件和真实源都可能做 IO，因此只在第一次搜索时、在线程池上创建。
+        // 程序目录中的 commandpark.json 会决定哪些实现 IConfigReader 的源启用。
+        return ConfigurableHintProviderFactory.Create();
     }
 
     /// <summary>一次搜索会话的共享状态（只在 UI 线程上读写）。</summary>
