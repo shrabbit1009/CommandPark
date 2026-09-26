@@ -8,10 +8,12 @@
 
 ### 搜索源
 
-目前有两个来源，后续会继续增加：
+目前有三个来源，后续会继续增加：
 
-- **程序搜索**：直接输入名字即可，在 `PATH`（以及 `System32`、`Windows`）里查找可执行文件。
+- **PATH 程序搜索**：直接输入名字即可，在 `PATH`（以及 `System32`、`Windows`）里查找可执行文件。
   与系统查找语义一致——**只查目录本身、不递归**；同名程序按 `PATH` 顺序取第一个。
+- **已安装程序**：搜索用户和所有用户的开始菜单快捷方式，支持名称、拼音、拼音首字母和目标程序名匹配。
+  默认不加前缀也会搜索；使用 `ap:`、`app:` 或 `ia:` 前缀会让该来源的结果加权。
 - **Everything 搜索**：用 `#` 或 `et:` 前缀触发，借助 [Everything](https://www.voidtools.com/)
   搜索全盘文件与文件夹（需要 Everything 处于运行状态）。
 
@@ -57,7 +59,15 @@ notepad        打开 notepad.exe
 git            打开 PATH 里第一个 git.exe
 ```
 
-**2. Everything 搜索（`#` 或 `et:` 前缀）**
+**2. 已安装程序搜索**
+
+```text
+ap:原神          匹配并加权开始菜单中的「原神」
+app:vsc          匹配 Visual Studio Code 的首字母
+ia:微信           使用 ia: 前缀同样会让已安装程序结果加权
+```
+
+**3. Everything 搜索（`#` 或 `et:` 前缀）**
 
 前缀模式默认开启：只有带前缀才查 Everything，其余输入只走程序搜索。
 
@@ -127,6 +137,7 @@ src/
     HintProvider.cs                   # 多源并发搜索 + 分批回填
     Sources/EnvProgramSource.cs       # PATH 程序搜索
     Sources/EverythingSource.cs       # Everything 搜索（前缀触发）
+    Sources/InstalledApplicationSource.cs       # 开始菜单已安装程序搜索
   CommandPark.Ui/                     # Avalonia 界面
     ProgramIconExtractor.cs           # 取程序自带的最大图标（PrivateExtractIcons）
     ShellIconExtractor.cs             # 系统文件图标 / 缩略图（IShellItemImageFactory）
@@ -155,6 +166,7 @@ docs/images/                          # README 截图
 - 程序图标的「最大尺寸」是**系统能给出的最大尺寸**（`PrivateExtractIcons` 会由 Shell 放大），
   不一定等于文件里真实存在的最大尺寸；要精确需要解析 `RT_GROUP_ICON`。
 - 冷启动（首次运行、系统文件缓存未热）时 Avalonia 初始化明显变慢，与搜索逻辑无关。
+- **快捷方式图标覆盖**：部分开始菜单快捷方式会通过 `IconLocation` 覆盖目标程序原始图标。当前优先显示快捷方式图标；后续需要增加检测或配置，让用户可以选择优先目标程序图标（[Issue #2](https://shrabbit.com:4000/gitlab/shrabbit/commandpark/-/work_items/2)）。
 
 ## 路线图
 
@@ -163,6 +175,7 @@ docs/images/                          # README 截图
 - [ ] 后台常驻 + 全局热键唤起（`CommandPark.Background` 进行中）
 - [ ] 执行失败写入本地日志，便于事后排查
 - [x] 结果按相似度排序（完全匹配优先，避免 `jcmd` 排在 `cmd` 前）
+- [ ] 优化快捷方式图标覆盖策略（可选择优先目标程序图标，[Issue #2](https://shrabbit.com:4000/gitlab/shrabbit/commandpark/-/work_items/2)）
 - [ ] Native AOT 版本（需要 Windows + MSVC 构建环境；体积更小、冷启动更快）
 
 ## 参与开发
