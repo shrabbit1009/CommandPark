@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using System;
+using System.Text;
 
 namespace CommandPark.Ui;
 
@@ -14,11 +15,15 @@ sealed class Program
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
-                     .UsePlatformDetect()
+    {
+        Console.InputEncoding = Console.OutputEncoding = Encoding.UTF8;
+        
+        return AppBuilder.Configure<App>()
+                         .UsePlatformDetect()
 #if DEBUG
-                     .WithDeveloperTools()
+                         .WithDeveloperTools()
 #endif
-                     .WithInterFont()
-                     .LogToTrace();
+                         .WithInterFont()
+                         .LogToTrace();
+    }
 }

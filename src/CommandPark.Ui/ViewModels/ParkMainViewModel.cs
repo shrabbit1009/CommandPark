@@ -301,6 +301,7 @@ public partial class ParkMainViewModel : ViewModelBase
         var provider = new HintProvider();
         provider.Sources.Add(new EnvProgramSource());
         provider.Sources.Add(new EverythingSource());
+        provider.Sources.Add(new InstalledApplicationSource());
         return provider;
     }
 

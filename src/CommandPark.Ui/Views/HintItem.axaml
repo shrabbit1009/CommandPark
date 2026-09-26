@@ -5,7 +5,7 @@
              xmlns:viewModels="clr-namespace:CommandPark.Ui.ViewModels"
              xmlns:lucide="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
              mc:Ignorable="d" d:DesignWidth="630"
-             MinHeight="92"
+             MinHeight="64"
              x:Class="CommandPark.Ui.Views.HintItem"
              x:DataType="viewModels:HintItemViewModel">
 
