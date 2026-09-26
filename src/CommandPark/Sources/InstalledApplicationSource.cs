@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json.Nodes;
 using NPinyin;
 
 namespace CommandPark.Sources;
@@ -19,10 +20,10 @@ namespace CommandPark.Sources;
 /// 前缀模式见 <see cref="PrefixMode"/>：默认不加前缀也搜，<c>ap:</c> / <c>app:</c> 前缀会让本源结果加权。
 /// </para>
 /// </summary>
-public class InstalledApplicationSource : IHintWithPrefix
+public class InstalledApplicationSource : IHintWithPrefix, IConfigReader
 {
     /// <summary>本源支持的前缀。</summary>
-    public static readonly string[] Prefixes = ["app:", "ap:", "ia:"];
+    public static readonly string[] Prefixes = ["$", "app:", "ap:", "ia:"];
 
     /// <summary>常见"噪音"快捷方式关键词（卸载/说明/网站/更新……）。</summary>
     private static readonly string[] NoiseKeywords =
@@ -465,4 +466,26 @@ public class InstalledApplicationSource : IHintWithPrefix
         string NormalizedPinyin,
         string Initials,
         string[] NormalizedAliases);
+
+    public bool ReadConfig(JsonNode json)
+    {
+        // 定位配置节
+        var node = json["sources"]?["installedApplication"];
+
+        // 如果没有这个，则代表该源没有启用，直接不运行。
+        if (node is null)
+            return false;
+        
+        // 排除项，找不到则默认
+        if (node["excludes"]?.GetValue<string[]>() is {} exc)
+            Excludes.AddRange(exc);
+
+        // 前缀模式，找不到则默认
+        PrefixMode    = node["prefixMode"]?.GetValue<bool>() ?? PrefixMode;
+        SkipNoise     = node["skipNoise"]?.GetValue<bool>() ?? SkipNoise;
+        PinyinMode    = node["pinyinMode"]?.GetValue<bool>() ?? PinyinMode;
+        MaxNameLength = node["maxLength"]?.GetValue<int>() ?? MaxNameLength;
+        
+        return true;
+    }
 }
