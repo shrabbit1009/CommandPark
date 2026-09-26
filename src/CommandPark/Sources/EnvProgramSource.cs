@@ -49,8 +49,8 @@ public class EnvProgramSource : IHintSource
 
                 yield return new Hint(
                     "executable:env",
-                    $"打开\"{name}\"",
-                    exeFile,
+                    $"系统程序 {name}",
+                    "位于环境变量的程序",
                     ComputeSimilarityHelper.ComputeSimilarity(query, name),
                     ct => OnRun(exeFile, ct))
                 {

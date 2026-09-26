@@ -8,26 +8,8 @@ public class EverythingSource : IHintWithPrefix
 {
     private static SearchClient? _everything;
     
-    /// <summary>
-    /// 去掉前缀 "#" 或 "et:"；返回是否带前缀（PrefixMode 用它判断要不要跑 Everything）。
-    /// </summary>
-    private static bool TryStripPrefix(string query, out string rawQuery)
-    {
-        if (query.StartsWith("et:", StringComparison.OrdinalIgnoreCase))
-        {
-            rawQuery = query[3..].Trim();
-            return true;
-        }
-
-        if (query.StartsWith('#'))
-        {
-            rawQuery = query[1..].Trim();
-            return true;
-        }
-
-        rawQuery = query;
-        return false;
-    }
+    /// <summary>本源支持的前缀。</summary>
+    public static readonly string[] Prefixes = ["et:", "#"];
 
     /// <summary>
     /// 每一批结果的数量。
@@ -41,9 +23,8 @@ public class EverythingSource : IHintWithPrefix
 
     public async IAsyncEnumerable<IHint> SearchAsync(string query, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // 剔除前缀（# 或 et:）。注意必须按"前缀"去掉，不能用 TrimStart(char[])——
-        // "et:" 会被当成字符集合，把 ext: 开头的查询里的 e 也吃掉。
-        var hasPrefix = TryStripPrefix(query, out var rawQuery);
+        // 剔除前缀（# 或 et:）；PrefixMode=false 时无前缀也搜索，带前缀时结果加权。
+        var hasPrefix = HintPrefix.TryStrip(query, out var rawQuery, Prefixes);
 
         // 检测前缀模式：无前缀则不运行搜索
         if (PrefixMode && !hasPrefix)
@@ -106,17 +87,22 @@ public class EverythingSource : IHintWithPrefix
                     
                     var name = item.Name;
                     var path = Path.Join(item.Path, name);
-                    var sim = ComputeSimilarityHelper.ComputeSimilarity(query, name);
+                    // 相似度按剥离前缀后的查询计算，并按是否使用前缀加权
+                    var sim = ComputeSimilarityHelper.ComputeSimilarity(rawQuery, name);
+                    if (hasPrefix)
+                    {
+                        sim += 1.0f;
+                    }
 
                     // 根据类型设定文本。
                     
-                    var hint = $"打开\"{name}\"";
+                    var hint = $"打开 {name}";
 
                     if (item.Flags.HasFlag(Result.ItemFlags.Drive))
-                        hint = $"打开驱动器\"{name}\"";
+                        hint = $"打开驱动器 {name}";
 
                     if (item.Flags.HasFlag(Result.ItemFlags.Folder))
-                        hint = $"打开文件夹\"{name}\"";
+                        hint = $"打开文件夹 {name}";
                     
                     yield return new EverythingHint("everything:searchResult", hint, path, sim, ct => OnRun(path, ct))
                     {

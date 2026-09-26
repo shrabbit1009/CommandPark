@@ -113,7 +113,9 @@ public class HintProvider : IHintProvider
 
         if (batch.Count > 0)
         {
-            onSearched(batch.ToArray());
+            // 按相似度降序（OrderByDescending 是稳定排序，同分保持到达顺序）：
+            // 让各源给出的权重、以及"输入前缀提升权重"真正体现在列表顺序上。
+            onSearched(batch.OrderByDescending(hint => hint.Similarity).ToArray());
         }
     }
 

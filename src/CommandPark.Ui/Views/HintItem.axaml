@@ -59,13 +59,18 @@
                    VerticalAlignment="Center"
                    Margin="24,0,16,0">
                 <lucide:LucideIcon Kind="{Binding LucideKind}"
-                                   Size="24"
+                                   Size="32"
                                    StrokeWidth="1.8"
                                    IsVisible="{Binding ShowLucideIcon}"/>
+                <!--
+                    位图图标（程序图标 / 缩略图 / 本地图片）默认不做插值，
+                    缩放时会显得过锐、有锯齿和像素块，这里显式用高质量插值。
+                -->
                 <Image Source="{Binding IconImage}"
-                       Width="24"
-                       Height="24"
+                       Width="32"
+                       Height="32"
                        Stretch="Uniform"
+                       RenderOptions.BitmapInterpolationMode="HighQuality"
                        IsVisible="{Binding ShowImageIcon}"/>
             </Panel>
             <StackPanel Grid.Column="1"
