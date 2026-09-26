@@ -4,7 +4,7 @@ using EverythingSearchClient;
 
 namespace CommandPark.Sources;
 
-public class EverythingSource : IHintSource
+public class EverythingSource : IHintWithPrefix
 {
     private static SearchClient? _everything;
     

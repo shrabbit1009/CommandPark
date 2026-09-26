@@ -8,6 +8,8 @@
 
     <ItemGroup>
       <PackageReference Include="EverythingSearchClient" Version="0.9.0.148" />
+      <PackageReference Include="Lnk" Version="2026.5.3" />
+      <PackageReference Include="NPinyin.Core" Version="3.0.0" />
     </ItemGroup>
 
 </Project>
