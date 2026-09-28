@@ -8,17 +8,23 @@
 
 ### 搜索源
 
-目前有六个来源，其中首屏欢迎项只在空查询时运行：
+CommandPark 当前包含六个来源。除首屏欢迎项外，它们会并发参与搜索，并按相关度排序。
 
-- **PATH 程序搜索**：直接输入名字即可，在 `PATH`（以及 `System32`、`Windows`）里查找可执行文件。
-  与系统查找语义一致——**只查目录本身、不递归**；同名程序按 `PATH` 顺序取第一个。
-- **已安装程序**：搜索用户和所有用户的开始菜单快捷方式，支持名称、拼音、拼音首字母和目标程序名匹配。
-  默认不加前缀也会搜索；使用 `ap:`、`app:` 或 `ia:` 前缀会让该来源的结果加权。
-- **Everything 搜索**：用 `#` 或 `et:` 前缀触发，借助 [Everything](https://www.voidtools.com/)
-  搜索全盘文件与文件夹（需要 Everything 处于运行状态）。
-- **运行命令**：用 `@`、`run:` 或 `r:` 前缀运行输入的命令，当前通过 `runas` 启动；不带前缀时作为低优先级兜底。
-- **LaTeX 计算**：用 `@`、`c:` 或 `calc:` 前缀计算表达式；无论计算成功或失败，`c:` / `calc:` 都会提供“在 Desmos 中打开”跳转项，详情窗口可按 `Alt+D` 打开。
-- **首屏欢迎项**：空查询时运行实现 `IHomeDisplayable` 的源，显示欢迎操作；输入后自动隐藏。
+| 来源 | 触发方式 | 说明 |
+| --- | --- | --- |
+| PATH 程序 | 直接输入 | 在 `PATH`、`System32` 和 `Windows` 中查找 `.exe`；每个程序名只取 PATH 中第一个。 |
+| 已安装程序 | 直接输入 | 搜索用户和所有用户的开始菜单快捷方式，支持名称、拼音、拼音首字母和目标程序名。 |
+| Everything | `#` 或 `et:` | 通过 Everything 搜索全盘文件、文件夹和驱动器，需要 Everything 正在运行。 |
+| 运行命令 | `@`、`run:`、`r:` | 运行输入的命令；默认使用 `runas` 启动，可能触发 UAC。 |
+| 计算 | `@`、`c:`、`calc:` | 使用 AngouriMath 计算表达式；推荐使用 `c:` 或 `calc:`。 |
+| 首屏欢迎 | 空查询 | 运行实现 `IHomeDisplayable` 的来源，输入任意内容后自动隐藏。 |
+
+- **PATH 程序搜索**只查目录本身，不递归子目录，避免扫描整个 `C:\Windows`。
+- **已安装程序**默认无前缀也会搜索；`ap:`、`app:`、`ia:` 会给本源结果加权。
+- **Everything** 默认只在带 `#` / `et:` 前缀时运行；可在配置中关闭 `everything.prefixMode`。
+- **运行命令**默认无前缀时作为低优先级兜底；可在配置中设置 `run.prefixMode`。
+- **计算**支持超时与取消；`c:` / `calc:` 在成功、错误和超时情况下都会保留 Desmos 跳转项。
+- **首屏欢迎**由 `welcome` 配置节控制，首屏操作也可以直接用键盘选择和执行。
 
 ### 主题
 
@@ -98,15 +104,31 @@ r:cmd /c echo hello
 
 运行命令会通过 `runas` 启动，因此可能触发 UAC。
 
-**5. 计算（`c:` / `calc:` 前缀）**
+**5. 计算与 Desmos 跳转（`c:` / `calc:` 前缀）**
+
+普通表达式会先计算结果，再提供 Desmos 跳转项：
 
 ```text
-c:1 + 1
-calc:sqrt(2)
-calc:\int_0^1 x^2 dx
+c:i^2
 ```
 
-计算超时会自动取消；按 Enter 打开详情窗口。使用 `c:` 或 `calc:` 前缀时，无论表达式是否有效都会提供“在 Desmos 中打开”跳转项，详情窗口可按 `Alt+D` 打开。
+结果会显示 `= -1`，同时出现“在 Desmos 中打开”。选中计算结果按 `Enter` 查看详情，详情窗口按 `Alt+D` 可直接打开 Desmos。
+
+![Calc 计算结果与 Desmos 跳转](docs/images/calc.png)
+
+图表表达式会通过 `Latexize()` 转换为 LaTeX 后生成 Desmos 快照：
+
+```text
+calc:y=x^{7}+\sin\frac{62}{6}x
+```
+
+![Desmos 图表：y=x^7+sin(62/6 x)](docs/images/desmos.png)
+
+[在 Desmos 中查看这张图](https://www.desmos.com/calculator/ldguqxfiie)
+
+> `@` 也是计算源的前缀之一，但它同时用于运行命令源。需要明确的计算/Desmos 跳转时，建议使用 `c:` 或 `calc:`。
+
+计算默认超时时间为 2 秒；无论表达式成功、失败还是超时，`c:` / `calc:` 都会保留 Desmos 跳转 Hint。
 
 ### 配置文件
 
@@ -230,12 +252,13 @@ src/
     ConfigurableHintProviderFactory.cs # 按配置创建搜索 Provider
     IHomeDisplayable.cs                # 首屏显示标记接口
     ThemeConfigReader.cs              # 读取主题模式配置
+    DesmosHelper.cs                   # Desmos 快照 URL 生成
     Sources/EnvProgramSource.cs       # PATH 程序搜索
     Sources/EverythingSource.cs       # Everything 搜索（前缀触发）
     Sources/InstalledApplicationSource.cs       # 开始菜单已安装程序搜索
     Sources/WelcomeSource.cs                   # 空查询时的首屏欢迎项
     Sources/RunSource.cs                       # 运行输入的命令
-    Sources/LatexCalcSource.cs                 # LaTeX / AngouriMath 计算源
+    Sources/CalcSource.cs                      # AngouriMath 计算 / Desmos 跳转源
   CommandPark.Ui/                     # Avalonia 界面
     ProgramIconExtractor.cs           # 取程序自带的最大图标（PrivateExtractIcons）
     ShellIconExtractor.cs             # 系统文件图标 / 缩略图（IShellItemImageFactory）
@@ -257,6 +280,8 @@ docs/images/                          # README 截图
 - [Lucide.Avalonia](https://www.nuget.org/packages/Lucide.Avalonia) —— 矢量图标
 - [CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/) —— MVVM 源生成器
 - [EverythingSearchClient](https://www.nuget.org/packages/EverythingSearchClient) —— Everything IPC
+- [AngouriMath](https://am.angouri.org/) —— 表达式求值与 LaTeX 转换
+- [RestSharp](https://restsharp.dev/) —— Desmos 快照请求
 - 内嵌 JetBrains Mono 字体（SIL OFL 1.1）
 
 ## 已知问题
@@ -283,6 +308,7 @@ docs/images/                          # README 截图
 
 ```bash
 git clone https://shrabbit.com:4000/gitlab/shrabbit/commandpark.git
+git lfs pull
 cd commandpark
 dotnet build
 dotnet test
