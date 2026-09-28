@@ -17,6 +17,10 @@
     "run": {
       "prefixMode": false
     },
+    "latexCalc": {
+      "prefixMode": true,
+      "timeoutSeconds": 2
+    },
     "welcome": {
       "showEditConfig": true,
       "showRepo": true,

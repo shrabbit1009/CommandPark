@@ -41,5 +41,6 @@ public static class ConfigurableHintProviderFactory
         yield return new InstalledApplicationSource();
         yield return new RunSource();
         yield return new WelcomeSource();
+        yield return new CalcSource();
     }
 }

@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:CommandPark.Ui.ViewModels"
+        xmlns:lucide="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
+        x:Class="CommandPark.Ui.Views.HintDetailsWindow"
+        x:DataType="viewModels:HintDetailsWindowViewModel"
+        Title="详情"
+        Width="640"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        WindowDecorations="BorderOnly"
+        TransparencyLevelHint="AcrylicBlur, Mica, Blur, None"
+        ShowInTaskbar="False"
+        CanResize="False"
+        ExtendClientAreaToDecorationsHint="True"
+        TransparencyBackgroundFallback="{DynamicResource SystemAltHighColor}"
+        Topmost="True"
+        KeyDown="Window_OnKeyDown">
+
+    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto" Margin="20">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <lucide:LucideIcon Kind="FileText"
+                               Size="24"
+                               StrokeWidth="1.8"
+                               Foreground="{DynamicResource InfoColor}"
+                               VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding Title}"
+                       Classes="h4"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource ForegroundColor}"/>
+        </StackPanel>
+
+        <TextBlock Grid.Row="1"
+                   Text="{Binding Description}"
+                   TextWrapping="Wrap"
+                   Margin="0,14,0,0"
+                   Foreground="{DynamicResource Foreground50}"/>
+
+        <TextBox Grid.Row="3"
+                 Text="{Binding Details}"
+                 IsReadOnly="True"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 MinHeight="180"
+                 MaxHeight="420"
+                 Margin="0,14,0,0"
+                 FontFamily="{StaticResource JetBrainsMono}"
+                 FontSize="13"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+
+        <Button Grid.Row="4"
+                x:Name="CloseButton"
+                Content="关闭（Enter / ESC）"
+                HorizontalAlignment="Right"
+                Margin="0,16,0,0"
+                IsDefault="True"
+                IsCancel="True"
+                Classes="Primary"
+                Click="Close_OnClick"/>
+    </Grid>
+</Window>

@@ -81,7 +81,7 @@
                 <TextBlock Text="{Binding Name, FallbackValue=Unknow}"
                            FontSize="16"
                            FontFamily="{StaticResource JetBrainsMono}"
-                           TextTrimming="WordEllipsis"
+                           TextTrimming="CharacterEllipsis"
                            ToolTip.Tip="{Binding Description}" />
                 <TextBlock Text="{Binding Description, FallbackValue=Unknow}"
                            FontFamily="{StaticResource JetBrainsMono}"

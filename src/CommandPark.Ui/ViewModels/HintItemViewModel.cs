@@ -86,6 +86,9 @@ public partial class HintItemViewModel : ViewModelBase
     /// <summary>执行命令失败时触发。异常在这里被拦住，不会冒到 UI 线程导致崩溃。</summary>
     public event EventHandler<HintRunFailedEventArgs>? RunFailed;
 
+    /// <summary>请求显示 Hint 完整详情时触发。</summary>
+    public event EventHandler<HintDetailsRequestedEventArgs>? DetailsRequested;
+
     [RelayCommand]
     public Task Run() => TryRunAsync();
 
@@ -95,6 +98,11 @@ public partial class HintItemViewModel : ViewModelBase
     /// </summary>
     public async Task<bool> TryRunAsync()
     {
+        if (TryRequestDetails())
+        {
+            return false;
+        }
+
         try
         {
             await Hint.Run(_cancellationTokenSource.Token);
@@ -117,6 +125,19 @@ public partial class HintItemViewModel : ViewModelBase
 
             return false;
         }
+    }
+
+    private bool TryRequestDetails()
+    {
+        if (Hint is not IDetailedHint detailed ||
+            string.IsNullOrWhiteSpace(detailed.Details) ||
+            DetailsRequested is null)
+        {
+            return false;
+        }
+
+        DetailsRequested.Invoke(this, new HintDetailsRequestedEventArgs(Hint, detailed.Details));
+        return true;
     }
 
     [RelayCommand]

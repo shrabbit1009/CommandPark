@@ -8,7 +8,7 @@
 
 ### 搜索源
 
-目前有五个来源，其中首屏欢迎项只在空查询时运行：
+目前有六个来源，其中首屏欢迎项只在空查询时运行：
 
 - **PATH 程序搜索**：直接输入名字即可，在 `PATH`（以及 `System32`、`Windows`）里查找可执行文件。
   与系统查找语义一致——**只查目录本身、不递归**；同名程序按 `PATH` 顺序取第一个。
@@ -17,6 +17,7 @@
 - **Everything 搜索**：用 `#` 或 `et:` 前缀触发，借助 [Everything](https://www.voidtools.com/)
   搜索全盘文件与文件夹（需要 Everything 处于运行状态）。
 - **运行命令**：用 `@`、`run:` 或 `r:` 前缀运行输入的命令，当前通过 `runas` 启动；不带前缀时作为低优先级兜底。
+- **LaTeX 计算**：用 `@`、`c:` 或 `calc:` 前缀计算表达式；计算超时会自动取消，Enter 可查看详情。
 - **首屏欢迎项**：空查询时运行实现 `IHomeDisplayable` 的源，显示欢迎操作；输入后自动隐藏。
 
 ### 主题
@@ -97,6 +98,16 @@ r:cmd /c echo hello
 
 运行命令会通过 `runas` 启动，因此可能触发 UAC。
 
+**5. 计算（`c:` / `calc:` 前缀）**
+
+```text
+c:1 + 1
+calc:sqrt(2)
+calc:\int_0^1 x^2 dx
+```
+
+计算超时会自动取消；按 Enter 打开详情窗口。
+
 ### 配置文件
 
 程序目录中的 `commandpark.json` 用于配置搜索源；程序也会兼容读取同目录下的 `config.json`。
@@ -121,6 +132,10 @@ r:cmd /c echo hello
     },
     "run": {
       "prefixMode": false
+    },
+    "latexCalc": {
+      "prefixMode": true,
+      "timeoutSeconds": 2
     },
     "welcome": {
       "showEditConfig": true,
@@ -147,6 +162,8 @@ r:cmd /c echo hello
 - `installedApplication.maxLength`：名称超过该长度时视为描述型噪声。
 - `installedApplication.excludes`：额外排除的名称或路径关键字。
 - `run.prefixMode`：为 `true` 时只有输入 `@`、`run:` 或 `r:` 前缀才运行任意命令。
+- `latexCalc.prefixMode`：为 `true` 时只有输入 `@`、`c:` 或 `calc:` 前缀才运行计算源。
+- `latexCalc.timeoutSeconds`：单次计算超时时间，范围 1..30 秒。
 - `welcome.showEditConfig`：是否显示修改配置文件的欢迎项。
 - `welcome.showRepo`：是否显示项目仓库入口。
 - `welcome.showOfficial`：是否显示 shRabbit 官方网站入口。
@@ -206,6 +223,8 @@ CommandPark.slnx
 src/
   CommandPark/                        # 核心库：Hint 模型、搜索源、图标抽象
     IHintIcon.cs                      # 图标抽象（程序图标 / 文件图标 / 缩略图 / 本地图片）
+    IDetailedHint.cs                  # 可在详情窗口查看的 Hint 接口
+    DetailedHint.cs                   # 默认详情 Hint 实现
     HintProvider.cs                   # 多源并发搜索 + 分批回填
     ConfigFile.cs                     # 程序目录 JSON 配置读取
     ConfigurableHintProviderFactory.cs # 按配置创建搜索 Provider
@@ -216,13 +235,14 @@ src/
     Sources/InstalledApplicationSource.cs       # 开始菜单已安装程序搜索
     Sources/WelcomeSource.cs                   # 空查询时的首屏欢迎项
     Sources/RunSource.cs                       # 运行输入的命令
+    Sources/LatexCalcSource.cs                 # LaTeX / AngouriMath 计算源
   CommandPark.Ui/                     # Avalonia 界面
     ProgramIconExtractor.cs           # 取程序自带的最大图标（PrivateExtractIcons）
     ShellIconExtractor.cs             # 系统文件图标 / 缩略图（IShellItemImageFactory）
     Win32BitmapConverter.cs           # HICON / HBITMAP → Avalonia 位图
     ViewModels/ParkMainViewModel.cs   # 搜索编排：防抖、取消、流式回填、选中与执行
     ViewModels/HintItemViewModel.cs   # 单条结果：图标、名称、执行命令
-    Views/                            # 主窗口、搜索视图、结果条目、错误窗口
+    Views/                            # 主窗口、搜索视图、结果条目、错误/详情窗口
     commandpark.json                  # 搜索源配置；发布时复制到程序目录
     commandpark.schema.json           # 配置 JSON Schema；发布时复制到程序目录
   CommandPark.Background/             # 后台常驻与全局热键监听（进行中）
@@ -251,7 +271,7 @@ docs/images/                          # README 截图
 
 ## 路线图
 
-- [ ] 更多搜索源（浏览器书签 / 历史、计算器、进程、窗口……）
+- [ ] 更多搜索源（浏览器书签 / 历史、进程、窗口……）
 - [ ] `cp:` 前缀：查看与修改 CommandPark 自身配置
 - [ ] 后台常驻 + 全局热键唤起（`CommandPark.Background` 进行中）
 - [ ] 执行失败写入本地日志，便于事后排查

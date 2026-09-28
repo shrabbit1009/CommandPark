@@ -103,6 +103,9 @@ public partial class ParkMainViewModel : ViewModelBase
     /// <summary>任意条目执行失败时触发（供界面弹出错误窗口）。</summary>
     public event EventHandler<HintRunFailedEventArgs>? RunFailed;
 
+    /// <summary>任意条目请求显示详情时触发（供界面打开详情窗口）。</summary>
+    public event EventHandler<HintDetailsRequestedEventArgs>? DetailsRequested;
+
     /// <summary>最近一次搜索任务（含防抖与批次回填），主要供测试等待。</summary>
     public Task? CurrentSearch { get; private set; }
 
@@ -281,6 +284,7 @@ public partial class ParkMainViewModel : ViewModelBase
 
                 var item = new HintItemViewModel(hint);
                 item.RunFailed += OnItemRunFailed;
+                item.DetailsRequested += OnItemDetailsRequested;
                 Results.Add(item);
             }
 
@@ -290,6 +294,8 @@ public partial class ParkMainViewModel : ViewModelBase
     }
 
     private void OnItemRunFailed(object? sender, HintRunFailedEventArgs args) => RunFailed?.Invoke(this, args);
+
+    private void OnItemDetailsRequested(object? sender, HintDetailsRequestedEventArgs args) => DetailsRequested?.Invoke(this, args);
 
     /// <summary>
     /// 取消上一次搜索。该 CTS 可能已经被它所属的搜索在 finally 里释放，

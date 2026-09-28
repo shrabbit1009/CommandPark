@@ -39,6 +39,9 @@
         "run": {
           "$ref": "#/$defs/run"
         },
+        "latexCalc": {
+          "$ref": "#/$defs/latexCalc"
+        },
         "welcome": {
           "$ref": "#/$defs/welcome"
         }
@@ -120,6 +123,25 @@
           "type": "boolean",
           "default": false,
           "description": "为 true 时只有输入 @、run: 或 r: 前缀才运行该源。"
+        }
+      },
+      "additionalProperties": false
+    },
+    "latexCalc": {
+      "type": "object",
+      "description": "LaTeX / AngouriMath 计算源。提供该节点即启用。",
+      "properties": {
+        "prefixMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "为 true 时只有输入 @、c: 或 calc: 前缀才运行。"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 2,
+          "description": "单次表达式计算的超时时间（秒）。"
         }
       },
       "additionalProperties": false

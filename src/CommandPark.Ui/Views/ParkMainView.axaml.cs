@@ -36,6 +36,7 @@ public partial class ParkMainView : UserControl
         if (_subscribedViewModel is not null)
         {
             _subscribedViewModel.RunFailed -= OnRunFailed;
+            _subscribedViewModel.DetailsRequested -= OnDetailsRequested;
         }
 
         _subscribedViewModel = DataContext as ParkMainViewModel;
@@ -43,6 +44,7 @@ public partial class ParkMainView : UserControl
         if (_subscribedViewModel is not null)
         {
             _subscribedViewModel.RunFailed += OnRunFailed;
+            _subscribedViewModel.DetailsRequested += OnDetailsRequested;
         }
     }
 
@@ -112,6 +114,29 @@ public partial class ParkMainView : UserControl
         catch (Exception)
         {
             // 弹窗自身失败也不能把应用带崩
+        }
+    }
+
+    /// <summary>显示 Hint 完整详情；不关闭主窗口。</summary>
+    private async void OnDetailsRequested(object? sender, HintDetailsRequestedEventArgs args)
+    {
+        try
+        {
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+
+            var detailsWindow = new HintDetailsWindow
+            {
+                DataContext = new HintDetailsWindowViewModel(args.Hint, args.Details),
+            };
+
+            await detailsWindow.ShowDialog(owner);
+        }
+        catch (Exception)
+        {
+            // 详情窗口失败不能影响主界面。
         }
     }
 
