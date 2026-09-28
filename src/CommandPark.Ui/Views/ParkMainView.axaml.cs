@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -23,6 +23,9 @@ public partial class ParkMainView : UserControl
     {
         if (sender is Control control)
             control.Focus();
+
+        if (DataContext is ParkMainViewModel viewModel)
+            _ = viewModel.InitializeHomeAsync();
     }
 
     /// <summary>DataContext 可能被外部替换，这里保证只订阅当前 VM 的失败事件。</summary>

@@ -39,5 +39,7 @@ public static class ConfigurableHintProviderFactory
         yield return new EnvProgramSource();
         yield return new EverythingSource();
         yield return new InstalledApplicationSource();
+        yield return new RunSource();
+        yield return new WelcomeSource();
     }
 }

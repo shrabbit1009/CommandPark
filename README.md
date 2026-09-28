@@ -8,7 +8,7 @@
 
 ### 搜索源
 
-目前有三个来源，后续会继续增加：
+目前有五个来源，其中首屏欢迎项只在空查询时运行：
 
 - **PATH 程序搜索**：直接输入名字即可，在 `PATH`（以及 `System32`、`Windows`）里查找可执行文件。
   与系统查找语义一致——**只查目录本身、不递归**；同名程序按 `PATH` 顺序取第一个。
@@ -16,6 +16,8 @@
   默认不加前缀也会搜索；使用 `ap:`、`app:` 或 `ia:` 前缀会让该来源的结果加权。
 - **Everything 搜索**：用 `#` 或 `et:` 前缀触发，借助 [Everything](https://www.voidtools.com/)
   搜索全盘文件与文件夹（需要 Everything 处于运行状态）。
+- **运行命令**：用 `@`、`run:` 或 `r:` 前缀运行输入的命令，当前通过 `runas` 启动；不带前缀时作为低优先级兜底。
+- **首屏欢迎项**：空查询时运行实现 `IHomeDisplayable` 的源，显示欢迎操作；输入后自动隐藏。
 
 ### 主题
 
@@ -83,7 +85,17 @@ et:report 2026           用 et: 前缀也一样
 
 ![Everything 搜索：文件缩略图](docs/images/everything.png)
 
-> 想让所有输入都走 Everything？把 `EverythingSource.PrefixMode` 设为 `false`。
+> 想让所有输入都走 Everything？在 `commandpark.json` 中把 `everything.prefixMode` 设为 `false`。
+
+**4. 运行命令（`@` / `run:` / `r:` 前缀）**
+
+```text
+@notepad
+run:"C:\Program Files\Example\app.exe"
+r:cmd /c echo hello
+```
+
+运行命令会通过 `runas` 启动，因此可能触发 UAC。
 
 ### 配置文件
 
@@ -106,6 +118,14 @@ et:report 2026           用 et: 前缀也一样
       "pinyinMode": true,
       "maxLength": 64,
       "excludes": ["Uninstall"]
+    },
+    "run": {
+      "prefixMode": false
+    },
+    "welcome": {
+      "showEditConfig": true,
+      "showRepo": true,
+      "showOfficial": true
     }
   }
 }
@@ -126,6 +146,10 @@ et:report 2026           用 et: 前缀也一样
 - `installedApplication.pinyinMode`：是否启用连续拼音和拼音首字母匹配。
 - `installedApplication.maxLength`：名称超过该长度时视为描述型噪声。
 - `installedApplication.excludes`：额外排除的名称或路径关键字。
+- `run.prefixMode`：为 `true` 时只有输入 `@`、`run:` 或 `r:` 前缀才运行任意命令。
+- `welcome.showEditConfig`：是否显示修改配置文件的欢迎项。
+- `welcome.showRepo`：是否显示项目仓库入口。
+- `welcome.showOfficial`：是否显示 shRabbit 官方网站入口。
 
 > 修改配置结构时必须同步修改 `commandpark.schema.json`，否则编辑器校验会与实际配置不一致。
 
@@ -185,10 +209,13 @@ src/
     HintProvider.cs                   # 多源并发搜索 + 分批回填
     ConfigFile.cs                     # 程序目录 JSON 配置读取
     ConfigurableHintProviderFactory.cs # 按配置创建搜索 Provider
+    IHomeDisplayable.cs                # 首屏显示标记接口
     ThemeConfigReader.cs              # 读取主题模式配置
     Sources/EnvProgramSource.cs       # PATH 程序搜索
     Sources/EverythingSource.cs       # Everything 搜索（前缀触发）
     Sources/InstalledApplicationSource.cs       # 开始菜单已安装程序搜索
+    Sources/WelcomeSource.cs                   # 空查询时的首屏欢迎项
+    Sources/RunSource.cs                       # 运行输入的命令
   CommandPark.Ui/                     # Avalonia 界面
     ProgramIconExtractor.cs           # 取程序自带的最大图标（PrivateExtractIcons）
     ShellIconExtractor.cs             # 系统文件图标 / 缩略图（IShellItemImageFactory）

@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -51,6 +51,7 @@
             <!--
                 图标：绑定 IHintIcon，按实现类型切换控件
                   LucideHintIcon     → LucideIcon（默认 Terminal）
+                  LucideIdHintIcon   → 按 Id 解析 LucideIconKind（默认 Terminal）
                   LocalImageHintIcon → Image（本地图片，解码在线程池完成）
                 Icon 为 null 时整列收起
             -->

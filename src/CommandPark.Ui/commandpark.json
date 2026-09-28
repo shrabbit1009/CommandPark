@@ -13,6 +13,14 @@
       "pinyinMode": true,
       "maxLength": 64,
       "excludes": []
+    },
+    "run": {
+      "prefixMode": false
+    },
+    "welcome": {
+      "showEditConfig": true,
+      "showRepo": true,
+      "showOfficial": true
     }
   }
 }

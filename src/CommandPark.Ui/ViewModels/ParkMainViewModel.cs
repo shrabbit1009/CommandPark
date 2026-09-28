@@ -38,6 +38,7 @@ public partial class ParkMainViewModel : ViewModelBase
 
     private Task<IHintProvider>? _providerTask;
     private CancellationTokenSource? _searchCts;
+    private bool _homeInitializationStarted;
 
     /// <summary>默认构造：使用内置默认源，供设计期与默认运行路径使用。</summary>
     public ParkMainViewModel() : this(null, null)
@@ -137,45 +138,63 @@ public partial class ParkMainViewModel : ViewModelBase
         return await Results[index].TryRunAsync();
     }
 
+    /// <summary>在窗口首次加载时显示首屏源；只执行一次。</summary>
+    public Task InitializeHomeAsync()
+    {
+        if (_homeInitializationStarted || !string.IsNullOrWhiteSpace(InputText))
+        {
+            return CurrentSearch ?? Task.CompletedTask;
+        }
+
+        _homeInitializationStarted = true;
+        var cts = CreateSearchCancellation();
+        StartSearch(string.Empty, cts, isHome: true);
+        return CurrentSearch ?? Task.CompletedTask;
+    }
+
     partial void OnInputTextChanged(string value)
     {
-        // 这里必须保持轻量：只取消上一次搜索并起一个防抖任务。
-        // 真正的查询在 RunSearchAsync 里、且在线程池上执行，绝不阻塞输入与首屏。
-        var cts = new CancellationTokenSource();
-        var previous = Interlocked.Exchange(ref _searchCts, cts);
-        TryCancel(previous);
-
+        var cts = CreateSearchCancellation();
         var query = value.Trim();
+
         if (query.Length == 0)
         {
-            Results.Clear();
-            ErrorMessage = null;
-            IsSearching = false;
-            IsEmpty = false;
-            IsIdle = true;
-            Interlocked.CompareExchange(ref _searchCts, null, cts);
-            cts.Dispose();
-            CurrentSearch = Task.CompletedTask;
+            _homeInitializationStarted = true;
+            StartSearch(string.Empty, cts, isHome: true);
             return;
         }
 
-        // 注意：这里既不显示"搜索中"，也不清空旧结果。
-        // 旧结果要一直留到新结果到达为止，否则每次按键都会闪一下空白。
-        ErrorMessage = null;
-        IsEmpty = false;
-        IsIdle = false;
-        CurrentSearch = RunSearchAsync(query, cts);
+        StartSearch(query, cts, isHome: false);
     }
 
-    private async Task RunSearchAsync(string query, CancellationTokenSource cts)
+    private CancellationTokenSource CreateSearchCancellation()
+    {
+        var cts = new CancellationTokenSource();
+        var previous = Interlocked.Exchange(ref _searchCts, cts);
+        TryCancel(previous);
+        return cts;
+    }
+
+    private void StartSearch(string query, CancellationTokenSource cts, bool isHome)
+    {
+        ErrorMessage = null;
+        IsEmpty = false;
+        IsIdle = isHome && Results.Count == 0;
+        CurrentSearch = RunSearchAsync(query, cts, isHome);
+    }
+
+    private async Task RunSearchAsync(string query, CancellationTokenSource cts, bool isHome)
     {
         var token = cts.Token;
         var session = new SearchSession();
 
         try
         {
-            // 防抖：连续输入时只有最后一次会真正发起搜索
-            await Task.Delay(DebounceTime, token);
+            // 首屏只加载本地的欢迎项，不做防抖；普通搜索保留防抖。
+            if (!isHome)
+            {
+                await Task.Delay(DebounceTime, token);
+            }
 
             // "搜索中"计时从这里开始：把懒加载 Provider 的耗时也算进去
             var slowIndicatorTask = Task.Delay(SlowSearchThreshold, token);
@@ -201,14 +220,21 @@ public partial class ParkMainViewModel : ViewModelBase
             await DrainAsync();
 
             token.ThrowIfCancellationRequested();
-
             IsSearching = false;
 
-            // 本次搜索一个结果都没有：只有列表本来就空才提示"没有匹配"，
-            // 否则保留上一次的内容，静静不动。
             if (!session.HasResults)
             {
-                IsEmpty = Results.Count == 0;
+                if (isHome)
+                {
+                    Results.Clear();
+                    IsIdle = Results.Count == 0;
+                    IsEmpty = false;
+                }
+                else
+                {
+                    // 普通搜索没有结果时，只有列表本来就空才提示"没有匹配"
+                    IsEmpty = Results.Count == 0;
+                }
             }
         }
         catch (OperationCanceledException)
@@ -226,6 +252,7 @@ public partial class ParkMainViewModel : ViewModelBase
             cts.Dispose();
         }
     }
+
 
     /// <summary>把一批结果切回 UI 线程追加到列表（回调来自线程池线程）。</summary>
     private void AppendBatch(IHint[] batch, CancellationToken token, SearchSession session)

@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 
 namespace CommandPark;
 
@@ -33,7 +33,12 @@ public class HintProvider : IHintProvider
         }
 
         // 取快照：搜索期间调用方增删 Sources 既不会影响本次搜索，也不会抛集合修改异常。
-        var sources = Sources.ToArray();
+        // 空查询进入首屏模式，只运行 IHomeDisplayable 源；非空查询跳过首屏源。
+        var isHome = string.IsNullOrWhiteSpace(query);
+        var sources = Sources
+            .Where(source => (source is IHomeDisplayable) == isHome)
+            .ToArray();
+
         if (sources.Length == 0)
         {
             return;

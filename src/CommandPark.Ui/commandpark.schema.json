@@ -35,6 +35,12 @@
         },
         "installedApplication": {
           "$ref": "#/$defs/installedApplication"
+        },
+        "run": {
+          "$ref": "#/$defs/run"
+        },
+        "welcome": {
+          "$ref": "#/$defs/welcome"
         }
       },
       "additionalProperties": false
@@ -102,6 +108,40 @@
           "uniqueItems": true,
           "default": [],
           "description": "额外排除的名称或路径关键字。"
+        }
+      },
+      "additionalProperties": false
+    },
+    "run": {
+      "type": "object",
+      "description": "运行输入命令的搜索源。提供该节点即启用。",
+      "properties": {
+        "prefixMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "为 true 时只有输入 @、run: 或 r: 前缀才运行该源。"
+        }
+      },
+      "additionalProperties": false
+    },
+    "welcome": {
+      "type": "object",
+      "description": "空查询时显示的首屏欢迎源。提供该节点即启用。",
+      "properties": {
+        "showEditConfig": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否显示“修改 CommandPark 配置文件”。"
+        },
+        "showRepo": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否显示项目仓库入口。"
+        },
+        "showOfficial": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否显示 shRabbit 官方网站入口。"
         }
       },
       "additionalProperties": false

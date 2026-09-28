@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
@@ -56,13 +56,15 @@ public partial class HintItemViewModel : ViewModelBase
 
     /// <summary>
     /// Lucide 图标种类。图片类图标（本地图片/程序图标）在还没加载出来时，
-    /// 先用默认图标兜底，避免图标位置空一块。
+    /// 先用默认图标兜底，避免图标位置空一块。<see cref="LucideIdHintIcon"/> 的 Id
+    /// 按 <see cref="LucideIconKind"/> 枚举名解析，大小写不敏感，非法值回落 Terminal。
     /// </summary>
     public LucideIconKind? LucideKind => Icon switch
     {
-        LucideHintIcon lucide => lucide.IconKind,
-        null                  => null,
-        _                     => IconImage is null ? DefaultLucideKind : null,
+        LucideHintIcon lucide   => lucide.IconKind,
+        LucideIdHintIcon lucide => ParseLucideKind(lucide.Id),
+        null                    => null,
+        _                       => IconImage is null ? DefaultLucideKind : null,
     };
 
     /// <summary>是否显示 LucideIcon 控件。</summary>
@@ -224,6 +226,18 @@ public partial class HintItemViewModel : ViewModelBase
         "help" or "whats" or "what" or "ask" or "question" => new LucideHintIcon(LucideIconKind.MessageCircleQuestionMark),
         _ => null,
     };
+
+    private static LucideIconKind ParseLucideKind(string? id)
+    {
+        if (!string.IsNullOrWhiteSpace(id) &&
+            Enum.TryParse<LucideIconKind>(id, ignoreCase: true, out var kind) &&
+            Enum.IsDefined(kind))
+        {
+            return kind;
+        }
+
+        return DefaultLucideKind;
+    }
 
     private static IHintIcon ErrorIcon(IHint hint)
     {
