@@ -30,6 +30,10 @@ CommandPark 当前包含六个来源。除首屏欢迎项外，它们会并发�
 
 支持深色、浅色和跟随系统；由 `commandpark.json` 顶层的 `theme` 控制。
 
+在 Windows 上启用 `AcrylicBlur` / `Mica` / `Blur` 透明层级后，窗口背景会呈现系统级模糊：
+
+![背景模糊效果](docs/images/background-blur.png)
+
 ### 图标
 
 - **程序**：读取可执行文件自带的图标（取系统能给出的最大尺寸）
