@@ -8,9 +8,11 @@ public record DetailedHint : Hint, IDetailedHint
         string name,
         string description,
         string details,
-        HintRun onRun) : base(id, name, description, onRun)
+        HintRun onRun,
+        string? actionName = null) : base(id, name, description, onRun)
     {
         Details = details;
+        ActionName = actionName;
     }
 
     public DetailedHint(
@@ -19,10 +21,13 @@ public record DetailedHint : Hint, IDetailedHint
         string description,
         float similarity,
         HintRun onRun,
-        string details) : base(id, name, description, similarity, onRun)
+        string details,
+        string? actionName = null) : base(id, name, description, similarity, onRun)
     {
         Details = details;
+        ActionName = actionName;
     }
 
     public string Details { get; set; }
+    public string? ActionName { get; set; }
 }

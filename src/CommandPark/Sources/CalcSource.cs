@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using AngouriMath;
+using AngouriMath.Extensions;
 using RestSharp;
 
 namespace CommandPark.Sources;
@@ -81,6 +83,11 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
             {
                 Icon = new LucideIdHintIcon("TimerOff"),
             };
+
+            if (CreateDesmosHint(expression, query, hasPrefix) is { } timeoutDesmosHint)
+            {
+                yield return timeoutDesmosHint;
+            }
             yield break;
         }
 
@@ -95,6 +102,11 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
             {
                 Icon = new LucideIdHintIcon("CircleAlert"),
             };
+
+            if (CreateDesmosHint(expression, query, hasPrefix) is { } errorDesmosHint)
+            {
+                yield return errorDesmosHint;
+            }
             yield break;
         }
 
@@ -107,11 +119,56 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
             $"= {result}",
             "高级计算器，按 Enter 查看详情",
             1,
-            _ => Task.CompletedTask,
-            details)
+            ct => OpenDesmosAsync(expression, ct),
+            details,
+            "在 Desmos 中打开 (Alt+D)")
         {
             Icon = new LucideIdHintIcon("Calculator"),
         };
+
+        if (CreateDesmosHint(expression, query, hasPrefix) is { } desmosHint)
+        {
+            yield return desmosHint;
+        }
+
+    }
+
+    private static Hint? CreateDesmosHint(string expression, string query, bool hasPrefix)
+    {
+        // 仅在明确的 c:/calc: 前缀下额外提供独立的 Desmos 跳转项。
+        if (!hasPrefix || !HasExactCalcPrefix(query))
+        {
+            return null;
+        }
+
+        return new Hint(
+            "calc:desmos",
+            "在 Desmos 中打开",
+            $"将 {expression} 转换为 LaTeX 并打开图表。",
+            0.95f,
+            ct => OpenDesmosAsync(expression, ct))
+        {
+            Icon = new LucideIdHintIcon("ExternalLink"),
+        };
+    }
+
+    private static bool HasExactCalcPrefix(string query)
+    {
+        var trimmed = query.Trim();
+        return trimmed.StartsWith("c:", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("calc:", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task OpenDesmosAsync(string expression, CancellationToken cancellationToken)
+    {
+        var latex = expression.Latexize();
+        var url = await DesmosHelper.GenerateDesmosSnapshotUrl(latex, cancellationToken);
+        var startInfo = new ProcessStartInfo("explorer.exe")
+        {
+            UseShellExecute = true,
+        };
+        startInfo.ArgumentList.Add(url);
+        Process.Start(startInfo);
     }
 
     private static string Evaluate(string expression, CancellationToken cancellationToken)

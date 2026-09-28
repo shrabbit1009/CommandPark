@@ -12,12 +12,16 @@ public class CalcSourceTest
     {
         var source = new CalcSource();
 
-        var hint = Assert.Single(await source.SearchAsync("c:2 + 3").ToListAsync());
+        var hints = await source.SearchAsync("c:2 + 3").ToListAsync();
 
+        var hint = Assert.Single(hints, item => item.Id == "calc:result");
         Assert.StartsWith("= 5", hint.Name);
         var detailed = Assert.IsAssignableFrom<IDetailedHint>(hint);
         Assert.Contains("输入: 2 + 3", detailed.Details);
         Assert.Contains("结果: 5", detailed.Details);
+
+        var desmosHint = Assert.Single(hints, item => item.Id == "calc:desmos");
+        Assert.Equal("在 Desmos 中打开", desmosHint.Name);
     }
 
     [Fact]
@@ -74,7 +78,7 @@ public class CalcSourceTest
             .AsTask()
             .WaitAsync(TimeSpan.FromSeconds(6));
 
-        var hint = Assert.Single(hints);
-        Assert.True(hint.Id is "lcalc:timeout" or "lcalc:error");
+        Assert.Contains(hints, hint => hint.Id is "lcalc:timeout" or "lcalc:error");
+        Assert.Contains(hints, hint => hint.Id == "calc:desmos");
     }
 }

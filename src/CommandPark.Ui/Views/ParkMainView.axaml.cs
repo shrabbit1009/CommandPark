@@ -129,7 +129,7 @@ public partial class ParkMainView : UserControl
 
             var detailsWindow = new HintDetailsWindow
             {
-                DataContext = new HintDetailsWindowViewModel(args.Hint, args.Details),
+                DataContext = new HintDetailsWindowViewModel(args.Hint, args.Details, args.ActionName),
             };
 
             await detailsWindow.ShowDialog(owner);

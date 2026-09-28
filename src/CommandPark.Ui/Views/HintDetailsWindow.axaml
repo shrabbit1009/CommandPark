@@ -49,14 +49,29 @@
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
 
-        <Button Grid.Row="4"
-                x:Name="CloseButton"
-                Content="关闭（Enter / ESC）"
-                HorizontalAlignment="Right"
-                Margin="0,16,0,0"
-                IsDefault="True"
-                IsCancel="True"
-                Classes="Primary"
-                Click="Close_OnClick"/>
+        <StackPanel Grid.Row="4"
+                    HorizontalAlignment="Stretch"
+                    Margin="0,16,0,0"
+                    Spacing="8">
+            <TextBlock Text="{Binding ActionError}"
+                       IsVisible="{Binding HasActionError}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ErrorColor}"/>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+                <Button Content="{Binding ActionName}"
+                        Command="{Binding RunActionCommand}"
+                        IsVisible="{Binding HasAction}"
+                        Classes="Primary"/>
+                <Button x:Name="CloseButton"
+                        Content="关闭（Enter / ESC）"
+                        IsDefault="True"
+                        IsCancel="True"
+                        Classes="Primary"
+                        Click="Close_OnClick"/>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </Window>

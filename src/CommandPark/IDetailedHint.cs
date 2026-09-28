@@ -6,4 +6,7 @@ namespace CommandPark;
 public interface IDetailedHint : IHint
 {
     string Details { get; }
+
+    /// <summary>详情窗口中的可选操作名称；为空时不显示操作按钮。</summary>
+    string? ActionName { get; }
 }

@@ -18,11 +18,11 @@ public class DesmosHelper
     /// <param name="cancellationToken">取消</param>
     /// <returns>URL</returns>
     /// <remarks>
-    /// 可通过 AngouriMath 提供的 String 类型扩展方法 <c>Latexise()</c> 进行普通表达式和 LaTeX 表达式的转换。
+    /// 可通过 AngouriMath 提供的 String 类型扩展方法 <c>Latexize()</c> 进行普通表达式和 LaTeX 表达式的转换。
     /// </remarks>
-    private static async Task<string> GenerateDesmosSnapshotUrl(string latex, CancellationToken cancellationToken = default)
+    public static async Task<string> GenerateDesmosSnapshotUrl(string latex, CancellationToken cancellationToken = default)
     {
-        var client = new RestClient();
+        using var client = new RestClient();
         var dto = new DesmosBodyDto
         {
             State = JsonSerializer.Serialize(new DesmosStateDto(latex)),
@@ -33,7 +33,7 @@ public class DesmosHelper
 
         var response = await client.ExecuteAsync(req, cancellationToken);
 
-        return JsonNode.Parse(response.Content!)!["stateUrl"]!.GetValue<string>();
+        return $"https://www.desmos.com/calculator/{dto.Hash}";
     }
 
     /// <summary>
