@@ -239,8 +239,31 @@ dotnet publish src/CommandPark.Ui -c Release -r win-x64 -p:PublishReadyToRun=tru
 - 提速来自 **ReadyToRun（crossgen2 预编译 IL → 本机码）**，省掉启动时的 JIT；
   **首次运行**（文件还没进系统缓存）差距更明显：1381ms → 626ms。
 - R2R 代码要求运行时补丁版本匹配，否则运行时会静默丢掉 R2R 代码回落到 JIT（提速就白费了），因此推荐配合 `--self-contained true`。
-- **Native AOT 版本后续可能提供**：体积更小、冷启动更快，但必须在 **Windows + MSVC（VS Build Tools 的 C++ 工作负载）** 上构建——
-  纯 Linux 构建机会直接报错 `Cross-OS native compilation is not supported`。
+- **Native AOT**：已完成构建和启动速度测试，详见下方「Native AOT 实测」；正式发布包仍在准备中。
+
+#### Native AOT 实测（2026-09-29）
+
+本轮使用同一台机器、重启后各跑 5 次，测量「进程启动 → 窗口可见」：
+
+```bash
+dotnet publish src/CommandPark.Ui -c Release -r win-x64 `
+  -p:PublishAot=true `
+  -p:OptimizationPreference=Speed `
+  -p:StackTraceSupport=false `
+  -p:DebugType=None -p:DebugSymbols=false `
+  -o src/CommandPark.Ui/bin/Release/aot-win-x64
+```
+
+| 构建方式 | 各次耗时 | 最快 | 中位 | 最慢 | 发布目录大小 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| ReadyToRun + self-contained | 491 / 454 / 458 / 450 / 461ms | 450ms | **458ms** | 491ms | ~1.13GB |
+| **Native AOT** | 243 / 221 / 254 / 238 / 238ms | **221ms** | **238ms** | 254ms | ~153MB |
+
+按中位数计算，Native AOT 比当前 R2R 发布方式快约 **48%**，发布目录也更小。
+
+- AOT 完成了 5/5 次窗口启动验证；首次冷缓存运行可能明显更慢。
+- 当前 AOT 发布仍会报告 COM P/Invoke、Everything、RestSharp 等 trimming/AOT 警告，后续需要继续做功能回归。
+- `DesmosHelper` 的 DTO 已使用 `DesmosJsonContext` 的 source-generated JSON 元数据，并将请求体改为显式 JSON 字符串，避免 `AddJsonBody(dto)` 的反射序列化路径。
 
 ## 项目结构
 
@@ -257,6 +280,7 @@ src/
     IHomeDisplayable.cs                # 首屏显示标记接口
     ThemeConfigReader.cs              # 读取主题模式配置
     DesmosHelper.cs                   # Desmos 快照 URL 生成
+    DesmosJsonContext.cs              # Desmos DTO AOT JSON 元数据
     Sources/EnvProgramSource.cs       # PATH 程序搜索
     Sources/EverythingSource.cs       # Everything 搜索（前缀触发）
     Sources/InstalledApplicationSource.cs       # 开始菜单已安装程序搜索
@@ -306,7 +330,7 @@ docs/images/                          # README 截图
 - [ ] 执行失败写入本地日志，便于事后排查
 - [x] 结果按相似度排序（完全匹配优先，避免 `jcmd` 排在 `cmd` 前）
 - [ ] 优化快捷方式图标覆盖策略（可选择优先目标程序图标，[Issue #2](https://shrabbit.com:4000/gitlab/shrabbit/commandpark/-/work_items/2)）
-- [ ] Native AOT 版本（需要 Windows + MSVC 构建环境；体积更小、冷启动更快）
+- [x] Native AOT 构建与启动速度测试（功能回归继续）
 
 ## 参与开发
 

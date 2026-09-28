@@ -25,11 +25,11 @@ public class DesmosHelper
         using var client = new RestClient();
         var dto = new DesmosBodyDto
         {
-            State = JsonSerializer.Serialize(new DesmosStateDto(latex)),
+            State = JsonSerializer.Serialize(new DesmosStateDto(latex), DesmosJsonContext.Default.DesmosStateDto),
         };
 
         var req = new RestRequest("https://www.desmos.com/api/v1/calculator-shared/save", Method.Post);
-        req.AddJsonBody(dto);
+        req.AddStringBody(JsonSerializer.Serialize(dto, DesmosJsonContext.Default.DesmosBodyDto), DataFormat.Json);
 
         var response = await client.ExecuteAsync(req, cancellationToken);
 
