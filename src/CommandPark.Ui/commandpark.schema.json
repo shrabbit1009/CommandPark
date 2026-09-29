@@ -137,7 +137,7 @@
         "prefixMode": {
           "type": "boolean",
           "default": true,
-          "description": "为 true 时只有输入 @、c: 或 calc: 前缀才运行。"
+          "description": "为 true 时只有输入 ~、c: 或 calc: 前缀才运行。"
         },
         "timeoutSeconds": {
           "type": "integer",

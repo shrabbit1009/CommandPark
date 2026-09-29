@@ -16,7 +16,7 @@ CommandPark 当前包含七个来源。除首屏欢迎项外，它们会并发�
 | 已安装程序 | 直接输入 | 搜索用户和所有用户的开始菜单快捷方式，支持名称、拼音、拼音首字母和目标程序名。 |
 | Everything | `#` 或 `et:` | 通过 Everything 搜索全盘文件、文件夹和驱动器，需要 Everything 正在运行。 |
 | 运行命令 | `@`、`run:`、`r:` | 运行输入的命令；默认使用 `runas` 启动，可能触发 UAC。 |
-| 计算 | `@`、`c:`、`calc:` | 使用 AngouriMath 计算表达式；推荐使用 `c:` 或 `calc:`。 |
+| 计算 | `~`、`c:`、`calc:` | 使用 AngouriMath 计算表达式；推荐使用 `c:` 或 `calc:`。 |
 | Bing | `b:`、`bs:` | 搜索 Bing，并把 Bing 关键词建议作为候选结果。 |
 | 首屏欢迎 | 空查询 | 运行实现 `IHomeDisplayable` 的来源，输入任意内容后自动隐藏。 |
 
@@ -132,7 +132,7 @@ calc:y=x^{7}+\sin\frac{62}{6}x
 
 [在 Desmos 中查看这张图](https://www.desmos.com/calculator/ldguqxfiie)
 
-> `@` 也是计算源的前缀之一，但它同时用于运行命令源。需要明确的计算/Desmos 跳转时，建议使用 `c:` 或 `calc:`。
+> 计算源使用 `~`、`c:`、`calc:` 前缀；需要明确的计算/Desmos 跳转时，建议使用 `c:` 或 `calc:`。
 
 计算默认超时时间为 2 秒；无论表达式成功、失败还是超时，`c:` / `calc:` 都会保留 Desmos 跳转 Hint。
 
@@ -204,7 +204,7 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 - `installedApplication.maxLength`：名称超过该长度时视为描述型噪声。
 - `installedApplication.excludes`：额外排除的名称或路径关键字。
 - `run.prefixMode`：为 `true` 时只有输入 `@`、`run:` 或 `r:` 前缀才运行任意命令。
-- `latexCalc.prefixMode`：为 `true` 时只有输入 `@`、`c:` 或 `calc:` 前缀才运行计算源。
+- `latexCalc.prefixMode`：为 `true` 时只有输入 `~`、`c:` 或 `calc:` 前缀才运行计算源。
 - `latexCalc.timeoutSeconds`：单次计算超时时间，范围 1..30 秒。
 - `bing.prefixMode`：`true` 时只有输入 `b:` 或 `bs:` 才运行 Bing 搜索源。
 - `welcome.showEditConfig`：是否显示修改配置文件的欢迎项。
