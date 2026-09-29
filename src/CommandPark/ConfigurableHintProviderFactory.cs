@@ -42,5 +42,6 @@ public static class ConfigurableHintProviderFactory
         yield return new RunSource();
         yield return new WelcomeSource();
         yield return new CalcSource();
+        yield return new BingSearchSource();
     }
 }

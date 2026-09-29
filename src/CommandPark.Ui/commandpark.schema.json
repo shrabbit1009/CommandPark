@@ -42,6 +42,9 @@
         "latexCalc": {
           "$ref": "#/$defs/latexCalc"
         },
+        "bing": {
+          "$ref": "#/$defs/bing"
+        },
         "welcome": {
           "$ref": "#/$defs/welcome"
         }
@@ -142,6 +145,18 @@
           "maximum": 30,
           "default": 2,
           "description": "单次表达式计算的超时时间（秒）。"
+        }
+      },
+      "additionalProperties": false
+    },
+    "bing": {
+      "type": "object",
+      "description": "Bing 网络搜索源。提供该节点即启用。",
+      "properties": {
+        "prefixMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "为 true 时只有输入 b: 或 bs: 前缀才运行该源。"
         }
       },
       "additionalProperties": false

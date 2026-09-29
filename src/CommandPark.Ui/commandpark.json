@@ -21,6 +21,9 @@
       "prefixMode": true,
       "timeoutSeconds": 2
     },
+    "bing": {
+      "prefixMode": true
+    },
     "welcome": {
       "showEditConfig": true,
       "showRepo": true,

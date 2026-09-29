@@ -42,9 +42,9 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCts.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(TimeoutSeconds, 1, 30)));
 
-        string? result = null;
-        Exception? error = null;
-        var timedOut = false;
+        string?       result          = null;
+        Exception?    error           = null;
+        var           timedOut        = false;
         Task<string>? calculationTask = null;
 
         try

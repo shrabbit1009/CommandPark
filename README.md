@@ -8,7 +8,7 @@
 
 ### 搜索源
 
-CommandPark 当前包含六个来源。除首屏欢迎项外，它们会并发参与搜索，并按相关度排序。
+CommandPark 当前包含七个来源。除首屏欢迎项外，它们会并发参与搜索，并按相关度排序。
 
 | 来源 | 触发方式 | 说明 |
 | --- | --- | --- |
@@ -17,6 +17,7 @@ CommandPark 当前包含六个来源。除首屏欢迎项外，它们会并发�
 | Everything | `#` 或 `et:` | 通过 Everything 搜索全盘文件、文件夹和驱动器，需要 Everything 正在运行。 |
 | 运行命令 | `@`、`run:`、`r:` | 运行输入的命令；默认使用 `runas` 启动，可能触发 UAC。 |
 | 计算 | `@`、`c:`、`calc:` | 使用 AngouriMath 计算表达式；推荐使用 `c:` 或 `calc:`。 |
+| Bing | `b:`、`bs:` | 搜索 Bing，并把 Bing 关键词建议作为候选结果。 |
 | 首屏欢迎 | 空查询 | 运行实现 `IHomeDisplayable` 的来源，输入任意内容后自动隐藏。 |
 
 - **PATH 程序搜索**只查目录本身，不递归子目录，避免扫描整个 `C:\Windows`。
@@ -24,6 +25,7 @@ CommandPark 当前包含六个来源。除首屏欢迎项外，它们会并发�
 - **Everything** 默认只在带 `#` / `et:` 前缀时运行；可在配置中关闭 `everything.prefixMode`。
 - **运行命令**默认无前缀时作为低优先级兜底；可在配置中设置 `run.prefixMode`。
 - **计算**支持超时与取消；`c:` / `calc:` 在成功、错误和超时情况下都会保留 Desmos 跳转项。
+- **Bing**仅在 `b:` / `bs:` 前缀下运行，会先返回精确搜索项，再返回关键词建议。
 - **首屏欢迎**由 `welcome` 配置节控制，首屏操作也可以直接用键盘选择和执行。
 
 ### 主题
@@ -134,6 +136,17 @@ calc:y=x^{7}+\sin\frac{62}{6}x
 
 计算默认超时时间为 2 秒；无论表达式成功、失败还是超时，`c:` / `calc:` 都会保留 Desmos 跳转 Hint。
 
+**6. Bing 搜索（`b:` / `bs:` 前缀）**
+
+```text
+b:CommandPark
+bs:CommandPark Github
+```
+
+Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示 Bing 关键词建议；建议项同样可以直接按 Enter 搜索。
+
+![Bing 搜索与建议](docs/images/bing.png)
+
 ### 配置文件
 
 程序目录中的 `commandpark.json` 用于配置搜索源；程序也会兼容读取同目录下的 `config.json`。
@@ -163,6 +176,9 @@ calc:y=x^{7}+\sin\frac{62}{6}x
       "prefixMode": true,
       "timeoutSeconds": 2
     },
+    "bing": {
+      "prefixMode": true
+    },
     "welcome": {
       "showEditConfig": true,
       "showRepo": true,
@@ -190,6 +206,7 @@ calc:y=x^{7}+\sin\frac{62}{6}x
 - `run.prefixMode`：为 `true` 时只有输入 `@`、`run:` 或 `r:` 前缀才运行任意命令。
 - `latexCalc.prefixMode`：为 `true` 时只有输入 `@`、`c:` 或 `calc:` 前缀才运行计算源。
 - `latexCalc.timeoutSeconds`：单次计算超时时间，范围 1..30 秒。
+- `bing.prefixMode`：`true` 时只有输入 `b:` 或 `bs:` 才运行 Bing 搜索源。
 - `welcome.showEditConfig`：是否显示修改配置文件的欢迎项。
 - `welcome.showRepo`：是否显示项目仓库入口。
 - `welcome.showOfficial`：是否显示 shRabbit 官方网站入口。
@@ -280,13 +297,16 @@ src/
     IHomeDisplayable.cs                # 首屏显示标记接口
     ThemeConfigReader.cs              # 读取主题模式配置
     DesmosHelper.cs                   # Desmos 快照 URL 生成
+    BingHelper.cs                     # Bing 搜索/建议 URL 辅助
     DesmosJsonContext.cs              # Desmos DTO AOT JSON 元数据
+    ISearchEngineHelper.cs            # 搜索引擎 Helper 接口
     Sources/EnvProgramSource.cs       # PATH 程序搜索
     Sources/EverythingSource.cs       # Everything 搜索（前缀触发）
     Sources/InstalledApplicationSource.cs       # 开始菜单已安装程序搜索
     Sources/WelcomeSource.cs                   # 空查询时的首屏欢迎项
     Sources/RunSource.cs                       # 运行输入的命令
     Sources/CalcSource.cs                      # AngouriMath 计算 / Desmos 跳转源
+    Sources/BingSearchSource.cs                # Bing 搜索与建议源
   CommandPark.Ui/                     # Avalonia 界面
     ProgramIconExtractor.cs           # 取程序自带的最大图标（PrivateExtractIcons）
     ShellIconExtractor.cs             # 系统文件图标 / 缩略图（IShellItemImageFactory）

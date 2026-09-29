@@ -43,7 +43,7 @@ public class BingHelper : ISearchEngineHelper
     {
         var list = new List<string>(12);
 
-        var req = new RestRequest(string.Format(SuggestUrl, keyword));
+        var req = new RestRequest(string.Format(SuggestUrl, Uri.EscapeDataString(keyword)));
         var rsp = await RestClient.ExecuteAsync(req, cancellationToken);
 
         var json = JsonNode.Parse(rsp.Content!)!["s"]!;
@@ -62,7 +62,7 @@ public class BingHelper : ISearchEngineHelper
     /// <returns></returns>
     public string BuildSearchUrl(string keyword)
     {
-        return string.Format(SearchUrl, keyword);
+        return string.Format(SearchUrl, Uri.EscapeDataString(keyword));
     }
 
     private string Trim(string input) => input.Replace("\ue000",string.Empty)
