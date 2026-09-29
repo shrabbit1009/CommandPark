@@ -15,7 +15,7 @@ namespace CommandPark.Sources;
 public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
 {
     /// <summary>本源支持的前缀。</summary>
-    public static readonly string[] Prefixes = ["@", "c:", "calc:"];
+    public static readonly string[] Prefixes = ["~", "c:", "calc:"];
 
     /// <summary>前缀模式：true 时只有带前缀才运行。</summary>
     public bool PrefixMode { get; set; } = true;
