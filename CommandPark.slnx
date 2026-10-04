@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="src/CommandPark.Background.Cpp/CommandPark.Background.Cpp.vcxproj">
+    <Platform Project="Win32" />
+  </Project>
   <Project Path="src/CommandPark.Background/CommandPark.Background.csproj" />
   <Project Path="src/CommandPark.Tests/CommandPark.Tests.csproj" />
   <Project Path="src/CommandPark.Ui/CommandPark.Ui.csproj" />
