@@ -1,4 +1,4 @@
-namespace CommandPark;
+namespace CommandPark.Utils;
 
 /// <summary>
 /// 统一的文本相关度评分。

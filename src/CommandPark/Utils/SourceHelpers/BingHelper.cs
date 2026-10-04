@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using RestSharp;
 
-namespace CommandPark;
+namespace CommandPark.Utils.SourceHelpers;
 
 public class BingHelper : ISearchEngineHelper
 {

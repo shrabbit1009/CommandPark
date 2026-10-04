@@ -1,10 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using RestSharp;
 
-namespace CommandPark;
+namespace CommandPark.Utils.SourceHelpers;
 
 /// <summary>
 /// 逆向的 Desmos 快照获取。可从 LaTeX 转换为 Desmos 快照链接，供直接跳转。
