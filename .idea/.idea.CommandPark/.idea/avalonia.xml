@@ -5,6 +5,7 @@
       <map>
         <entry key="src/CommandPark.Ui/App.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
         <entry key="src/CommandPark.Ui/Views/ErrorWindow.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
+        <entry key="src/CommandPark.Ui/Views/HintDetailsWindow.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
         <entry key="src/CommandPark.Ui/Views/HintItem.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
         <entry key="src/CommandPark.Ui/Views/MainWindow.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
         <entry key="src/CommandPark.Ui/Views/ParkMainView.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
