@@ -1297,6 +1297,16 @@ namespace CommandPark::Background
             return FileHelper::WriteAllText(pidPath, text);
         }
 
+        /// <summary>
+        /// 把进程工作集压到最小，降低常驻内存。
+        /// 页面只是转入后备列表，需要时会被重新换入，属于“让数字更诚实”的做法。
+        /// </summary>
+        static void TrimWorkingSet()
+        {
+            SetProcessWorkingSetSize(
+                GetCurrentProcess(), static_cast<SIZE_T>(-1), static_cast<SIZE_T>(-1));
+        }
+
         static void DeletePidFileIfOwned(const std::wstring& pidPath, DWORD ownerPid)
         {
             DWORD pid = 0;
@@ -1699,6 +1709,9 @@ namespace CommandPark::Background
             {
                 MessageBoxW(_window, error.c_str(), Constants::ApplicationTitle, MB_ICONERROR | MB_OK);
             }
+
+            // ShellExecute 可能把一些页面带进程里，唤起后重新压一次工作集。
+            ProcessHelper::TrimWorkingSet();
         }
     };
 
@@ -1820,6 +1833,9 @@ namespace CommandPark::Background
 
             const DWORD processId = GetCurrentProcessId();
             ProcessHelper::WritePidFile(pidPath, processId);
+
+            // 初始化完成后驻留；把工作集压到最小，减少常驻内存。
+            ProcessHelper::TrimWorkingSet();
 
             const int exitCode = application.Run();
 
