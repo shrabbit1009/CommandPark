@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 
 namespace CommandPark.Ui;
@@ -11,9 +12,10 @@ namespace CommandPark.Ui;
 /// <para>
 /// 由主程序负责“首次拉起后台程序”：
 /// <list type="number">
-/// <item>读取 <c>commandpark.json</c> 的 <c>hotkey</c>；为 <see langword="null"/> / 缺失时不启用后台。</item>
+/// <item>读取 <c>commandpark.json</c> 的 <c>hotkey</c>；显式写 <see langword="null"/> 时不启用后台。</item>
 /// <item>通过程序目录下的 <c>PID</c> 判断后台程序是否已经在运行（进程是否还活着、是否是后台程序）。</item>
-/// <item>首次启动（后台未运行）时不弹输入窗口，只拉起后台程序，然后让调用方直接退出。</item>
+/// <item>首次启动（后台未运行）时只拉起后台程序，并按需提示“已在后台启动”，然后让调用方直接退出。</item>
+/// <item>后台不可用时把原因写入 <see cref="CommandPark.BackgroundStatus"/>，首屏欢迎项会据此提示。</item>
 /// </list>
 /// </para>
 /// </summary>
@@ -28,21 +30,30 @@ internal static class BackgroundLauncher
     /// <summary>默认全局快捷键；必须与 CommandPark.Background.Cpp 的 Constants::DefaultHotKey 保持一致。</summary>
     public const string DefaultHotKey = "Ctrl+Alt+D";
 
+    private const uint MessageBoxOk = 0x00000000;
+    private const uint MessageBoxIconInformation = 0x00000040;
+
     /// <summary>
     /// 在 Avalonia 初始化之前调用。
-    /// 返回 <see langword="true"/> 表示“首次启动，只拉起了后台程序”，
+    /// 返回 <see langword="true"/> 表示“首次启动，已拉起后台程序”，
     /// 调用方应当直接退出，不要显示输入窗口。
     /// </summary>
-    public static bool StartBackgroundIfNeeded()
+    /// <param name="noDisplay">为 <see langword="true"/> 时不显示“已在后台启动”提示（自启动模式）。</param>
+    public static bool StartBackgroundIfNeeded(bool noDisplay = false)
     {
+        BackgroundStatus.UnavailableReason = null;
+
         if (!OperatingSystem.IsWindows())
         {
             return false;
         }
 
-        // 快捷键为 null / 未配置：不拉起后台程序，双击直接运行。
-        if (string.IsNullOrWhiteSpace(ReadConfiguredHotkey()))
+        // 快捷键被显式关闭：不拉起后台程序，双击直接运行。
+        var hotkey = ReadConfiguredHotkey();
+        if (string.IsNullOrWhiteSpace(hotkey))
         {
+            BackgroundStatus.UnavailableReason =
+                "没有配置全局快捷键（commandpark.json 的 hotkey 为 null），无法用热键唤起。";
             return false;
         }
 
@@ -50,6 +61,8 @@ internal static class BackgroundLauncher
         if (!File.Exists(backgroundProgramPath))
         {
             // 没带后台程序（例如没有构建 C++ 项目）：照常显示主窗口。
+            BackgroundStatus.UnavailableReason =
+                $"程序目录里找不到后台程序 {BackgroundProgramFileName}，无法用热键唤起。";
             return false;
         }
 
@@ -61,7 +74,31 @@ internal static class BackgroundLauncher
         }
 
         // 首次启动：只拉起后台程序，不弹输入窗口。
-        return TryStartBackgroundProgram(backgroundProgramPath);
+        if (!TryStartBackgroundProgram(backgroundProgramPath))
+        {
+            BackgroundStatus.UnavailableReason = "后台程序启动失败，无法用热键唤起。";
+            return false;
+        }
+
+        if (!noDisplay)
+        {
+            ShowStartedNotification(hotkey);
+        }
+
+        return true;
+    }
+
+    /// <summary>提示“已经在后台启动”，随后调用方直接退出。</summary>
+    private static void ShowStartedNotification(string hotkey)
+    {
+        var message =
+            "CommandPark 已在后台启动。" + Environment.NewLine +
+            Environment.NewLine +
+            $"按 {hotkey} 唤起搜索窗口；右键托盘图标可以「修改配置」或「退出」。" + Environment.NewLine +
+            Environment.NewLine +
+            "以 --no-display 启动可不再显示本提示（适合开机自启动）。";
+
+        MessageBoxW(IntPtr.Zero, message, "CommandPark", MessageBoxOk | MessageBoxIconInformation);
     }
 
     /// <summary>
@@ -193,4 +230,7 @@ internal static class BackgroundLauncher
             return false;
         }
     }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern int MessageBoxW(IntPtr hWnd, string text, string caption, uint type);
 }

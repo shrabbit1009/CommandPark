@@ -30,6 +30,38 @@ public class WelcomeSourceTest
     }
 
     [Fact]
+    public async Task SearchAsync_WhenBackgroundUnavailable_AppendsHintLast()
+    {
+        BackgroundStatus.UnavailableReason = "测试：后台热键不可用";
+        try
+        {
+            var source = new WelcomeSource();
+
+            var hints = await source.SearchAsync(string.Empty).ToListAsync();
+
+            Assert.Equal(5, hints.Count);
+            Assert.Equal("welcome:backgroundUnavailable", hints[^1].Id);
+            Assert.Contains("测试：后台热键不可用", hints[^1].Description);
+        }
+        finally
+        {
+            BackgroundStatus.UnavailableReason = null;
+        }
+    }
+
+    [Fact]
+    public async Task SearchAsync_WhenBackgroundAvailable_HasNoBackgroundHint()
+    {
+        BackgroundStatus.UnavailableReason = null;
+        var source = new WelcomeSource();
+
+        var hints = await source.SearchAsync(string.Empty).ToListAsync();
+
+        Assert.DoesNotContain(hints, hint => hint.Id == "welcome:backgroundUnavailable");
+        Assert.Equal("welcome:version", hints[^1].Id);
+    }
+
+    [Fact]
     public void ReadConfig_AppliesWelcomeSettings()
     {
         var source = new WelcomeSource();

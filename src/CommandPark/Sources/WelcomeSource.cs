@@ -80,6 +80,20 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
             Icon = new LucideIdHintIcon("GitCommitHorizontal"),
         };
 
+        // 后台热键不可用（后台程序缺失 / 未配置快捷键 / 启动失败等）时，在最后给一条提示。
+        var backgroundUnavailableReason = BackgroundStatus.UnavailableReason;
+        if (!string.IsNullOrWhiteSpace(backgroundUnavailableReason))
+        {
+            yield return new Hint(
+                "welcome:backgroundUnavailable",
+                "全局热键不可用",
+                backgroundUnavailableReason,
+                _ => Task.CompletedTask)
+            {
+                Icon = new LucideIdHintIcon("KeyboardOff"),
+            };
+        }
+
         await Task.CompletedTask;
     }
 
