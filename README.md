@@ -156,6 +156,7 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 {
   "$schema": "./commandpark.schema.json",
   "theme": "auto",
+  "hotkey": "Ctrl+Alt+D",
   "sources": {
     "envProgram": {},
     "everything": {
@@ -193,6 +194,7 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 | ![深色主题](docs/images/hero.png) | ![浅色主题](docs/images/theme-light.png) |
 
 - `theme`：`auto`、`light` 或 `dark`；为 `null` 或不填写时跟随系统，默认值也是 `auto`。
+- `hotkey`：后台程序监听的全局快捷键，默认 `Ctrl+Alt+D`；显式写 `null` 时不启动后台热键监听。
 - 文件不存在时使用内置默认值，所有内置源都会启用。
 - 文件存在时，未提供配置节的 `IConfigReader` 源不会运行。
 - `envProgram`：提供空对象即启用 PATH 程序搜索。
@@ -212,6 +214,21 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 - `welcome.showOfficial`：是否显示 shRabbit 官方网站入口。
 
 > 修改配置结构时必须同步修改 `commandpark.schema.json`，否则编辑器校验会与实际配置不一致。
+
+### 后台常驻与全局热键
+
+后台程序 `CommandPark.Background.Cpp.exe` 是常驻的小型 Win32 C++ 程序，负责注册全局快捷键和托盘图标；
+它由主程序按需拉起，构建时会复制到主程序旁边。
+
+- 配置了 `hotkey` 后，主程序启动时会读取程序目录下的 `PID` 判断后台是否已经在运行（进程是否还活着、是否是后台程序）：
+  - 后台**未运行** → 这次启动**只拉起后台程序**，不弹输入窗口，然后直接退出（相当于“注册热键”）。
+  - 后台**已在运行** → 正常显示输入窗口。
+- 之后双击主程序，或按下快捷键，都会唤起主窗口（每按一次唤起一次）。
+- 托盘图标右键菜单只有「修改配置」和「退出」；「修改配置」会用默认程序打开 `commandpark.json`。
+- `hotkey` 不填时使用默认值 `Ctrl+Alt+D`；显式写 `null` 时**不拉起后台程序**，双击直接运行主程序。
+- 快捷键格式为「修饰符+按键」，例如 `Ctrl+Alt+Space`、`Win+Shift+S`、`Ctrl+F12`，至少需要一个修饰键。
+
+> “程序目录”指主程序与后台程序所在目录，`PID` 与 `commandpark.json` 都在这里查找。
 
 ### 执行失败时
 
@@ -242,6 +259,22 @@ dotnet test
 # 发布（推荐：ReadyToRun 预编译，启动更快）
 dotnet publish src/CommandPark.Ui -c Release -r win-x64 -p:PublishReadyToRun=true --self-contained true -o src/CommandPark.Ui/bin/Release/r2r-win-x64
 ```
+
+### 后台程序（C++）
+
+`CommandPark.Background.Cpp` 是独立的 Win32 C++ 项目，需要 Visual Studio 的 MSVC 工具链；
+Release 配置默认开启 `/O2`、内联与 LTCG（Whole Program Optimization）：
+
+```bash
+# 构建后台程序；产物在 src/CommandPark.Background.Cpp/bin/<Platform>/<Configuration>/
+msbuild src/CommandPark.Background.Cpp/CommandPark.Background.Cpp.vcxproj -p:Configuration=Release -p:Platform=x64
+
+# 再构建主程序：会把同配置的 CommandPark.Background.Cpp.exe 复制到主程序输出目录
+dotnet build src/CommandPark.Ui -c Release
+```
+
+> 主程序按 `bin/x64/$(Configuration)/` 查找后台程序，找不到就跳过（仍能启动，只是没有全局热键）；
+> 平台可用 `-p:CommandParkBackgroundPlatform=Win32` 覆盖。
 
 ### 启动速度
 
@@ -316,7 +349,8 @@ src/
     Views/                            # 主窗口、搜索视图、结果条目、错误/详情窗口
     commandpark.json                  # 搜索源配置；发布时复制到程序目录
     commandpark.schema.json           # 配置 JSON Schema；发布时复制到程序目录
-  CommandPark.Background/             # 后台常驻与全局热键监听（进行中）
+  CommandPark.Background/             # 后台常驻与全局热键监听（C# 原型）
+  CommandPark.Background.Cpp/         # 后台常驻与全局热键监听（Win32 C++ 实现）
   CommandPark.Tests/                  # 单元测试
 docs/images/                          # README 截图
 ```
@@ -346,7 +380,7 @@ docs/images/                          # README 截图
 
 - [ ] 更多搜索源（浏览器书签 / 历史、进程、窗口……）
 - [ ] `cp:` 前缀：查看与修改 CommandPark 自身配置
-- [ ] 后台常驻 + 全局热键唤起（`CommandPark.Background` 进行中）
+- [x] 后台常驻 + 全局热键唤起（`CommandPark.Background.Cpp` 实现，托盘菜单可「修改配置」/「退出」）
 - [ ] 执行失败写入本地日志，便于事后排查
 - [x] 结果按相似度排序（完全匹配优先，避免 `jcmd` 排在 `cmd` 前）
 - [ ] 优化快捷方式图标覆盖策略（可选择优先目标程序图标，[Issue #2](https://shrabbit.com:4000/gitlab/shrabbit/commandpark/-/work_items/2)）

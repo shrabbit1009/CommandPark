@@ -23,6 +23,14 @@
       "default": "auto",
       "description": "主题模式：auto、light 或 dark；null 或不填时跟随系统。"
     },
+    "hotkey": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": "Ctrl+Alt+D",
+      "description": "后台程序监听的全局快捷键，例如 Ctrl+Alt+D、Win+Shift+S；不填时使用默认值 Ctrl+Alt+D，显式写 null 时不启动后台热键监听。"
+    },
     "sources": {
       "type": "object",
       "description": "各搜索源的配置。未提供配置节的 IConfigReader 源不会运行。",

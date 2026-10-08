@@ -1,6 +1,7 @@
 {
   "$schema": "./commandpark.schema.json",
   "theme": "auto",
+  "hotkey": "Ctrl+Alt+D",
   "sources": {
     "envProgram": {},
     "everything": {

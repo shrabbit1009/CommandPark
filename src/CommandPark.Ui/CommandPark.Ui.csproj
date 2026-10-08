@@ -6,6 +6,21 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
     </PropertyGroup>
 
+    <!-- 后台程序（C++）由主程序在首次启动时拉起，构建时复制到主程序旁边。
+         需要先构建 CommandPark.Background.Cpp；文件不存在时会自动跳过。 -->
+    <PropertyGroup>
+        <CommandParkBackgroundPlatform Condition="'$(CommandParkBackgroundPlatform)' == ''">x64</CommandParkBackgroundPlatform>
+        <CommandParkBackgroundPath Condition="'$(CommandParkBackgroundPath)' == ''">$(MSBuildThisFileDirectory)..\CommandPark.Background.Cpp\bin\$(CommandParkBackgroundPlatform)\$(Configuration)\CommandPark.Background.Cpp.exe</CommandParkBackgroundPath>
+    </PropertyGroup>
+
+    <ItemGroup Condition="Exists('$(CommandParkBackgroundPath)')">
+        <None Include="$(CommandParkBackgroundPath)">
+            <Link>CommandPark.Background.Cpp.exe</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </None>
+    </ItemGroup>
+
     <ItemGroup>
         <Folder Include="Models\"/>
         <AvaloniaResource Include="Assets\**"/>
