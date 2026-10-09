@@ -28,6 +28,32 @@ CommandPark 当前包含七个来源。除首屏欢迎项外，它们会并发�
 - **Bing**仅在 `b:` / `bs:` 前缀下运行，会先返回精确搜索项，再返回关键词建议。
 - **首屏欢迎**由 `welcome` 配置节控制，首屏操作也可以直接用键盘选择和执行。
 
+### 后台常驻与全局热键
+
+`CommandPark.Background.Cpp.exe` 是常驻的小型 Win32 C++ 守护进程，负责注册全局快捷键和托盘图标；
+它由主程序按需拉起，构建时会复制到主程序旁边。
+
+- 主程序启动时读取程序目录下的 `PID` 判断后台是否已经在运行（进程是否还活着、是否是本后台程序）：
+  - 后台**未运行** → 这次启动**只拉起后台程序**，弹一次「已在后台启动」提示，不显示输入窗口，然后直接退出（相当于“注册热键”）。
+  - 后台**已在运行** → 正常显示输入窗口。
+- 之后按下快捷键（默认 `Ctrl+Alt+D`），或再次双击主程序，都会唤起搜索窗口。
+- 快捷键格式为「修饰符+按键」，例如 `Ctrl+Alt+Space`、`Win+Shift+S`、`Ctrl+F12`，至少需要一个修饰键。
+- 托盘图标右键菜单提供「修改配置」和「退出」；「修改配置」用默认程序打开 `commandpark.json`，资源管理器重启后会自动重建托盘图标。
+- 启动参数带 `--no-display` 时不弹「已在后台启动」提示，适合放进开机自启动。
+- `hotkey` 不填时使用默认值 `Ctrl+Alt+D`；显式写 `null` 时不拉起后台程序，双击直接运行主程序。
+- 后台不可用（后台程序缺失、`hotkey` 为 `null`、后台启动失败等）时，主程序照常显示输入窗口，并在首屏欢迎项**最后**追加一条提示。
+
+> “程序目录”指主程序与后台程序所在目录，`PID` 与 `commandpark.json` 都在这里查找。
+
+### 点击权重
+
+CommandPark 会把「id + 标题 + 描述」拼起来做 SHA256，只在本地记录每个摘要的点击次数：
+
+- 执行或查看详情都会让该条目的计数 +1，下次搜索时按点击次数加权，点击越多越靠前。
+- 记录写在本机的 `commandpark.clicks.htt`（默认位于 `%LOCALAPPDATA%\CommandPark\`），程序启动时读取、退出时写回。
+- 文件是二进制格式，每条记录只有 32 字节摘要 + 4 字节计数；不含任何明文，无法反推用户点过什么。
+- 默认最多保留 10000 条，超过后从最旧的记录开始删除；可用 `clicks.maxEntries` 调整。
+
 ### 主题
 
 支持深色、浅色和跟随系统；由 `commandpark.json` 顶层的 `theme` 控制。
@@ -47,6 +73,7 @@ CommandPark 当前包含七个来源。除首屏欢迎项外，它们会并发�
 ### 交互
 
 - **相关度排序**：完全匹配 > 前缀 > 词边界/包含 > 模糊匹配；同分时短名称优先。例如输入 cmd 时，cmd.exe 会排在 jcmd.exe 前，即使后者所在目录在 PATH 中更靠前
+- **点击权重**：执行或查看过的条目点击越多，之后的搜索里排序越靠前；只在本机保存摘要与次数（见上文「点击权重」）
 - **流式结果**：拿到一批就显示一批，不等搜索全部结束
 - **不闪白**：搜索期间保留上一次的结果，直到新结果到达才整体替换
 - **不闪提示**：`搜索中` 只在超过 300ms 仍没有结果时才出现
@@ -157,6 +184,9 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
   "$schema": "./commandpark.schema.json",
   "theme": "auto",
   "hotkey": "Ctrl+Alt+D",
+  "clicks": {
+    "maxEntries": 10000
+  },
   "sources": {
     "envProgram": {},
     "everything": {
@@ -195,6 +225,7 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 
 - `theme`：`auto`、`light` 或 `dark`；为 `null` 或不填写时跟随系统，默认值也是 `auto`。
 - `hotkey`：后台程序监听的全局快捷键，默认 `Ctrl+Alt+D`；显式写 `null` 时不启动后台热键监听。
+- `clicks.maxEntries`：本地最多保留的点击记录条数，默认 `10000`，范围 1..1000000；超过后从最旧的记录开始删除。
 - 文件不存在时使用内置默认值，所有内置源都会启用。
 - 文件存在时，未提供配置节的 `IConfigReader` 源不会运行。
 - `envProgram`：提供空对象即启用 PATH 程序搜索。
@@ -214,23 +245,6 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 - `welcome.showOfficial`：是否显示 shRabbit 官方网站入口。
 
 > 修改配置结构时必须同步修改 `commandpark.schema.json`，否则编辑器校验会与实际配置不一致。
-
-### 后台常驻与全局热键
-
-后台程序 `CommandPark.Background.Cpp.exe` 是常驻的小型 Win32 C++ 程序，负责注册全局快捷键和托盘图标；
-它由主程序按需拉起，构建时会复制到主程序旁边。
-
-- 配置了 `hotkey` 后，主程序启动时会读取程序目录下的 `PID` 判断后台是否已经在运行（进程是否还活着、是否是后台程序）：
-  - 后台**未运行** → 这次启动**只拉起后台程序**、弹一次「已在后台启动」提示，不显示输入窗口，然后直接退出（相当于“注册热键”）。
-  - 后台**已在运行** → 正常显示输入窗口。
-- 之后双击主程序，或按下快捷键，都会唤起主窗口（每按一次唤起一次）。
-- 启动参数带 `--no-display` 时不显示「已在后台启动」提示，适合放进开机自启动。
-- 托盘图标右键菜单只有「修改配置」和「退出」；「修改配置」会用默认程序打开 `commandpark.json`。
-- `hotkey` 不填时使用默认值 `Ctrl+Alt+D`；显式写 `null` 时**不拉起后台程序**，双击直接运行主程序。
-- 快捷键格式为「修饰符+按键」，例如 `Ctrl+Alt+Space`、`Win+Shift+S`、`Ctrl+F12`，至少需要一个修饰键。
-- 后台不可用（后台程序缺失、`hotkey` 为 `null`、后台启动失败等）时，主程序照常显示输入窗口，并在首屏欢迎项**最后**追加一条提示。
-
-> “程序目录”指主程序与后台程序所在目录，`PID` 与 `commandpark.json` 都在这里查找。
 
 ### 执行失败时
 
@@ -280,24 +294,26 @@ dotnet build src/CommandPark.Ui -c Release
 
 ### 启动速度
 
-下表都是「进程启动 → 窗口可见」的实测值（同一台机器，各跑 5 次）：
+下表是「进程启动 → 窗口可见」的实测值（2026-09-29，同一台机器、重启后各跑 5 次）：
 
-| 构建方式 | 最快 | 中位 | 说明 |
-| --- | --- | --- | --- |
-| 框架依赖（默认发布） | 777ms | 781ms | 日常开发用的方式 |
-| self-contained（未开 R2R） | 842ms | 855ms | 自带运行库，但启动要多从磁盘加载，反而更慢 |
-| **ReadyToRun + self-contained** | **530ms** | **543ms** | 推荐发布方式，比默认发布快约 **30%** |
+| 构建方式 | 各次耗时 | 最快 | 中位 | 最慢 | 发布目录大小 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| ReadyToRun + self-contained | 491 / 454 / 458 / 450 / 461ms | 450ms | **458ms** | 491ms | ~1.13GB |
+| **Native AOT** | 243 / 221 / 254 / 238 / 238ms | **221ms** | **238ms** | 254ms | ~153MB |
 
-- 提速来自 **ReadyToRun（crossgen2 预编译 IL → 本机码）**，省掉启动时的 JIT；
-  **首次运行**（文件还没进系统缓存）差距更明显：1381ms → 626ms。
-- R2R 代码要求运行时补丁版本匹配，否则运行时会静默丢掉 R2R 代码回落到 JIT（提速就白费了），因此推荐配合 `--self-contained true`。
-- **Native AOT**：已完成构建和启动速度测试，详见下方「Native AOT 实测」；正式发布包仍在准备中。
+- 日常开发用框架依赖发布即可；正式发布推荐 **ReadyToRun（crossgen2 预编译 IL → 本机码）+ self-contained**，
+  省掉启动时的 JIT，比框架依赖发布快约 30%，首次冷缓存运行差距更明显。
+- R2R 代码要求运行时补丁版本匹配，否则会静默回落到 JIT、提速失效，因此推荐配合 `--self-contained true`。
+- **Native AOT** 比 R2R 发布再快约 **48%**，发布目录也更小；首次冷缓存运行可能明显更慢。
+- 当前 AOT 发布仍会报告 COM P/Invoke、Everything、RestSharp 等 trimming/AOT 警告，需要继续做功能回归。
+- `DesmosHelper` 的 DTO 已使用 `DesmosJsonContext` 的 source-generated JSON 元数据，避免反射序列化路径。
 
-#### Native AOT 实测（2026-09-29）
-
-本轮使用同一台机器、重启后各跑 5 次，测量「进程启动 → 窗口可见」：
+发布命令：
 
 ```bash
+dotnet publish src/CommandPark.Ui -c Release -r win-x64 -p:PublishReadyToRun=true --self-contained true -o src/CommandPark.Ui/bin/Release/r2r-win-x64
+
+# 或 Native AOT
 dotnet publish src/CommandPark.Ui -c Release -r win-x64 `
   -p:PublishAot=true `
   -p:OptimizationPreference=Speed `
@@ -305,17 +321,6 @@ dotnet publish src/CommandPark.Ui -c Release -r win-x64 `
   -p:DebugType=None -p:DebugSymbols=false `
   -o src/CommandPark.Ui/bin/Release/aot-win-x64
 ```
-
-| 构建方式 | 各次耗时 | 最快 | 中位 | 最慢 | 发布目录大小 |
-| --- | --- | ---: | ---: | ---: | ---: |
-| ReadyToRun + self-contained | 491 / 454 / 458 / 450 / 461ms | 450ms | **458ms** | 491ms | ~1.13GB |
-| **Native AOT** | 243 / 221 / 254 / 238 / 238ms | **221ms** | **238ms** | 254ms | ~153MB |
-
-按中位数计算，Native AOT 比当前 R2R 发布方式快约 **48%**，发布目录也更小。
-
-- AOT 完成了 5/5 次窗口启动验证；首次冷缓存运行可能明显更慢。
-- 当前 AOT 发布仍会报告 COM P/Invoke、Everything、RestSharp 等 trimming/AOT 警告，后续需要继续做功能回归。
-- `DesmosHelper` 的 DTO 已使用 `DesmosJsonContext` 的 source-generated JSON 元数据，并将请求体改为显式 JSON 字符串，避免 `AddJsonBody(dto)` 的反射序列化路径。
 
 ## 项目结构
 
@@ -342,16 +347,20 @@ src/
     Sources/RunSource.cs                       # 运行输入的命令
     Sources/CalcSource.cs                      # AngouriMath 计算 / Desmos 跳转源
     Sources/BingSearchSource.cs                # Bing 搜索与建议源
+    IHintWeightProvider.cs            # 附加排序权重接口（相似度之外的增量）
+    Utils/Clicks/HintClickStore.cs     # 点击权重：id+标题+描述的 SHA256 → 次数
+    Utils/Clicks/HashToTimesReader.cs  # htt 二进制读写（摘要 + 计数）
   CommandPark.Ui/                     # Avalonia 界面
     ProgramIconExtractor.cs           # 取程序自带的最大图标（PrivateExtractIcons）
     ShellIconExtractor.cs             # 系统文件图标 / 缩略图（IShellItemImageFactory）
     Win32BitmapConverter.cs           # HICON / HBITMAP → Avalonia 位图
     ViewModels/ParkMainViewModel.cs   # 搜索编排：防抖、取消、流式回填、选中与执行
     ViewModels/HintItemViewModel.cs   # 单条结果：图标、名称、执行命令
+    ClickHistory.cs                   # 点击权重：启动读盘、退出写回
     Views/                            # 主窗口、搜索视图、结果条目、错误/详情窗口
     commandpark.json                  # 搜索源配置；发布时复制到程序目录
     commandpark.schema.json           # 配置 JSON Schema；发布时复制到程序目录
-  CommandPark.Background/             # 后台常驻与全局热键监听（C# 原型）
+  CommandPark.Background/             # 早期 C# 原型，已被 C++ 守护进程取代
   CommandPark.Background.Cpp/         # 后台常驻与全局热键监听（Win32 C++ 实现）
   CommandPark.Tests/                  # 单元测试
 docs/images/                          # README 截图
@@ -382,11 +391,8 @@ docs/images/                          # README 截图
 
 - [ ] 更多搜索源（浏览器书签 / 历史、进程、窗口……）
 - [ ] `cp:` 前缀：查看与修改 CommandPark 自身配置
-- [x] 后台常驻 + 全局热键唤起（`CommandPark.Background.Cpp` 实现，托盘菜单可「修改配置」/「退出」）
 - [ ] 执行失败写入本地日志，便于事后排查
-- [x] 结果按相似度排序（完全匹配优先，避免 `jcmd` 排在 `cmd` 前）
 - [ ] 优化快捷方式图标覆盖策略（可选择优先目标程序图标，[Issue #2](https://shrabbit.com:4000/gitlab/shrabbit/commandpark/-/work_items/2)）
-- [x] Native AOT 构建与启动速度测试（功能回归继续）
 
 ## 参与开发
 
