@@ -53,7 +53,7 @@ public class HintClickStoreTest
     }
 
     [Fact]
-    public void GetWeight_ScalesWithClicks_AndCapsAtMax()
+    public void GetWeight_EqualsClickCount()
     {
         var store = new HintClickStore();
         var hint  = Hint("app");
@@ -63,15 +63,16 @@ public class HintClickStoreTest
         for (var i = 1; i <= 5; i++)
         {
             store.RecordClick(hint);
-            Assert.Equal(HintClickStore.BoostPerClick * i, store.GetWeight(hint), precision: 5);
+            Assert.Equal(i, store.GetWeight(hint), precision: 5);
         }
 
+        // 权重就是点击数，不设上限：超过 1 也照常累加。
         for (var i = 0; i < 20; i++)
         {
             store.RecordClick(hint);
         }
 
-        Assert.Equal(HintClickStore.MaxBoost, store.GetWeight(hint), precision: 5);
+        Assert.Equal(25f, store.GetWeight(hint), precision: 5);
     }
 
     [Fact]

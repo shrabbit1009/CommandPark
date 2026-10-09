@@ -81,7 +81,7 @@ public class HintProviderTest
         var provider = new HintProvider
         {
             Sources = { new EqualSimilaritySource("low", "high") },
-            WeightProvider = new FixedWeightProvider(new Dictionary<string, float> { ["high"] = 0.25f }),
+            WeightProvider = new FixedWeightProvider(new Dictionary<string, float> { ["high"] = 3f }),
         };
 
         var batches = new BatchCollector();
@@ -112,6 +112,31 @@ public class HintProviderTest
         await provider.SearchAsync("q", batches.Add, TimeSpan.FromMilliseconds(20));
 
         Assert.Equal(new[] { "high", "low" }, batches.All.Select(hint => hint.Id).ToArray());
+    }
+
+    [Fact]
+    public async Task SearchAsync_ClickWeight_CanPromoteAcrossSimilarityTiers()
+    {
+        // 回归：权重曾被封顶在 0.25，点击再多也斗不过更高的相似度。
+        // 现在权重=点击数，1 次点击就能让 0.68 的条目反超 0.94 的条目。
+        var store = new HintClickStore();
+        store.RecordClick(new Hint("clicked", "clicked", "clicked"));
+
+        var provider = new HintProvider
+        {
+            Sources =
+            {
+                new GivenHintsSource(
+                    new Hint("better", "better", "better") { Similarity = 0.94f },
+                    new Hint("clicked", "clicked", "clicked") { Similarity = 0.68f })
+            },
+            WeightProvider = store,
+        };
+
+        var batches = new BatchCollector();
+        await provider.SearchAsync("q", batches.Add, TimeSpan.FromMilliseconds(20));
+
+        Assert.Equal(new[] { "clicked", "better" }, batches.All.Select(hint => hint.Id).ToArray());
     }
 
     [Fact]
@@ -484,6 +509,21 @@ public class HintProviderTest
             foreach (var id in ids)
             {
                 yield return new Hint(id, id, id) { Similarity = 0.5f };
+            }
+        }
+    }
+
+    /// <summary>按给定的 Hint 实例原样产出（保留各自的 Similarity）。</summary>
+    private sealed class GivenHintsSource(params IHint[] hints) : IHintSource
+    {
+        public async IAsyncEnumerable<IHint> SearchAsync(
+            string query,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            foreach (var hint in hints)
+            {
+                yield return hint;
             }
         }
     }

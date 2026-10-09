@@ -6,7 +6,7 @@ namespace CommandPark.Utils.Clicks;
 
 /// <summary>
 /// 基于 htt 的点击权重存储：以“id + 名称 + 描述”的 SHA256 作为键记录点击次数，
-/// 并把它换算成叠加在相似度上的排序权重。点击越多，权重越高，结果越靠前。
+/// 并把点击数直接作为排序权重叠加到相似度上。点击越多，权重越高，结果越靠前。
 /// <para>
 /// 本地只保存摘要与计数，不保存 Hint 明文，因此无法由本地 .htt 反推用户点了什么。
 /// 实例对读写都做了加锁，可安全地从搜索线程读取、从 UI 线程记录点击。
@@ -16,12 +16,6 @@ public sealed class HintClickStore : IHintWeightProvider
 {
     /// <summary>默认最多保留的条目数。</summary>
     public const int DefaultMaxEntries = HashToTimes.DefaultMaxEntries;
-
-    /// <summary>每一次点击带来的相似度加成。</summary>
-    public const float BoostPerClick = 0.05f;
-
-    /// <summary>点击加成的上限，避免高频项完全压过搜索相关度。</summary>
-    public const float MaxBoost = 0.25f;
 
     /// <summary>拼接三个字段时使用的分隔符（ASCII Unit Separator），避免字段边界产生歧义。</summary>
     public const byte FieldSeparator = 0x1F;
@@ -91,7 +85,7 @@ public sealed class HintClickStore : IHintWeightProvider
     }
 
     /// <summary>
-    /// 计算排序加成：<c>min(点击次数 × <see cref="BoostPerClick"/>, <see cref="MaxBoost"/>)</c>。
+    /// 排序权重就是点击数：点 1 次 +1、点 N 次 +N，不设上限。
     /// 没有任何记录时直接返回 0，连摘要都不必计算。
     /// </summary>
     public float GetWeight(IHint hint)
@@ -111,9 +105,8 @@ public sealed class HintClickStore : IHintWeightProvider
         }
     }
 
-    /// <summary>把点击数换算成排序加成。</summary>
-    public static float WeightOf(int clicks) =>
-        clicks <= 0 ? 0f : MathF.Min(MaxBoost, BoostPerClick * clicks);
+    /// <summary>把点击数换算成排序权重：点击数即为权重。</summary>
+    public static float WeightOf(int clicks) => clicks <= 0 ? 0f : clicks;
 
     /// <summary>按“id + 名称 + 描述”计算摘要。</summary>
     public static SHA256Store HashOf(IHint hint) => HashOf(hint.Id, hint.Name, hint.Description);
@@ -164,7 +157,7 @@ public sealed class HintClickStore : IHintWeightProvider
         }
     }
 
-    /// <summary>从 htt 流读取（不会清空流之外的内容）。</summary>
+    /// <summary>从 htt 流读取。</summary>
     public static async Task<HintClickStore> LoadAsync(
         Stream stream,
         int maxEntries = DefaultMaxEntries,

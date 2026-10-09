@@ -3,29 +3,32 @@ namespace CommandPark.Utils.Clicks;
 /// <summary>
 /// htt 文件的默认位置与读写辅助。
 /// <para>
-/// 默认写到 <c>%LOCALAPPDATA%\CommandPark\commandpark.clicks.htt</c>；
-/// 目录不可用时回落到程序目录。写入采用“先写临时文件、再原子替换”，避免关闭时崩溃留下半个文件。
+/// 默认写到 <c>{AppData}\shRabbit\CommandPark\clicks.htt</c>
+/// （即 <c>%APPDATA%\shRabbit\CommandPark\clicks.htt</c>）；目录不可用时回落到程序目录。
+/// 写入采用“先写临时文件、再原子替换”，避免关闭时崩溃留下半个文件。
 /// </para>
 /// </summary>
 public static class HintClickStoreFile
 {
     /// <summary>默认文件名。</summary>
-    public const string FileName = "commandpark.clicks.htt";
+    public const string FileName = "clicks.htt";
 
-    /// <summary>在 LocalApplicationData 下使用的子目录名。</summary>
-    public const string DirectoryName = "CommandPark";
+    /// <summary>应用数据目录下的厂商目录名。</summary>
+    public const string VendorDirectoryName = "shRabbit";
+
+    /// <summary>应用数据目录下的应用目录名。</summary>
+    public const string AppDirectoryName = "CommandPark";
 
     /// <summary>返回默认的 htt 文件完整路径。</summary>
     public static string DefaultPath()
     {
-        var baseDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var baseDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         if (string.IsNullOrWhiteSpace(baseDirectory))
         {
-            baseDirectory = AppContext.BaseDirectory;
-            return Path.Combine(baseDirectory, FileName);
+            return Path.Combine(AppContext.BaseDirectory, FileName);
         }
 
-        return Path.Combine(baseDirectory, DirectoryName, FileName);
+        return Path.Combine(baseDirectory, VendorDirectoryName, AppDirectoryName, FileName);
     }
 
     /// <summary>
