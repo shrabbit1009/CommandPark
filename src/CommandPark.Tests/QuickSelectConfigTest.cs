@@ -37,6 +37,19 @@ public class QuickSelectConfigTest
     }
 
     [Theory]
+    [InlineData(null, false)]
+    [InlineData("""{"quickSelect":{}}""", false)]
+    [InlineData("""{"quickSelect":{"showWeight":false}}""", false)]
+    [InlineData("""{"quickSelect":{"showWeight":true}}""", true)]
+    [InlineData("""{"quickSelect":{"showWeight":"yes"}}""", false)]
+    public void ReadShowWeight_DefaultsToFalse(string? json, bool expected)
+    {
+        var node = json is null ? null : JsonNode.Parse(json);
+
+        Assert.Equal(expected, QuickSelectConfig.ReadShowWeight(node));
+    }
+
+    [Theory]
     [InlineData(-1, null)]
     [InlineData(0, 1)]
     [InlineData(8, 9)]

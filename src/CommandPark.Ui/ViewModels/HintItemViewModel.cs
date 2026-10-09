@@ -91,13 +91,18 @@ public partial class HintItemViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(ShowQuickSelect))]
     public partial bool ShowMeta { get; set; }
 
+    /// <summary>配置是否开启权重显示（quickSelect.showWeight，默认关闭）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowWeight))]
+    public partial bool WeightEnabled { get; set; }
+
     /// <summary>该条目的点击权重（点击数），0 表示没有点击历史。</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowWeight))]
     public partial int Weight { get; set; }
 
-    /// <summary>是否显示点击权重：只在有点击记录（大于 0）时显示，避免一排 0。</summary>
-    public bool ShowWeight => ShowMeta && Weight > 0;
+    /// <summary>是否显示点击权重：配置开启、且有点击记录（大于 0）时才显示。</summary>
+    public bool ShowWeight => ShowMeta && WeightEnabled && Weight > 0;
 
     /// <summary>快速选择编号（1~9）；超出前 9 条或未开启快速选择时为 null。</summary>
     [ObservableProperty]

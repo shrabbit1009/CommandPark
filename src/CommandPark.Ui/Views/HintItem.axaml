@@ -90,7 +90,7 @@
                 </TextBlock>
             </StackPanel>
 
-            <!-- 点击权重：仅在有点击记录时显示点击数，文本 75% 不透明度 -->
+            <!-- 点击权重：quickSelect.showWeight 开启且有点击记录时显示，文本 75% 不透明度 -->
             <TextBlock Grid.Column="2"
                        Text="{Binding Weight}"
                        IsVisible="{Binding ShowWeight}"

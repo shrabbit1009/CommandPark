@@ -7,7 +7,8 @@
   },
   "quickSelect": {
     "enabled": true,
-    "modifier": "Alt"
+    "modifier": "Alt",
+    "showWeight": false
   },
   "sources": {
     "envProgram": {},

@@ -99,6 +99,11 @@
           "enum": ["Alt", "Ctrl"],
           "default": "Alt",
           "description": "触发快速选择的修饰键：按住它再按 1~9 打开对应结果。"
+        },
+        "showWeight": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否在结果右侧显示点击权重；默认关闭，避免出现一排 0。"
         }
       },
       "additionalProperties": false

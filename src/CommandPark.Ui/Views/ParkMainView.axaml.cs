@@ -44,11 +44,13 @@ public partial class ParkMainView : UserControl
             var config = ConfigFile.Load();
             viewModel.QuickSelectEnabled = QuickSelectConfig.ReadEnabled(config);
             viewModel.QuickSelectModifier = QuickSelectConfig.ReadModifier(config);
+            viewModel.ShowWeightEnabled = QuickSelectConfig.ReadShowWeight(config);
         }
         catch (Exception)
         {
             viewModel.QuickSelectEnabled = QuickSelectConfig.DefaultEnabled;
             viewModel.QuickSelectModifier = QuickSelectConfig.DefaultModifier;
+            viewModel.ShowWeightEnabled = QuickSelectConfig.DefaultShowWeight;
         }
     }
 

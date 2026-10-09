@@ -105,6 +105,12 @@ public partial class ParkMainViewModel : ViewModelBase
     [ObservableProperty]
     public partial QuickSelectModifier QuickSelectModifier { get; set; } = QuickSelectConfig.DefaultModifier;
 
+    /// <summary>
+    /// 是否在结果右侧显示点击权重（来自 commandpark.json 的 quickSelect.showWeight，默认关闭）。
+    /// </summary>
+    [ObservableProperty]
+    public partial bool ShowWeightEnabled { get; set; }
+
     /// <summary>是否有结果可显示（由 <see cref="Results"/> 集合驱动）。</summary>
     public bool HasResults => Results.Count > 0;
 
@@ -328,6 +334,8 @@ public partial class ParkMainViewModel : ViewModelBase
     private void ApplyQuickSelectMeta(HintItemViewModel item, int index)
     {
         item.ShowMeta = QuickSelectEnabled;
+        item.WeightEnabled = ShowWeightEnabled;
+
         if (!QuickSelectEnabled)
         {
             item.Weight = 0;
@@ -335,11 +343,15 @@ public partial class ParkMainViewModel : ViewModelBase
             return;
         }
 
-        item.Weight = ClickHistory.Store.GetClickCount(item.Hint);
+        item.Weight = ShowWeightEnabled ? ClickHistory.Store.GetClickCount(item.Hint) : 0;
         item.QuickSelectKey = QuickSelectConfig.GetKey(index);
     }
 
-    partial void OnQuickSelectEnabledChanged(bool value)
+    partial void OnQuickSelectEnabledChanged(bool value) => RefreshQuickSelectMeta();
+
+    partial void OnShowWeightEnabledChanged(bool value) => RefreshQuickSelectMeta();
+
+    private void RefreshQuickSelectMeta()
     {
         for (var i = 0; i < Results.Count; i++)
         {
