@@ -12,6 +12,9 @@ public static class HashToTimesReader
     /// <param name="reader">流</param>
     /// <param name="cancellationToken">取消</param>
     /// <returns>返回构建好的<see cref="HashToTimes"/>实例。</returns>
+    /// <remarks>
+    /// 会读完流中的内容，不会改流位置。
+    /// </remarks>
     public static async Task<HashToTimes> ReadAsync(Stream reader, CancellationToken cancellationToken = default)
     {
         var htt = new HashToTimes();
@@ -37,6 +40,9 @@ public static class HashToTimesReader
     /// <param name="htt"><see cref="HashToTimes"/>实例</param>
     /// <param name="writer">流</param>
     /// <param name="cancellationToken">此为异步任务</param>
+    /// <remarks>
+    /// 不会改流位置，需确认写入位置是否预期正确。
+    /// </remarks>
     public static async Task WriteAsync(HashToTimes htt, Stream writer, CancellationToken cancellationToken = default)
     {
         if (htt.Count == 0)
