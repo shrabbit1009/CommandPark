@@ -90,10 +90,10 @@
                 </TextBlock>
             </StackPanel>
 
-            <!-- 点击权重：点击数（0 表示没有点击历史），文本 75% 不透明度 -->
+            <!-- 点击权重：仅在有点击记录时显示点击数，文本 75% 不透明度 -->
             <TextBlock Grid.Column="2"
                        Text="{Binding Weight}"
-                       IsVisible="{Binding ShowMeta}"
+                       IsVisible="{Binding ShowWeight}"
                        Opacity="0.75"
                        VerticalAlignment="Center"
                        Margin="12,0,10,0"
