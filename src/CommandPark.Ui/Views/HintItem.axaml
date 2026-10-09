@@ -43,7 +43,7 @@
             Width="{Binding $parent[UserControl].Bounds.Width}"
             Height="{Binding $parent[UserControl].Bounds.Height}">
         
-        <Grid ColumnDefinitions="Auto, *"
+        <Grid ColumnDefinitions="Auto, *, Auto, Auto"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch"
               Width="{Binding $parent[UserControl].Bounds.Width}"
@@ -89,6 +89,28 @@
                            ToolTip.Tip="{Binding Description}">
                 </TextBlock>
             </StackPanel>
+
+            <!-- 点击权重：点击数（0 表示没有点击历史），文本 75% 不透明度 -->
+            <TextBlock Grid.Column="2"
+                       Text="{Binding Weight}"
+                       IsVisible="{Binding ShowMeta}"
+                       Opacity="0.75"
+                       VerticalAlignment="Center"
+                       Margin="12,0,10,0"
+                       FontFamily="{StaticResource JetBrainsMono}"
+                       FontSize="12"/>
+
+            <!-- 快速选择：前 9 条最右侧居中显示 1~9，配合修饰键（默认 Alt）直接打开 -->
+            <TextBlock Grid.Column="3"
+                       Text="{Binding QuickSelectKey}"
+                       IsVisible="{Binding ShowQuickSelect}"
+                       Opacity="0.75"
+                       Width="28"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       FontFamily="{StaticResource JetBrainsMono}"
+                       FontSize="13"/>
         </Grid>
     </Button>
     

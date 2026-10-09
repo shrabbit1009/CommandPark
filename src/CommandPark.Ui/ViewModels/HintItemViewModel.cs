@@ -83,6 +83,25 @@ public partial class HintItemViewModel : ViewModelBase
     [ObservableProperty] public partial string Name { get; set; } = string.Empty;
     [ObservableProperty] public partial string Description { get; set; } = string.Empty;
 
+    /// <summary>
+    /// 是否显示右侧的权重与快速选择（由 commandpark.json 的 quickSelect.enabled 决定）。
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowQuickSelect))]
+    public partial bool ShowMeta { get; set; }
+
+    /// <summary>该条目的点击权重（点击数），0 表示没有点击历史。</summary>
+    [ObservableProperty]
+    public partial int Weight { get; set; }
+
+    /// <summary>快速选择编号（1~9）；超出前 9 条或未开启快速选择时为 null。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowQuickSelect))]
+    public partial int? QuickSelectKey { get; set; }
+
+    /// <summary>是否显示快速选择编号。</summary>
+    public bool ShowQuickSelect => ShowMeta && QuickSelectKey is > 0;
+
     /// <summary>执行命令失败时触发。异常在这里被拦住，不会冒到 UI 线程导致崩溃。</summary>
     public event EventHandler<HintRunFailedEventArgs>? RunFailed;
 

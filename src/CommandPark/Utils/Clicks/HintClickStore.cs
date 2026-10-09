@@ -74,9 +74,17 @@ public sealed class HintClickStore : IHintWeightProvider
         }
     }
 
-    /// <summary>读取某个 Hint 的点击次数。</summary>
+    /// <summary>读取某个 Hint 的点击次数；没有历史记录时直接返回 0，连摘要都不必计算。</summary>
     public int GetClickCount(IHint hint)
     {
+        lock (_gate)
+        {
+            if (_times.Count == 0)
+            {
+                return 0;
+            }
+        }
+
         var hash = HashOf(hint);
         lock (_gate)
         {

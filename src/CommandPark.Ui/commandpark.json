@@ -5,6 +5,10 @@
   "clicks": {
     "maxEntries": 10000
   },
+  "quickSelect": {
+    "enabled": true,
+    "modifier": "Alt"
+  },
   "sources": {
     "envProgram": {},
     "everything": {

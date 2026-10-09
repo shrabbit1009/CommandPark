@@ -95,6 +95,16 @@ public partial class ParkMainViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
 
+    /// <summary>
+    /// 是否显示右侧的点击权重与快速选择（来自 commandpark.json 的 quickSelect.enabled，默认开启）。
+    /// </summary>
+    [ObservableProperty]
+    public partial bool QuickSelectEnabled { get; set; } = true;
+
+    /// <summary>快速选择使用的修饰键（默认 Alt，可配 Ctrl）。</summary>
+    [ObservableProperty]
+    public partial QuickSelectModifier QuickSelectModifier { get; set; } = QuickSelectConfig.DefaultModifier;
+
     /// <summary>是否有结果可显示（由 <see cref="Results"/> 集合驱动）。</summary>
     public bool HasResults => Results.Count > 0;
 
@@ -139,6 +149,18 @@ public partial class ParkMainViewModel : ViewModelBase
 
         // 异常由 HintItemViewModel 内部拦截并转成 RunFailed 事件（会弹出错误窗口）
         return await Results[index].TryRunAsync();
+    }
+
+    /// <summary>执行第 <paramref name="index"/> 条结果（0 起），供 1~9 快速选择使用。</summary>
+    public async Task<bool> RunIndexAsync(int index)
+    {
+        if (index < 0 || index >= Results.Count)
+        {
+            return false;
+        }
+
+        SelectedIndex = index;
+        return await RunSelectedAsync();
     }
 
     /// <summary>在窗口首次加载时显示首屏源；只执行一次。</summary>
@@ -286,6 +308,7 @@ public partial class ParkMainViewModel : ViewModelBase
                 item.RunFailed += OnItemRunFailed;
                 item.DetailsRequested += OnItemDetailsRequested;
                 item.Activated += OnItemActivated;
+                ApplyQuickSelectMeta(item, Results.Count);
                 Results.Add(item);
             }
 
@@ -300,6 +323,29 @@ public partial class ParkMainViewModel : ViewModelBase
 
     /// <summary>累计点击权重：点击越多，下次搜索时该条目的排序越靠前。</summary>
     private static void OnItemActivated(object? sender, HintActivatedEventArgs args) => ClickHistory.Store.RecordClick(args.Hint);
+
+    /// <summary>按条目在结果中的位置（0 起）填充右侧的点击权重与快速选择编号。</summary>
+    private void ApplyQuickSelectMeta(HintItemViewModel item, int index)
+    {
+        item.ShowMeta = QuickSelectEnabled;
+        if (!QuickSelectEnabled)
+        {
+            item.Weight = 0;
+            item.QuickSelectKey = null;
+            return;
+        }
+
+        item.Weight = ClickHistory.Store.GetClickCount(item.Hint);
+        item.QuickSelectKey = QuickSelectConfig.GetKey(index);
+    }
+
+    partial void OnQuickSelectEnabledChanged(bool value)
+    {
+        for (var i = 0; i < Results.Count; i++)
+        {
+            ApplyQuickSelectMeta(Results[i], i);
+        }
+    }
 
     /// <summary>
     /// 取消上一次搜索。该 CTS 可能已经被它所属的搜索在 finally 里释放，

@@ -34,6 +34,9 @@
     "clicks": {
       "$ref": "#/$defs/clicks"
     },
+    "quickSelect": {
+      "$ref": "#/$defs/quickSelect"
+    },
     "sources": {
       "type": "object",
       "description": "各搜索源的配置。未提供配置节的 IConfigReader 源不会运行。",
@@ -78,6 +81,24 @@
           "maximum": 1000000,
           "default": 10000,
           "description": "本地最多保留的点击记录条数；超过后从最旧的记录开始删除。"
+        }
+      },
+      "additionalProperties": false
+    },
+    "quickSelect": {
+      "type": "object",
+      "description": "快速选择视图：结果右侧显示点击权重与前 9 条的编号。",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否显示权重与快速选择；关闭后修饰键+数字不再触发。"
+        },
+        "modifier": {
+          "type": "string",
+          "enum": ["Alt", "Ctrl"],
+          "default": "Alt",
+          "description": "触发快速选择的修饰键：按住它再按 1~9 打开对应结果。"
         }
       },
       "additionalProperties": false
