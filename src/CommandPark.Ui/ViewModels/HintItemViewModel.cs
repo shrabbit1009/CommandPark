@@ -89,6 +89,12 @@ public partial class HintItemViewModel : ViewModelBase
     /// <summary>请求显示 Hint 完整详情时触发。</summary>
     public event EventHandler<HintDetailsRequestedEventArgs>? DetailsRequested;
 
+    /// <summary>
+    /// 用户激活本条 Hint（鼠标点击或回车执行）时触发，用于累计点击权重。
+    /// 无论执行成功、失败还是转为查看详情，都会先触发一次。
+    /// </summary>
+    public event EventHandler<HintActivatedEventArgs>? Activated;
+
     [RelayCommand]
     public Task Run() => TryRunAsync();
 
@@ -98,6 +104,9 @@ public partial class HintItemViewModel : ViewModelBase
     /// </summary>
     public async Task<bool> TryRunAsync()
     {
+        // 用户确实激活了这条结果：先记一次点击，再执行 / 查看详情。
+        Activated?.Invoke(this, new HintActivatedEventArgs(Hint));
+
         if (TryRequestDetails())
         {
             return false;

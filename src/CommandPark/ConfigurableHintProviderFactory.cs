@@ -14,12 +14,17 @@ public static class ConfigurableHintProviderFactory
     /// <summary>使用程序目录中的配置创建默认 Provider。</summary>
     /// <param name="configDirectory">配置目录；为空时使用 <see cref="AppContext.BaseDirectory"/>。</param>
     /// <param name="sources">可注入的源列表；为空时使用内置源。</param>
+    /// <param name="weightProvider">可选的附加排序权重源（例如点击次数）；会挂到返回的 Provider 上。</param>
     public static HintProvider Create(
         string? configDirectory = null,
-        IEnumerable<IHintSource>? sources = null)
+        IEnumerable<IHintSource>? sources = null,
+        IHintWeightProvider? weightProvider = null)
     {
         var config = ConfigFile.Load(configDirectory);
-        var provider = new HintProvider();
+        var provider = new HintProvider
+        {
+            WeightProvider = weightProvider,
+        };
 
         foreach (var source in sources ?? CreateDefaultSources())
         {

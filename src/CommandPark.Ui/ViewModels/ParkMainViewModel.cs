@@ -285,6 +285,7 @@ public partial class ParkMainViewModel : ViewModelBase
                 var item = new HintItemViewModel(hint);
                 item.RunFailed += OnItemRunFailed;
                 item.DetailsRequested += OnItemDetailsRequested;
+                item.Activated += OnItemActivated;
                 Results.Add(item);
             }
 
@@ -296,6 +297,9 @@ public partial class ParkMainViewModel : ViewModelBase
     private void OnItemRunFailed(object? sender, HintRunFailedEventArgs args) => RunFailed?.Invoke(this, args);
 
     private void OnItemDetailsRequested(object? sender, HintDetailsRequestedEventArgs args) => DetailsRequested?.Invoke(this, args);
+
+    /// <summary>累计点击权重：点击越多，下次搜索时该条目的排序越靠前。</summary>
+    private static void OnItemActivated(object? sender, HintActivatedEventArgs args) => ClickHistory.Store.RecordClick(args.Hint);
 
     /// <summary>
     /// 取消上一次搜索。该 CTS 可能已经被它所属的搜索在 finally 里释放，
@@ -329,8 +333,9 @@ public partial class ParkMainViewModel : ViewModelBase
     private static IHintProvider CreateDefaultProvider()
     {
         // 配置文件和真实源都可能做 IO，因此只在第一次搜索时、在线程池上创建。
-        // 程序目录中的 commandpark.json 会决定哪些实现 IConfigReader 的源启用。
-        return ConfigurableHintProviderFactory.Create();
+        // 程序目录中的 commandpark.json 会决定哪些实现 IConfigReader 的源启用；
+        // ClickHistory.Store 提供基于点击次数的附加排序权重。
+        return ConfigurableHintProviderFactory.Create(weightProvider: ClickHistory.Store);
     }
 
     /// <summary>一次搜索会话的共享状态（只在 UI 线程上读写）。</summary>

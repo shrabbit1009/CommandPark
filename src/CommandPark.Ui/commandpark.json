@@ -2,6 +2,9 @@
   "$schema": "./commandpark.schema.json",
   "theme": "auto",
   "hotkey": "Ctrl+Alt+D",
+  "clicks": {
+    "maxEntries": 10000
+  },
   "sources": {
     "envProgram": {},
     "everything": {

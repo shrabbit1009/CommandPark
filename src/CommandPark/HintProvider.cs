@@ -16,6 +16,12 @@ public class HintProvider : IHintProvider
     /// <summary>通过接口暴露为只读视图，避免调用方拿到具体集合类型。</summary>
     IReadOnlyList<IHintSource> IHintProvider.Sources => Sources;
 
+    /// <summary>
+    /// 可选的附加排序权重源（例如点击次数）。返回值会叠加到 <see cref="IHint.Similarity"/> 上，
+    /// 让“点击越多越靠前”真正体现在列表顺序上。为 null 时保持原来的纯相似度排序。
+    /// </summary>
+    public IHintWeightProvider? WeightProvider { get; set; }
+
     /// <inheritdoc />
     public async Task SearchAsync(
         string query,
@@ -103,7 +109,7 @@ public class HintProvider : IHintProvider
     /// 取空队列并回调一批结果。用 <see cref="ConcurrentQueue{T}.TryDequeue(out IHint)"/> 逐个取出，
     /// 只拿走真正取到的元素，因此不会丢掉并发写入的其它结果。队列为空时不回调。
     /// </summary>
-    private static void Flush(ConcurrentQueue<IHint> queue, Action<IHint[]> onSearched)
+    private void Flush(ConcurrentQueue<IHint> queue, Action<IHint[]> onSearched)
     {
         if (queue.IsEmpty)
         {
@@ -118,9 +124,14 @@ public class HintProvider : IHintProvider
 
         if (batch.Count > 0)
         {
-            // 按相似度降序（OrderByDescending 是稳定排序，同分保持到达顺序）：
-            // 让各源给出的权重、以及"输入前缀提升权重"真正体现在列表顺序上。
-            onSearched(batch.OrderByDescending(hint => hint.Similarity).ToArray());
+            // 按“相似度 + 附加权重”降序（OrderByDescending 是稳定排序，同分保持到达顺序）：
+            // 让各源给出的权重、"输入前缀提升权重"以及点击次数真正体现在列表顺序上。
+            var weightProvider = WeightProvider;
+            var ordered = weightProvider is null
+                ? batch.OrderByDescending(static hint => hint.Similarity)
+                : batch.OrderByDescending(hint => hint.Similarity + weightProvider.GetWeight(hint));
+
+            onSearched(ordered.ToArray());
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
+using CommandPark.Utils.Clicks;
 using JetBrains.Annotations;
 
 namespace CommandPark.Tests;
@@ -68,6 +69,63 @@ public class HintProviderTest
         await provider.SearchAsync("q", batches.Add, Fast);
 
         Assert.Empty(batches.Batches);
+    }
+
+    // ------------------------------------------------------------------
+    // 点击权重排序
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public async Task SearchAsync_WithWeightProvider_PromotesHeavierHints()
+    {
+        var provider = new HintProvider
+        {
+            Sources = { new EqualSimilaritySource("low", "high") },
+            WeightProvider = new FixedWeightProvider(new Dictionary<string, float> { ["high"] = 0.25f }),
+        };
+
+        var batches = new BatchCollector();
+        await provider.SearchAsync("q", batches.Add, TimeSpan.FromMilliseconds(20));
+
+        // 相似度相同：权重更高的条目应当排在前面。
+        Assert.Equal(new[] { "high", "low" }, batches.All.Select(hint => hint.Id).ToArray());
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithClickStore_PromotesClickedHint()
+    {
+        // 端到端：真实点击存储按「id + 名称 + 描述」命中，并影响 Provider 的排序。
+        var store = new HintClickStore();
+        var clicked = new Hint("high", "high", "high");
+        for (var i = 0; i < 5; i++)
+        {
+            store.RecordClick(clicked);
+        }
+
+        var provider = new HintProvider
+        {
+            Sources = { new EqualSimilaritySource("low", "high") },
+            WeightProvider = store,
+        };
+
+        var batches = new BatchCollector();
+        await provider.SearchAsync("q", batches.Add, TimeSpan.FromMilliseconds(20));
+
+        Assert.Equal(new[] { "high", "low" }, batches.All.Select(hint => hint.Id).ToArray());
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithoutWeightProvider_KeepsArrivalOrderForEqualSimilarity()
+    {
+        var provider = new HintProvider
+        {
+            Sources = { new EqualSimilaritySource("first", "second") },
+        };
+
+        var batches = new BatchCollector();
+        await provider.SearchAsync("q", batches.Add, TimeSpan.FromMilliseconds(20));
+
+        Assert.Equal(new[] { "first", "second" }, batches.All.Select(hint => hint.Id).ToArray());
     }
 
     // ------------------------------------------------------------------
@@ -413,6 +471,27 @@ public class HintProviderTest
                 }
             }
         }
+    }
+
+    /// <summary>产出若干相似度完全相同的条目，用于验证附加权重排序。</summary>
+    private sealed class EqualSimilaritySource(params string[] ids) : IHintSource
+    {
+        public async IAsyncEnumerable<IHint> SearchAsync(
+            string query,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            foreach (var id in ids)
+            {
+                yield return new Hint(id, id, id) { Similarity = 0.5f };
+            }
+        }
+    }
+
+    /// <summary>按 Id 给出固定权重的测试权重源。</summary>
+    private sealed class FixedWeightProvider(IReadOnlyDictionary<string, float> weights) : IHintWeightProvider
+    {
+        public float GetWeight(IHint hint) => weights.TryGetValue(hint.Id, out var weight) ? weight : 0f;
     }
 
     /// <summary>按脚本 (延迟, Id) 依次产出结果的测试源。</summary>

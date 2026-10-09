@@ -31,6 +31,9 @@
       "default": "Ctrl+Alt+D",
       "description": "后台程序监听的全局快捷键，例如 Ctrl+Alt+D、Win+Shift+S；不填时使用默认值 Ctrl+Alt+D，显式写 null 时不启动后台热键监听。"
     },
+    "clicks": {
+      "$ref": "#/$defs/clicks"
+    },
     "sources": {
       "type": "object",
       "description": "各搜索源的配置。未提供配置节的 IConfigReader 源不会运行。",
@@ -65,6 +68,20 @@
   ],
   "additionalProperties": false,
   "$defs": {
+    "clicks": {
+      "type": "object",
+      "description": "点击权重（htt）配置。提供该节点即启用；点击越多，结果越靠前。",
+      "properties": {
+        "maxEntries": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000,
+          "default": 10000,
+          "description": "本地最多保留的点击记录条数；超过后从最旧的记录开始删除。"
+        }
+      },
+      "additionalProperties": false
+    },
     "envProgram": {
       "type": "object",
       "description": "PATH 程序搜索源。提供空对象即启用；不提供该节点则禁用。",

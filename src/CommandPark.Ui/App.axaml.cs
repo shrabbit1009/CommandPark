@@ -42,6 +42,10 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            // 启动即读取本地点击权重；退出前写回。这样每次唤起窗口都能沿用历史点击。
+            ClickHistory.Preload();
+            desktop.Exit += (_, _) => ClickHistory.Save();
+
             desktop.MainWindow = new MainWindow
             {
                 // DataContext = new MainViewModel(),
