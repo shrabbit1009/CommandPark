@@ -45,12 +45,14 @@ public partial class ParkMainView : UserControl
             viewModel.QuickSelectEnabled = QuickSelectConfig.ReadEnabled(config);
             viewModel.QuickSelectModifier = QuickSelectConfig.ReadModifier(config);
             viewModel.ShowWeightEnabled = QuickSelectConfig.ReadShowWeight(config);
+            viewModel.FunctionKeysEnabled = QuickSelectConfig.ReadFunctionKeys(config);
         }
         catch (Exception)
         {
             viewModel.QuickSelectEnabled = QuickSelectConfig.DefaultEnabled;
             viewModel.QuickSelectModifier = QuickSelectConfig.DefaultModifier;
             viewModel.ShowWeightEnabled = QuickSelectConfig.DefaultShowWeight;
+            viewModel.FunctionKeysEnabled = QuickSelectConfig.DefaultFunctionKeys;
         }
     }
 
@@ -62,19 +64,12 @@ public partial class ParkMainView : UserControl
     {
         if (e.Handled ||
             DataContext is not ParkMainViewModel viewModel ||
-            !viewModel.QuickSelectEnabled ||
-            e.KeyModifiers != ToKeyModifiers(viewModel.QuickSelectModifier))
+            !viewModel.QuickSelectEnabled)
         {
             return;
         }
 
-        var index = e.Key switch
-        {
-            >= Key.D1 and <= Key.D9           => (int)e.Key - (int)Key.D1,
-            >= Key.NumPad1 and <= Key.NumPad9 => (int)e.Key - (int)Key.NumPad1,
-            _                                 => -1,
-        };
-
+        var index = ResolveQuickSelectIndex(viewModel, e);
         if (index < 0 || index >= viewModel.Results.Count)
         {
             return;
@@ -85,6 +80,32 @@ public partial class ParkMainView : UserControl
         {
             (TopLevel.GetTopLevel(this) as Window)?.Close();
         }
+    }
+
+    /// <summary>
+    /// 解析本次按键对应的快速选择下标（0 起），-1 表示不是快速选择：
+    /// 开启 <c>functionKeys</c> 时支持 F1~F9（不带修饰键），否则使用「修饰键 + 1~9」。
+    /// </summary>
+    private static int ResolveQuickSelectIndex(ParkMainViewModel viewModel, KeyEventArgs e)
+    {
+        if (viewModel.FunctionKeysEnabled &&
+            e.KeyModifiers == KeyModifiers.None &&
+            e.Key is >= Key.F1 and <= Key.F9)
+        {
+            return (int)e.Key - (int)Key.F1;
+        }
+
+        if (e.KeyModifiers != ToKeyModifiers(viewModel.QuickSelectModifier))
+        {
+            return -1;
+        }
+
+        return e.Key switch
+        {
+            >= Key.D1 and <= Key.D9           => (int)e.Key - (int)Key.D1,
+            >= Key.NumPad1 and <= Key.NumPad9 => (int)e.Key - (int)Key.NumPad1,
+            _                                 => -1,
+        };
     }
 
     private static KeyModifiers ToKeyModifiers(QuickSelectModifier modifier) => modifier switch

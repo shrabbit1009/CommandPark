@@ -39,6 +39,19 @@ public class QuickSelectConfigTest
     [Theory]
     [InlineData(null, false)]
     [InlineData("""{"quickSelect":{}}""", false)]
+    [InlineData("""{"quickSelect":{"functionKeys":false}}""", false)]
+    [InlineData("""{"quickSelect":{"functionKeys":true}}""", true)]
+    [InlineData("""{"quickSelect":{"functionKeys":"yes"}}""", false)]
+    public void ReadFunctionKeys_DefaultsToFalse(string? json, bool expected)
+    {
+        var node = json is null ? null : JsonNode.Parse(json);
+
+        Assert.Equal(expected, QuickSelectConfig.ReadFunctionKeys(node));
+    }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("""{"quickSelect":{}}""", false)]
     [InlineData("""{"quickSelect":{"showWeight":false}}""", false)]
     [InlineData("""{"quickSelect":{"showWeight":true}}""", true)]
     [InlineData("""{"quickSelect":{"showWeight":"yes"}}""", false)]

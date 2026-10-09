@@ -8,6 +8,7 @@
   "quickSelect": {
     "enabled": true,
     "modifier": "Alt",
+    "functionKeys": false,
     "showWeight": false
   },
   "sources": {

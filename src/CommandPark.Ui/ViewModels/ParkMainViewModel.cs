@@ -111,6 +111,12 @@ public partial class ParkMainViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool ShowWeightEnabled { get; set; }
 
+    /// <summary>
+    /// 是否额外支持直接按 F1~F9 打开对应条目（来自 quickSelect.functionKeys，默认关闭）。
+    /// </summary>
+    [ObservableProperty]
+    public partial bool FunctionKeysEnabled { get; set; }
+
     /// <summary>是否有结果可显示（由 <see cref="Results"/> 集合驱动）。</summary>
     public bool HasResults => Results.Count > 0;
 

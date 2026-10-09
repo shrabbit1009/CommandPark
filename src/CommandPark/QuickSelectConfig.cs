@@ -15,11 +15,12 @@ public enum QuickSelectModifier
 /// <summary>
 /// 快速选择视图的配置，位于 <c>commandpark.json</c> 顶层的 <c>quickSelect</c> 节点：
 /// <code>
-/// { "quickSelect": { "enabled": true, "modifier": "Alt", "showWeight": false } }
+/// { "quickSelect": { "enabled": true, "modifier": "Alt", "functionKeys": false, "showWeight": false } }
 /// </code>
 /// <para>
 /// 开启后结果列表右侧显示前 9 条的快速选择编号；
-/// 按住修饰键（默认 Alt，可改 Ctrl）再按 1~9 直接打开对应条目。默认开启。
+/// 默认按住修饰键（Alt，可改 Ctrl）再按 1~9 直接打开对应条目；
+/// 把 <c>functionKeys</c> 设为 <see langword="true"/> 时，额外支持直接按 F1~F9。
 /// 权重列默认隐藏，只有把 <c>showWeight</c> 设为 <see langword="true"/> 才显示。
 /// </para>
 /// </summary>
@@ -34,11 +35,17 @@ public static class QuickSelectConfig
     /// <summary>修饰键的配置项名。</summary>
     public const string ModifierPropertyName = "modifier";
 
+    /// <summary>是否支持 F1~F9 的配置项名。</summary>
+    public const string FunctionKeysPropertyName = "functionKeys";
+
     /// <summary>是否显示权重的配置项名。</summary>
     public const string ShowWeightPropertyName = "showWeight";
 
     /// <summary>默认是否开启。</summary>
     public const bool DefaultEnabled = true;
+
+    /// <summary>默认是否支持 F1~F9（默认关闭，仍使用修饰键 + 数字）。</summary>
+    public const bool DefaultFunctionKeys = false;
 
     /// <summary>默认是否显示权重（默认隐藏，避免出现一排 0）。</summary>
     public const bool DefaultShowWeight = false;
@@ -81,6 +88,20 @@ public static class QuickSelectConfig
             "alt"               => QuickSelectModifier.Alt,
             _                   => DefaultModifier,
         };
+    }
+
+    /// <summary>
+    /// 读取 <c>quickSelect.functionKeys</c>。缺失、类型错误时回落到 <see cref="DefaultFunctionKeys"/>。
+    /// </summary>
+    public static bool ReadFunctionKeys(JsonNode? config)
+    {
+        if (GetSection(config)?[FunctionKeysPropertyName] is not JsonValue value ||
+            !value.TryGetValue<bool>(out var functionKeys))
+        {
+            return DefaultFunctionKeys;
+        }
+
+        return functionKeys;
     }
 
     /// <summary>

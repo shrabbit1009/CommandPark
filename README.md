@@ -62,6 +62,7 @@ CommandPark 会把「id + 标题 + 描述」拼起来做 SHA256，只在本地�
 
 - 右侧固定显示前 9 条的快速选择编号 1~9；点击权重默认隐藏，打开 `quickSelect.showWeight` 后才会在有点击记录时显示。
 - 按住修饰键（默认 `Alt`，可配 `Ctrl`）再按 `1`~`9`，直接执行对应条目并关闭窗口。
+- 若把 `quickSelect.functionKeys` 设为 `true`，还可以直接按 `F1`~`F9`（F1 = 第 1 条），适合不习惯组合键的场景。
 - 用修饰键触发是为了不和搜索输入冲突：不按修饰键时，数字照常输入搜索框。
 - 右侧权重与编号文本使用 75% 不透明度。
 
@@ -104,6 +105,7 @@ CommandPark 会把「id + 标题 + 描述」拼起来做 SHA256，只在本地�
 | `Ctrl` + `Enter` | 执行选中项，**不关闭窗口** |
 | `Esc` | 关闭窗口 |
 | `Alt` + `1`~`9` | 执行第 N 条结果（快速选择；修饰键可配为 `Ctrl`） |
+| `F1`~`F9` | 同上（开启 `quickSelect.functionKeys` 后可用） |
 
 窗口打开后输入框自动获得焦点、结果默认选中第一条，全程可以只用键盘操作。
 
@@ -202,6 +204,7 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
   "quickSelect": {
     "enabled": true,
     "modifier": "Alt",
+    "functionKeys": false,
     "showWeight": false
   },
   "sources": {
@@ -245,6 +248,7 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 - `clicks.maxEntries`：本地最多保留的点击记录条数，默认 `10000`，范围 1..1000000；超过后从最旧的记录开始删除。
 - `quickSelect.enabled`：是否显示结果右侧的点击权重与快速选择编号，默认 `true`。
 - `quickSelect.modifier`：触发快速选择的修饰键，`Alt`（默认）或 `Ctrl`；按住它再按 1~9 打开对应结果。
+- `quickSelect.functionKeys`：设为 `true` 时额外支持直接按 F1~F9 打开对应结果，默认 `false`。
 - `quickSelect.showWeight`：是否在结果右侧显示点击权重（点击数），默认 `false`；默认只显示快速选择编号。
 - 文件不存在时使用内置默认值，所有内置源都会启用。
 - 文件存在时，未提供配置节的 `IConfigReader` 源不会运行。

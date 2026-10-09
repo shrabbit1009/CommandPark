@@ -100,6 +100,11 @@
           "default": "Alt",
           "description": "触发快速选择的修饰键：按住它再按 1~9 打开对应结果。"
         },
+        "functionKeys": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否额外支持直接按 F1~F9 打开对应结果（F1 = 第 1 条）。"
+        },
         "showWeight": {
           "type": "boolean",
           "default": false,
