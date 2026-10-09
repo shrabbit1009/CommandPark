@@ -54,6 +54,8 @@ CommandPark 会把「id + 标题 + 描述」拼起来做 SHA256，只在本地�
 - 文件是二进制格式，每条记录只有 32 字节摘要 + 4 字节计数；不含任何明文，无法反推用户点过什么。
 - 默认最多保留 10000 条，超过后从最旧的记录开始删除；可用 `clicks.maxEntries` 调整。
 
+> 上面描述的哈希、加权公式、htt 二进制格式与隐私边界，详见下文「内部说明」。
+
 ### 主题
 
 支持深色、浅色和跟随系统；由 `commandpark.json` 顶层的 `theme` 控制。
@@ -322,49 +324,37 @@ dotnet publish src/CommandPark.Ui -c Release -r win-x64 `
   -o src/CommandPark.Ui/bin/Release/aot-win-x64
 ```
 
-## 项目结构
+## 内部说明
 
-```
-CommandPark.slnx
-src/
-  CommandPark/                        # 核心库：Hint 模型、搜索源、图标抽象
-    IHintIcon.cs                      # 图标抽象（程序图标 / 文件图标 / 缩略图 / 本地图片）
-    IDetailedHint.cs                  # 可在详情窗口查看的 Hint 接口
-    DetailedHint.cs                   # 默认详情 Hint 实现
-    HintProvider.cs                   # 多源并发搜索 + 分批回填
-    ConfigFile.cs                     # 程序目录 JSON 配置读取
-    ConfigurableHintProviderFactory.cs # 按配置创建搜索 Provider
-    IHomeDisplayable.cs                # 首屏显示标记接口
-    ThemeConfigReader.cs              # 读取主题模式配置
-    DesmosHelper.cs                   # Desmos 快照 URL 生成
-    BingHelper.cs                     # Bing 搜索/建议 URL 辅助
-    DesmosJsonContext.cs              # Desmos DTO AOT JSON 元数据
-    ISearchEngineHelper.cs            # 搜索引擎 Helper 接口
-    Sources/EnvProgramSource.cs       # PATH 程序搜索
-    Sources/EverythingSource.cs       # Everything 搜索（前缀触发）
-    Sources/InstalledApplicationSource.cs       # 开始菜单已安装程序搜索
-    Sources/WelcomeSource.cs                   # 空查询时的首屏欢迎项
-    Sources/RunSource.cs                       # 运行输入的命令
-    Sources/CalcSource.cs                      # AngouriMath 计算 / Desmos 跳转源
-    Sources/BingSearchSource.cs                # Bing 搜索与建议源
-    IHintWeightProvider.cs            # 附加排序权重接口（相似度之外的增量）
-    Utils/Clicks/HintClickStore.cs     # 点击权重：id+标题+描述的 SHA256 → 次数
-    Utils/Clicks/HashToTimesReader.cs  # htt 二进制读写（摘要 + 计数）
-  CommandPark.Ui/                     # Avalonia 界面
-    ProgramIconExtractor.cs           # 取程序自带的最大图标（PrivateExtractIcons）
-    ShellIconExtractor.cs             # 系统文件图标 / 缩略图（IShellItemImageFactory）
-    Win32BitmapConverter.cs           # HICON / HBITMAP → Avalonia 位图
-    ViewModels/ParkMainViewModel.cs   # 搜索编排：防抖、取消、流式回填、选中与执行
-    ViewModels/HintItemViewModel.cs   # 单条结果：图标、名称、执行命令
-    ClickHistory.cs                   # 点击权重：启动读盘、退出写回
-    Views/                            # 主窗口、搜索视图、结果条目、错误/详情窗口
-    commandpark.json                  # 搜索源配置；发布时复制到程序目录
-    commandpark.schema.json           # 配置 JSON Schema；发布时复制到程序目录
-  CommandPark.Background/             # 早期 C# 原型，已被 C++ 守护进程取代
-  CommandPark.Background.Cpp/         # 后台常驻与全局热键监听（Win32 C++ 实现）
-  CommandPark.Tests/                  # 单元测试
-docs/images/                          # README 截图
-```
+### 点击权重（htt）
+
+**它解决什么**：在原有相关度排序之上叠加「用户更常点哪一条」的偏好，让常用命令逐步上浮。
+
+**哈希**：把 `id + 0x1F + 标题 + 0x1F + 描述` 按 UTF-8 编码后做 SHA256，取 32 字节摘要作为键。
+字段之间用 ASCII Unit Separator 分隔，避免 `("ab","c")` 与 `("a","bc")` 拼出同一个摘要。
+
+**htt 二进制格式**：每条记录固定 36 字节 = 32 字节摘要 + 4 字节小端 int 计数；
+可寻址与不可寻址流都能顺序读写，读写用 `ArrayPool` 分块批处理，逐条不产生额外分配。
+文件默认写在 `%LOCALAPPDATA%\CommandPark\commandpark.clicks.htt`（无权限时回落程序目录），
+先写 `*.tmp` 再原子替换，避免退出阶段崩溃留下半个文件。
+
+**排序加权**：`bonus = min(点击数 × 0.05, 0.25)`，搜索结果按 `Similarity + bonus` 降序；
+未命中或没有记录时为 0，因此未启用权重时仍是原来的纯相似度排序。
+
+**容量与淘汰**：默认最多 10000 条，可用 `clicks.maxEntries`（1..1000000）配置；
+超过上限时按「首次插入顺序」从最旧记录开始淘汰（FIFO），写回文件保持同一顺序。
+
+**生命周期与并发**：程序启动时读取、退出时写回；UI 线程计点击、搜索线程读权重，
+`HintClickStore` 用锁保护内部映射，`HintProvider` 在排序时调用 `IHintWeightProvider.GetWeight`。
+
+### 安全性
+
+- **不存明文**：本地只保存 SHA256 摘要与整数计数，文件里没有 id / 标题 / 描述，无法由 `.htt` 直接还原点击内容。
+- **单向哈希**：SHA256 不可逆，且摘要以 4 个 `ulong` 结构承载，作为字典键时不产生 `byte[]` 分配。
+- **仅本机**：不联网、不上传，只写入 `%LOCALAPPDATA%`（无权限时回落程序目录）。
+- **可删除即清空**：删除 `.htt` 文件即重置全部点击偏好，不残留其它痕迹。
+- **边界**：若已知候选项集合，仍可逐个计算摘要去比对计数（字典比对），因此它只是本机偏好数据，
+  不是「抗穷举」的匿名化或加密存储；应把它当作可随时删除的本地缓存。
 
 ## 技术栈
 
@@ -375,6 +365,8 @@ docs/images/                          # README 截图
 - [EverythingSearchClient](https://www.nuget.org/packages/EverythingSearchClient) —— Everything IPC
 - [AngouriMath](https://am.angouri.org/) —— 表达式求值与 LaTeX 转换
 - [RestSharp](https://restsharp.dev/) —— Desmos 快照请求
+- [Lnk](https://www.nuget.org/packages/Lnk) —— 解析开始菜单快捷方式（.lnk）的目标路径、参数与图标
+- [NPinyin.Core](https://www.nuget.org/packages/NPinyin.Core) —— 中文拼音与拼音首字母匹配
 - 内嵌 JetBrains Mono 字体（SIL OFL 1.1）
 
 ## 已知问题
