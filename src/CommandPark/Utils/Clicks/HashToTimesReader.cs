@@ -15,13 +15,12 @@ public static class HashToTimesReader
     public static async Task<HashToTimes> ReadAsync(Stream reader, CancellationToken cancellationToken = default)
     {
         var htt = new HashToTimes();
+        var buffer = new byte[BlockSize];
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
             
             // 读取一块（32字节sha + 4字节次数）
-            
-            var buffer = ArrayPool<byte>.Shared.Rent(BlockSize);
             if (reader.Length < BlockSize || reader.Length - reader.Position < BlockSize)
                 return htt;
             // 开始读
@@ -29,8 +28,6 @@ public static class HashToTimesReader
             // 根据上方规则，写值
             var span = buffer.AsSpan();
             htt[new SHA256Store(span[..32])] = BitConverter.ToInt32(span[32..BlockSize]);
-            // 归还池化数组
-            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 
@@ -45,18 +42,18 @@ public static class HashToTimesReader
         if (htt.Count == 0)
             return;
 
+        var buffer = new byte[BlockSize];
+        
         foreach (var kv in htt)
         {
             cancellationToken.ThrowIfCancellationRequested();
             
             // 开始写入块
-            var buffer = ArrayPool<byte>.Shared.Rent(BlockSize);
             var hash = kv.Key.GetBytes();
             var times = BitConverter.GetBytes(kv.Value);
             Array.Copy(hash,  0, buffer, 0,  32);
             Array.Copy(times, 0, buffer, 32, 4);
             await writer.WriteAsync(buffer, cancellationToken);
-            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 }
