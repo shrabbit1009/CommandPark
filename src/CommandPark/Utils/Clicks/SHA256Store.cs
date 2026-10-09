@@ -27,9 +27,9 @@ public readonly struct SHA256Store : IEquatable<SHA256Store>
         var result = new byte[32];
 
         BinaryPrimitives.WriteUInt64LittleEndian(result.AsSpan(0,  8),  _a);
-        BinaryPrimitives.WriteUInt64LittleEndian(result.AsSpan(8,  16), _b);
-        BinaryPrimitives.WriteUInt64LittleEndian(result.AsSpan(16, 24), _c);
-        BinaryPrimitives.WriteUInt64LittleEndian(result.AsSpan(24, 32), _d);
+        BinaryPrimitives.WriteUInt64LittleEndian(result.AsSpan(8,  8), _b);
+        BinaryPrimitives.WriteUInt64LittleEndian(result.AsSpan(16, 8), _c);
+        BinaryPrimitives.WriteUInt64LittleEndian(result.AsSpan(24, 8), _d);
 
         return result;
     }
