@@ -3,6 +3,7 @@
         xmlns:vm="using:CommandPark.Ui.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:CommandPark.Ui.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="CommandPark.Ui.Views.MainWindow"
         x:DataType="vm:MainViewModel"
@@ -35,6 +36,10 @@
         <ContentPresenter Content="{Binding InnerView}"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"/>
+        <controls:RainbowBorder Width="100"
+                                Height="100"
+                                CornerRadius="16"
+                                BorderThickness="8"/>
     </Grid>
 
 </Window>

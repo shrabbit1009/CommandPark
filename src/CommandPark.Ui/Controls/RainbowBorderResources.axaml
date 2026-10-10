@@ -1,0 +1,13 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Add Resources Here -->
+    <ConicGradientBrush x:Key="RainbowGradientBrush">
+        <GradientStops>
+            <GradientStop Color="#5900ff" Offset="0"/>
+            <GradientStop Color="#ff00c8" Offset=".25"/>
+            <GradientStop Color="#49e4da" Offset=".5"/>
+            <GradientStop Color="#e4d04e" Offset=".75"/>
+            <GradientStop Color="#5900ff" Offset="1"/>
+        </GradientStops>
+    </ConicGradientBrush>
+</ResourceDictionary>
