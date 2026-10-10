@@ -6,3 +6,5 @@ riderModule.iml
 *.user
 .*/
 Debug/
+!.github/
+!.github/**
