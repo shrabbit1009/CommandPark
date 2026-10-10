@@ -147,11 +147,11 @@ public partial class ParkMainViewModel : ViewModelBase
 
     /// <summary>输入框水印文本，随模式变化。</summary>
     public string InputWatermark =>
-        IsAiMode ? "用自然语言描述你想做什么，回车让 AI 筛选" : "输入关键字开始搜索";
+        IsAiMode ? "AI 搜索" : "开始搜索…";
 
     /// <summary>空闲提示文本，随模式变化。</summary>
     public string IdleHintText =>
-        IsAiMode ? "AI 模式：输入自然语言后按回车，AI 会自行筛选 Hint" : "输入关键字开始搜索";
+        IsAiMode ? "提交后，AI 会自行筛选 Hint 并列出" : "输入关键字开始搜索";
 
     /// <summary>AI 模式徽标文本：使用与快速选择相对的修饰键（Alt ↔ Ctrl）+ 1 / 2。</summary>
     public string AiModeBadge

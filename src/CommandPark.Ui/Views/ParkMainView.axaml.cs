@@ -14,14 +14,26 @@ public partial class ParkMainView : UserControl
     private ParkMainViewModel? _subscribedViewModel;
 
     public ParkMainView()
+        : this(new ParkMainViewModel())
     {
+    }
+
+    /// <summary>
+    /// 用外部传入的视图模型构造：主窗口需要订阅 <see cref="ParkMainViewModel.IsAiMode"/>，
+    /// 以便同步窗口级表现（AI 模式的彩虹描边），所以视图模型由调用方注入。
+    /// </summary>
+    /// <param name="viewModel">界面使用的视图模型。</param>
+    public ParkMainView(ParkMainViewModel viewModel)
+    {
+        ArgumentNullException.ThrowIfNull(viewModel);
+
         InitializeComponent();
 
         // 快速选择是「修饰键 + 1~9」：用隧道事件抢在 TextBox 之前处理，
         // 这样数字不会被当成搜索文本输入。
         AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
 
-        DataContext = new ParkMainViewModel();
+        DataContext = viewModel;
     }
 
     private void Control_OnLoaded(object? sender, RoutedEventArgs e)

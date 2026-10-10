@@ -1,13 +1,53 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Add Resources Here -->
-    <ConicGradientBrush x:Key="RainbowGradientBrush">
-        <GradientStops>
-            <GradientStop Color="#5900ff" Offset="0"/>
-            <GradientStop Color="#ff00c8" Offset=".25"/>
-            <GradientStop Color="#49e4da" Offset=".5"/>
-            <GradientStop Color="#e4d04e" Offset=".75"/>
-            <GradientStop Color="#5900ff" Offset="1"/>
-        </GradientStops>
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:CommandPark.Ui.Controls">
+
+    <!--
+        彩虹渐变边框的配色。
+        说明：
+        - ConicGradientBrush 沿边框中心做圆周扫掠，色相按 30° 等间隔取样，
+          首尾使用同一颜色（#FF4D8D），因此旋转 360° 后可以无缝衔接、不出现跳变。
+        - 相邻色相之间只跨一个色相区间，避免互补色直接插值产生的灰暗/浑浊过渡。
+        - 明度统一取中间调，深浅主题下都能看清，同时不会像纯饱和色那样刺眼。
+    -->
+    <ConicGradientBrush x:Key="RainbowGradientBrush" Center="50%,50%">
+        <GradientStop Color="#FF4D8D" Offset="0"/>      <!-- 330° 玫红 -->
+        <GradientStop Color="#FF5A5A" Offset="0.0833"/> <!--   0° 珊瑚红 -->
+        <GradientStop Color="#FF8A3D" Offset="0.1667"/> <!--  30° 橙 -->
+        <GradientStop Color="#FFC53D" Offset="0.25"/>   <!--  60° 琥珀 -->
+        <GradientStop Color="#C9F44D" Offset="0.3333"/> <!--  90° 青柠 -->
+        <GradientStop Color="#5FE38A" Offset="0.4167"/> <!-- 120° 绿 -->
+        <GradientStop Color="#35E0B0" Offset="0.5"/>    <!-- 150° 薄荷 -->
+        <GradientStop Color="#3CD9D9" Offset="0.5833"/> <!-- 180° 青 -->
+        <GradientStop Color="#3EA8FF" Offset="0.6667"/> <!-- 210° 天蓝 -->
+        <GradientStop Color="#6C7BFF" Offset="0.75"/>   <!-- 240° 靛蓝 -->
+        <GradientStop Color="#A061FF" Offset="0.8333"/> <!-- 270° 紫罗兰 -->
+        <GradientStop Color="#E158FF" Offset="0.9167"/> <!-- 300° 兰紫 -->
+        <GradientStop Color="#FF4D8D" Offset="1"/>      <!-- 330° 玫红（回到起点，保证循环无缝） -->
     </ConicGradientBrush>
+
+    <!--
+        RainbowBorder 的隐式主题。
+        动画通过 Avalonia 的关键帧动画系统启动（Style.Animations），只作用于控件自身的
+        GradientAngle 属性，再由控件同步给描边画刷：
+        - 这里使用 IterationCount="infinite" 的无限循环，交给样式动画驱动；
+          （注意：Animation.RunAsync() 在 Avalonia 中不允许用于无限循环动画，手动调用
+            会抛出 InvalidOperationException，因此必须写成 Style.Animations。）
+        - 动画随控件加入/离开可视树自动开始和结束，不需要手动逐帧刷新。
+        - PlaybackBehavior 保持默认 Auto：窗口隐藏/最小化时自动暂停。
+    -->
+    <ControlTheme x:Key="{x:Type controls:RainbowBorder}" TargetType="controls:RainbowBorder">
+        <Style Selector="^">
+            <Style.Animations>
+                <Animation Duration="0:0:6" IterationCount="infinite">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="GradientAngle" Value="0"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="GradientAngle" Value="360"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </ControlTheme>
 </ResourceDictionary>

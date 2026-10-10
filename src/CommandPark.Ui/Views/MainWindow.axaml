@@ -36,10 +36,31 @@
         <ContentPresenter Content="{Binding InnerView}"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"/>
-        <controls:RainbowBorder Width="100"
-                                Height="100"
-                                CornerRadius="16"
-                                BorderThickness="8"/>
-    </Grid>
+        <controls:RainbowBorder CornerRadius="0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                BorderThickness="8"
+                                Opacity="0">
+            <!--
+                淡入淡出交给 Opacity 的 Transitions 补间：行为只切换目标值。
+                不要用两个 FillMode="Forward" 的关键帧动画去抢同一个属性：
+                上一个动画的保持值会在另一个动画结束时重新生效，表现为淡入后立刻弹回。
+            -->
+            <controls:RainbowBorder.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
+                </Transitions>
+            </controls:RainbowBorder.Transitions>
 
+            <Interaction.Behaviors>
+                <DataTriggerBehavior Binding="{Binding ShowRainbow}" Value="True">
+                    <ChangePropertyAction PropertyName="Opacity" Value="1"/>
+                </DataTriggerBehavior>
+
+                <DataTriggerBehavior Binding="{Binding ShowRainbow}" Value="False">
+                    <ChangePropertyAction PropertyName="Opacity" Value="0"/>
+                </DataTriggerBehavior>
+            </Interaction.Behaviors>
+        </controls:RainbowBorder>
+    </Grid>
 </Window>
