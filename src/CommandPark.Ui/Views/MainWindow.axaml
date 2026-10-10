@@ -36,6 +36,7 @@
         <ContentPresenter Content="{Binding InnerView}"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"/>
+
         <controls:RainbowBorder CornerRadius="0"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
@@ -48,7 +49,7 @@
             -->
             <controls:RainbowBorder.Transitions>
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:2" Easing="ExponentialEaseOut"/>
                 </Transitions>
             </controls:RainbowBorder.Transitions>
 

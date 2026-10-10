@@ -17,7 +17,8 @@
         Topmost="True"
         KeyDown="Window_OnKeyDown">
 
-    <Grid RowDefinitions="Auto, Auto, Auto, Auto" Margin="20">
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto" Margin="20"
+          AttentionAnimations.ShakeX="1000">
         <!-- 标题行 -->
         <StackPanel Orientation="Horizontal" Spacing="10">
             <lucide:LucideIcon Kind="CircleAlert"

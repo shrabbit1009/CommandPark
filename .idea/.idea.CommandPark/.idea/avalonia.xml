@@ -6,6 +6,7 @@
         <entry key="src/CommandPark.Ui/App.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
         <entry key="src/CommandPark.Ui/Assets/Themes/CommandParkColors.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
         <entry key="src/CommandPark.Ui/Controls/RainbowBorderResources.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
+        <entry key="src/CommandPark.Ui/Views/AiChatWindow.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
         <entry key="src/CommandPark.Ui/Views/ErrorWindow.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
         <entry key="src/CommandPark.Ui/Views/HintDetailsWindow.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
         <entry key="src/CommandPark.Ui/Views/HintItem.axaml" value="src/CommandPark.Ui/CommandPark.Ui.csproj" />
