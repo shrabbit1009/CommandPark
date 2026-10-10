@@ -1,12 +1,9 @@
 name: AOT Publish
 
 on:
+  # 手动跑一次完整 AOT 发布（产物见 Actions artifact）
   workflow_dispatch:
-    inputs:
-      make_release:
-        description: 同时创建 GitHub Release（仅在 tag 上推送时生效）
-        type: boolean
-        default: false
+  # 推送 v* tag 时同样发布，并把 zip 附加到 GitHub Release
   push:
     tags:
       - 'v*'
