@@ -24,18 +24,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           lfs: true
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
-      # 后台守护程序是 C++ 工程（本机用 VS2026 的 v145 工具集），
-      # GitHub 运行器上只有 VS2022 的 v143，因此这里显式指定工具集；
-      # 即使构建失败也不影响主程序 AOT 产物。
+      # 后台守护程序是 C++ 工程（本机 VS2026 / v145；GitHub 运行器当前同为 windows-2025-vs2026）。
+      # 先按工程自带工具集构建，失败再回退 v143；即使构建不出来也不影响主程序 AOT 产物。
       - name: Build C++ background helper (best effort)
         continue-on-error: true
         shell: pwsh
@@ -44,25 +43,57 @@ jobs:
           $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" |
             Select-Object -First 1
           Write-Host "MSBuild: $msbuild"
-          & $msbuild src\CommandPark.Background.Cpp\CommandPark.Background.Cpp.vcxproj `
-            /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /m /v:minimal
+          $proj = 'src\CommandPark.Background.Cpp\CommandPark.Background.Cpp.vcxproj'
+
+          & $msbuild $proj /p:Configuration=Release /p:Platform=x64 /m /v:minimal
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning '默认工具集构建失败，回退 v143 重试'
+            & $msbuild $proj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /m /v:minimal
+          }
+
+          if ($LASTEXITCODE -eq 0) {
+            Get-ChildItem src\CommandPark.Background.Cpp\bin -Recurse -Filter *.exe |
+              Select-Object FullName, Length | Format-Table
+          }
 
       - name: Native AOT publish
-        run: >
-          dotnet publish src/CommandPark.Ui/CommandPark.Ui.csproj
-          -c Release -r win-x64
-          -p:PublishAot=true -p:SelfContained=true
-          -o publish/aot
+        shell: pwsh
+        run: |
+          dotnet publish src/CommandPark.Ui/CommandPark.Ui.csproj `
+            -c Release -r win-x64 `
+            -p:PublishAot=true -p:SelfContained=true `
+            -o publish/aot 2>&1 | Tee-Object -FilePath aot-publish.log
+          exit $LASTEXITCODE
+
+      - name: AOT warning summary
+        if: always()
+        shell: pwsh
+        run: |
+          if (-not (Test-Path aot-publish.log)) { exit 0 }
+          $warnings = Select-String -Path aot-publish.log -Pattern 'warning IL\d+' -AllMatches
+          "### Native AOT warnings: $($warnings.Count)" | Add-Content $env:GITHUB_STEP_SUMMARY
+          $warnings | ForEach-Object { $_.Line -replace '^.*warning ', 'warning ' } |
+            Sort-Object -Unique | ForEach-Object { "- ``$_``" } | Add-Content $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload AOT publish log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: aot-publish-log
+          path: aot-publish.log
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Package (without PDBs)
         shell: pwsh
         run: |
+          Get-ChildItem publish\aot | Select-Object Name, Length | Format-Table
           $files = Get-ChildItem publish\aot -File | Where-Object { $_.Extension -ne '.pdb' }
           Compress-Archive -Path $files.FullName -DestinationPath CommandPark-win-x64-aot.zip -Force
           Get-Item CommandPark-win-x64-aot.zip | Format-Table Name, Length
 
       - name: Upload AOT artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: CommandPark-win-x64-aot
           path: CommandPark-win-x64-aot.zip
