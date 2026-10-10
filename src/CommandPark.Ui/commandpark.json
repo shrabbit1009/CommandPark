@@ -11,6 +11,16 @@
     "functionKeys": false,
     "showWeight": false
   },
+  "ai": {
+    "provider": "kilo-free",
+    "endpoint": "",
+    "apiKey": "",
+    "model": "",
+    "session": "",
+    "headers": {},
+    "maxResults": 5,
+    "temperature": 0.2
+  },
   "sources": {
     "envProgram": {},
     "everything": {

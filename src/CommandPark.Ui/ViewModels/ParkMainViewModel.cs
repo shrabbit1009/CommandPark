@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using CommandPark.Ai;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommandPark.Ui.ViewModels;
@@ -38,7 +40,9 @@ public partial class ParkMainViewModel : ViewModelBase
 
     private Task<IHintProvider>? _providerTask;
     private CancellationTokenSource? _searchCts;
+    private CancellationTokenSource? _aiCts;
     private bool _homeInitializationStarted;
+    private string? _lastAiPrompt;
 
     /// <summary>默认构造：使用内置默认源，供设计期与默认运行路径使用。</summary>
     public ParkMainViewModel() : this(null, null)
@@ -93,6 +97,7 @@ public partial class ParkMainViewModel : ViewModelBase
     public partial bool IsEmpty { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFailed))]
     public partial string? ErrorMessage { get; set; }
 
     /// <summary>
@@ -103,6 +108,7 @@ public partial class ParkMainViewModel : ViewModelBase
 
     /// <summary>快速选择使用的修饰键（默认 Alt，可配 Ctrl）。</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AiModeBadge))]
     public partial QuickSelectModifier QuickSelectModifier { get; set; } = QuickSelectConfig.DefaultModifier;
 
     /// <summary>
@@ -116,6 +122,47 @@ public partial class ParkMainViewModel : ViewModelBase
     /// </summary>
     [ObservableProperty]
     public partial bool FunctionKeysEnabled { get; set; }
+
+    /// <summary>AI 的三项必填配置（commandpark.json 的 ai 节点）是否都已填写。</summary>
+    [ObservableProperty]
+    public partial bool IsAiAvailable { get; set; }
+
+    /// <summary>是否处于 AI 处理模式（按修饰键 + F1 切换）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InputWatermark))]
+    [NotifyPropertyChangedFor(nameof(IdleHintText))]
+    public partial bool IsAiMode { get; set; }
+
+    /// <summary>AI 正在检索并筛选 Hint。</summary>
+    [ObservableProperty]
+    public partial bool IsAiBusy { get; set; }
+
+    /// <summary>AI 对本次筛选的说明文本（可为空）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAiAnswer))]
+    public partial string? AiAnswer { get; set; }
+
+    /// <summary>是否有 AI 说明文本可显示。</summary>
+    public bool HasAiAnswer => !string.IsNullOrWhiteSpace(AiAnswer);
+
+    /// <summary>输入框水印文本，随模式变化。</summary>
+    public string InputWatermark =>
+        IsAiMode ? "用自然语言描述你想做什么，回车让 AI 筛选" : "输入关键字开始搜索";
+
+    /// <summary>空闲提示文本，随模式变化。</summary>
+    public string IdleHintText =>
+        IsAiMode ? "AI 模式：输入自然语言后按回车，AI 会自行筛选 Hint" : "输入关键字开始搜索";
+
+    /// <summary>AI 模式徽标文本：使用与快速选择相对的修饰键（Alt ↔ Ctrl）+ 1 / 2。</summary>
+    public string AiModeBadge
+    {
+        get
+        {
+            var relative = QuickSelectConfig.GetRelativeModifier(QuickSelectModifier);
+            var name = relative == QuickSelectModifier.Ctrl ? "Ctrl" : "Alt";
+            return $"AI 模式 · {name}+1 退出，{name}+2 聊天";
+        }
+    }
 
     /// <summary>是否有结果可显示（由 <see cref="Results"/> 集合驱动）。</summary>
     public bool HasResults => Results.Count > 0;
@@ -175,6 +222,172 @@ public partial class ParkMainViewModel : ViewModelBase
         return await RunSelectedAsync();
     }
 
+    /// <summary>提示用户尚未配置 AI。</summary>
+    public void NotifyAiUnavailable() =>
+        ErrorMessage = "尚未配置 AI：请在 commandpark.json 的 ai 节点填写 endpoint、apiKey 与 model。";
+
+    /// <summary>切换 AI 处理模式（修饰键 + F1）。配置不完整时返回 false 并给出提示。</summary>
+    public bool ToggleAiMode() => SetAiMode(!IsAiMode);
+
+    /// <summary>进入或退出 AI 处理模式。</summary>
+    /// <param name="enabled">true 进入 AI 模式，false 退出并恢复普通搜索。</param>
+    public bool SetAiMode(bool enabled)
+    {
+        if (enabled && !IsAiAvailable)
+        {
+            NotifyAiUnavailable();
+            return false;
+        }
+
+        if (IsAiMode == enabled)
+        {
+            return true;
+        }
+
+        if (enabled)
+        {
+            // 进入 AI 模式：取消进行中的普通搜索，清空列表等待 AI 结果。
+            TryCancel(Interlocked.Exchange(ref _searchCts, null));
+            IsAiMode = true;
+            IsAiBusy = false;
+            IsSearching = false;
+            IsEmpty = false;
+            AiAnswer = null;
+            _lastAiPrompt = null;
+            ErrorMessage = null;
+            Results.Clear();
+            IsIdle = string.IsNullOrWhiteSpace(InputText) && Results.Count == 0;
+        }
+        else
+        {
+            TryCancel(Interlocked.Exchange(ref _aiCts, null));
+            IsAiMode = false;
+            IsAiBusy = false;
+            AiAnswer = null;
+            _lastAiPrompt = null;
+            ErrorMessage = null;
+            StartNormalSearch(InputText);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// AI 模式下按回车：输入有变化时让 AI 重新筛选，结果已就绪时执行当前选中项。
+    /// </summary>
+    /// <param name="closeAfterRun">执行成功后是否关闭窗口（Ctrl+Enter 为 false）。</param>
+    /// <returns>调用方是否需要关闭窗口。</returns>
+    public async Task<bool> SubmitAiAsync(bool closeAfterRun)
+    {
+        var prompt = InputText.Trim();
+        if (prompt.Length == 0)
+        {
+            return false;
+        }
+
+        var resultsAreFresh =
+            _lastAiPrompt is not null &&
+            string.Equals(_lastAiPrompt, prompt, StringComparison.Ordinal) &&
+            Results.Count > 0;
+
+        if (resultsAreFresh)
+        {
+            return await RunSelectedAsync() && closeAfterRun;
+        }
+
+        await RunAiSearchAsync(prompt);
+        return false;
+    }
+
+    private async Task RunAiSearchAsync(string prompt)
+    {
+        var config = AiRuntime.Config;
+        if (config is null || !config.IsConfigured)
+        {
+            ErrorMessage = config is null
+                ? "尚未配置 AI：请在 commandpark.json 的 ai 节点填写 endpoint、apiKey 与 model。"
+                : $"AI 配置不完整：缺少 {string.Join("、", config.MissingFields)}。";
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        var previous = Interlocked.Exchange(ref _aiCts, cts);
+        TryCancel(previous);
+
+        var token = cts.Token;
+        ErrorMessage = null;
+        IsEmpty = false;
+        IsAiBusy = true;
+        AiAnswer = null;
+        _lastAiPrompt = null;
+
+        try
+        {
+            var client = AiRuntime.TryGetClient();
+            if (client is null)
+            {
+                ErrorMessage = "AI 客户端创建失败，请检查 commandpark.json 的 ai 配置。";
+                return;
+            }
+
+            var provider = await GetProviderTask();
+            var result = await AiHintSearch.RunAsync(client, provider, prompt, config, token);
+
+            token.ThrowIfCancellationRequested();
+
+            AiAnswer = result.Answer;
+            ApplyAiResults(result.Hints);
+            _lastAiPrompt = prompt;
+
+            if (result.Hints.Count == 0)
+            {
+                IsEmpty = true;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // 被新的输入或模式切换取消：交给新的操作接管。
+        }
+        catch (Exception exception)
+        {
+            ErrorMessage = exception.Message;
+        }
+        finally
+        {
+            if (ReferenceEquals(_aiCts, cts))
+            {
+                IsAiBusy = false;
+            }
+
+            cts.Dispose();
+        }
+    }
+
+    private void ApplyAiResults(IReadOnlyList<IHint> hints)
+    {
+        Results.Clear();
+
+        foreach (var hint in hints)
+        {
+            if (Results.Count >= MaxResults)
+            {
+                break;
+            }
+
+            var item = new HintItemViewModel(hint);
+            item.RunFailed += OnItemRunFailed;
+            item.DetailsRequested += OnItemDetailsRequested;
+            item.Activated += OnItemActivated;
+            ApplyQuickSelectMeta(item, Results.Count);
+            Results.Add(item);
+        }
+
+        SelectedIndex = Results.Count > 0 ? 0 : -1;
+    }
+
+    private Task<IHintProvider> GetProviderTask() =>
+        _providerTask ??= Task.Run(_providerFactory, CancellationToken.None);
+
     /// <summary>在窗口首次加载时显示首屏源；只执行一次。</summary>
     public Task InitializeHomeAsync()
     {
@@ -190,6 +403,21 @@ public partial class ParkMainViewModel : ViewModelBase
     }
 
     partial void OnInputTextChanged(string value)
+    {
+        if (IsAiMode)
+        {
+            // AI 模式不在输入时自动请求：等用户按回车再让 AI 筛选，避免每敲一个字都调用模型。
+            // 输入变化后旧结果不再对应当前提示词，标记失效，回车会重新请求。
+            _lastAiPrompt = null;
+            IsEmpty = false;
+            IsIdle = string.IsNullOrWhiteSpace(value);
+            return;
+        }
+
+        StartNormalSearch(value);
+    }
+
+    private void StartNormalSearch(string value)
     {
         var cts = CreateSearchCancellation();
         var query = value.Trim();
@@ -237,8 +465,7 @@ public partial class ParkMainViewModel : ViewModelBase
             var slowIndicatorTask = Task.Delay(SlowSearchThreshold, token);
 
             // 提供者懒加载：第一次搜索时才创建，且不占用 UI 线程
-            var providerTask = _providerTask ??= Task.Run(_providerFactory, CancellationToken.None);
-            var provider = await providerTask;
+            var provider = await GetProviderTask();
 
             // 搜索放线程池：Hint 源可能做同步 IO 或 CPU 计算，不能占用 UI 线程
             var searchTask = Task.Run(

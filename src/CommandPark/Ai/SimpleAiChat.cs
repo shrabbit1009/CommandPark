@@ -1,78 +1,122 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.Extensions.AI;
 
 namespace CommandPark.Ai;
 
 /// <summary>
-/// 对<see cref="IChatClient"/>的封装，使用更简单。
+/// 对 <see cref="IChatClient"/> 的封装，使用更简单：
+/// 自动维护系统提示词与对话历史，并在发送时把 <see cref="Tools"/> 交给模型。
 /// </summary>
-/// <param name="client">客户端实例</param>
+/// <param name="client">底层聊天客户端，实例需可被并发复用。</param>
 public class SimpleAiChat(IChatClient client) : ISimpleAiChat
 {
+    private readonly object _messagesGate = new();
     private readonly List<ChatMessage> _messages = [];
-    
-    /// <summary>
-    /// AI 调用的工具
-    /// </summary>
+    private readonly SemaphoreSlim _sendGate = new(initialCount: 1, maxCount: 1);
+
+    /// <summary>AI 调用的工具。</summary>
     public List<AITool> Tools { get; } = [];
-    
-    /// <summary>
-    /// 系统提示词，将首次输入并作为系统发送。
-    /// </summary>
+
+    /// <summary>系统提示词，将在首次发送时作为系统消息加入。</summary>
     public string SystemPrompt { get; set; } = string.Empty;
-    
+
+    /// <summary>可选的请求选项；为 null 时使用默认值。</summary>
+    public ChatOptions? Options { get; set; }
+
+    /// <summary>当前会话消息（含系统消息，若已加入）。</summary>
+    public IReadOnlyList<ChatMessage> Messages
+    {
+        get
+        {
+            lock (_messagesGate)
+            {
+                return _messages.ToArray();
+            }
+        }
+    }
+
+    /// <summary>清空对话历史；下一次发送会重新加入系统提示词。</summary>
+    public void Clear()
+    {
+        lock (_messagesGate)
+        {
+            _messages.Clear();
+        }
+    }
+
     /// <summary>
-    /// 导出对话内容字符串
+    /// 导出对话内容字符串。
     /// </summary>
-    /// <returns>格式为首行系统提示词，此后每行一个 角色\t: 内容</returns>
+    /// <returns>格式为首行系统提示词，此后每行一个 <c>角色 : 内容</c>。</returns>
     public string ExportToString()
     {
         var sb = new StringBuilder();
-        
+
         sb.AppendLine(SystemPrompt);
         sb.AppendLine();
 
-        foreach (var msg in _messages
-                    .Where(msg => msg.Role != ChatRole.System))
+        ChatMessage[] messages;
+        lock (_messagesGate)
         {
-            /*
-             * 你是一个有问题的助手。
-             * 
-             * User : 啊哈哈哈会话
-             * Assistant    : 我直接用最直白的话告诉你，这是不对的说法！\r\n\r\n你这种表述是错误的。问题在于：**整个句子没有一个字，但却连成了一句话。**\r\n## 可以这样修改：\r\n```\r\n啊哈哈哈哈活活或或红红火火恍恍惚惚 MJ\r\n```\r\n\r\n需要我为你整理一份详细的"说话指南吗"？
-             */
-            
+            messages = _messages.ToArray();
+        }
+
+        foreach (var msg in messages.Where(msg => msg.Role != ChatRole.System))
+        {
             sb.Append(msg.Role);
-            sb.Append('\t');
-            sb.Append(": ");
+            sb.Append(" : ");
             sb.Append(msg.Text);
             sb.AppendLine();
         }
-        
+
         return sb.ToString();
     }
 
     /// <summary>
-    /// 发送一条消息，并等待回复
+    /// 发送一条消息，并等待回复。同一实例上的并发发送会被串行化，避免对话历史错乱。
     /// </summary>
     /// <param name="text">消息内容，作为用户发送。</param>
     /// <param name="cancellationToken">取消。</param>
-    /// <returns>异步返回助手的回答。如果<see cref="Tools"/>有内容，则可能同时包含工具调用。</returns>
+    /// <returns>异步返回助手的回答。如果 <see cref="Tools"/> 有内容，则可能同时包含工具调用。</returns>
     public async Task<string> Send(string text, CancellationToken cancellationToken = default)
     {
-        if (_messages.Count == 0)
-            _messages.Add(new ChatMessage(ChatRole.System, SystemPrompt));
-        
-        _messages.Add(new ChatMessage(ChatRole.User, text));
+        ArgumentNullException.ThrowIfNull(text);
 
-        var options = Tools.Count > 0 ? new ChatOptions
+        await _sendGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            Tools = Tools,
-        } : null;
-        
-        var resp = await client.GetResponseAsync(_messages, options, cancellationToken: cancellationToken);
-        _messages.AddRange(resp.Messages);
-        
-        return resp.Text;
+            ChatMessage[] request;
+            lock (_messagesGate)
+            {
+                if (_messages.Count == 0 && !string.IsNullOrWhiteSpace(SystemPrompt))
+                {
+                    _messages.Add(new ChatMessage(ChatRole.System, SystemPrompt));
+                }
+
+                _messages.Add(new ChatMessage(ChatRole.User, text));
+                request = _messages.ToArray();
+            }
+
+            var options = Options?.Clone() ?? new ChatOptions();
+            if (Tools.Count > 0)
+            {
+                options.Tools = [.. Tools];
+            }
+
+            var response = await client
+                .GetResponseAsync(request, options, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
+            lock (_messagesGate)
+            {
+                _messages.AddRange(response.Messages);
+            }
+
+            return response.Text ?? string.Empty;
+        }
+        finally
+        {
+            _sendGate.Release();
+        }
     }
 }

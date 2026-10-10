@@ -66,6 +66,24 @@ CommandPark 会把「id + 标题 + 描述」拼起来做 SHA256，只在本地�
 - 用修饰键触发是为了不和搜索输入冲突：不按修饰键时，数字照常输入搜索框。
 - 右侧权重与编号文本使用 75% 不透明度。
 
+### AI 处理模式与 AI 聊天
+
+在 `commandpark.json` 顶层 `ai` 节点填写 OpenAI 兼容的聊天补全配置即可启用。可以直接用内置预设提供商，也可以用 `endpoint` / `apiKey` / `model` 自定义：
+
+| `ai.provider` | 端点 | 默认模型 | 密钥 | 说明 |
+| --- | --- | --- | --- | --- |
+| `kilo-free` | `https://api.kilo.ai/api/gateway` | `kilo-auto/free` | 不需要 | KiloCode 免费网关，开箱即用；不发送认证头 |
+| `deepseek` | `https://api.deepseek.com/v1` | `deepseek-flash` | 必填 | 也可把 `model` 改成 `deepseek-pro` |
+| `opencode-go` | `https://opencode.ai/zen/go/v1` | 用户自填 | 必填 | 自动附带 `User-Agent: command-park/{程序集版本}` 与 `x-opencode-session` 请求头 |
+
+预设值都可以用同名字段覆盖；不填 `provider` 时按通用 OpenAI 兼容端点处理，需要自行填写 `endpoint`、`apiKey`、`model`。
+
+- 按住与 `quickSelect.modifier` **相对**的另一个修饰键（默认 `Alt` 对应 `Ctrl`）再按 `1` 切换 **AI 处理模式**：输入自然语言后按回车，AI 会调用工具在本地 Hint 中检索、筛选，最后给出几个结果，并可以用快速选择直接执行。
+- 同样按住这个相对修饰键再按 `2` 打开 **AI 聊天窗口**：直接输入提示词与 AI 对话，支持复制与导出；对话只存在内存里，关闭即丢弃。
+- 每个候选 Hint 都会用「id + 名称 + 描述」做 SHA256 摘要并截短成短哈希，AI 只引用工具真实返回过的短哈希，应用再把它还原成对应的 Hint 显示。
+
+AI 的实现（提示词、工具、短哈希、结果解析）位于 `src/CommandPark/Ai`。
+
 ### 主题
 
 支持深色、浅色和跟随系统；由 `commandpark.json` 顶层的 `theme` 控制。
@@ -106,6 +124,10 @@ CommandPark 会把「id + 标题 + 描述」拼起来做 SHA256，只在本地�
 | `Esc` | 关闭窗口 |
 | `Alt` + `1`~`9` | 执行第 N 条结果（快速选择；修饰键可配为 `Ctrl`） |
 | `F1`~`F9` | 同上（开启 `quickSelect.functionKeys` 后可用） |
+| 相对修饰键 + `1` | 切换 AI 处理模式（与 `quickSelect.modifier` 相对的另一个修饰键：默认 `Alt` 对应 `Ctrl`，即 `Ctrl+1`） |
+| 相对修饰键 + `2` | 打开 AI 聊天窗口（默认 `Ctrl+2`，对话关闭后不保留） |
+| AI 模式下 `Enter` | 先用自然语言让 AI 筛选；结果就绪后再按一次执行选中项 |
+| 聊天窗口 `Enter` / `Ctrl`+`E` / `Ctrl`+`Shift`+`C` / `Esc` | 发送 / 导出 / 复制 / 关闭 |
 
 窗口打开后输入框自动获得焦点、结果默认选中第一条，全程可以只用键盘操作。
 
@@ -190,7 +212,7 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 
 ### 配置文件
 
-程序目录中的 `commandpark.json` 用于配置搜索源；程序也会兼容读取同目录下的 `config.json`。
+程序目录中的 `commandpark.json` 用于配置主题、热键、快速选择、AI 与搜索源；程序也会兼容读取同目录下的 `config.json`。
 `commandpark.schema.json` 是同一目录下的 JSON Schema，支持编辑器和 IDE 自动补全与校验。
 
 ```json
@@ -206,6 +228,16 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
     "modifier": "Alt",
     "functionKeys": false,
     "showWeight": false
+  },
+  "ai": {
+    "provider": "kilo-free",
+    "endpoint": "",
+    "apiKey": "",
+    "model": "",
+    "session": "",
+    "headers": {},
+    "maxResults": 5,
+    "temperature": 0.2
   },
   "sources": {
     "envProgram": {},
@@ -243,13 +275,39 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 | --- | --- |
 | ![深色主题](docs/images/hero.png) | ![浅色主题](docs/images/theme-light.png) |
 
+#### 顶层
+
 - `theme`：`auto`、`light` 或 `dark`；为 `null` 或不填写时跟随系统，默认值也是 `auto`。
 - `hotkey`：后台程序监听的全局快捷键，默认 `Ctrl+Alt+D`；显式写 `null` 时不启动后台热键监听。
-- `clicks.maxEntries`：本地最多保留的点击记录条数，默认 `10000`，范围 1..1000000；超过后从最旧的记录开始删除。
-- `quickSelect.enabled`：是否显示结果右侧的点击权重与快速选择编号，默认 `true`。
-- `quickSelect.modifier`：触发快速选择的修饰键，`Alt`（默认）或 `Ctrl`；按住它再按 1~9 打开对应结果。
-- `quickSelect.functionKeys`：设为 `true` 时额外支持直接按 F1~F9 打开对应结果，默认 `false`。
-- `quickSelect.showWeight`：是否在结果右侧显示点击权重（点击数），默认 `false`；默认只显示快速选择编号。
+
+#### `clicks`
+
+- `maxEntries`：本地最多保留的点击记录条数，默认 `10000`，范围 1..1000000；超过后从最旧的记录开始删除。
+
+#### `quickSelect`
+
+- `enabled`：是否显示结果右侧的点击权重与快速选择编号，默认 `true`。
+- `modifier`：触发快速选择的修饰键，`Alt`（默认）或 `Ctrl`；按住它再按 1~9 打开对应结果。
+- `functionKeys`：设为 `true` 时额外支持直接按 F1~F9 打开对应结果，默认 `false`。
+- `showWeight`：是否在结果右侧显示点击权重（点击数），默认 `false`；默认只显示快速选择编号。
+
+#### `ai`
+
+AI 快捷键使用与 `quickSelect.modifier` **相对**的另一个修饰键：`+1` 切换 AI 处理模式，`+2` 打开 AI 聊天（默认即 `Ctrl+1` / `Ctrl+2`）。
+
+- `provider`：预设提供商：`kilo-free`、`deepseek`、`opencode-go`；也可以写成 `{ "name": "deepseek" }`。填写后会自动补齐端点、模型与必要的请求头。
+- `endpoint`：聊天补全 API 端点；留空时使用 `provider` 预设的端点。可写基础地址（如 `https://api.openai.com/v1`），也可直接写完整路径（如 `https://api.openai.com/v1/chat/completions`）。
+- `apiKey`：API 密钥；`kilo-free` 可以留空（或写 `free` 表示不发送认证头），`deepseek` / `opencode-go` 与无 `provider` 的手动模式必填。
+- `model`：模型 ID；留空时使用 `provider` 预设的默认模型（`kilo-free` → `kilo-auto/free`，`deepseek` → `deepseek-flash`）。
+- `session`：`opencode-go` 使用的 `x-opencode-session` 请求头值；留空时自动生成一个会话 id。
+- `headers`：自定义请求头（字符串键值对）。手动模式与 `provider` 模式都会附带；与 `provider` 定义的请求头同名时以 `provider` 为准。
+- `maxResults`：AI 处理模式最终呈现的结果条数，默认 `5`，范围 1..20。
+- `temperature`：采样温度，默认 `0.2`，范围 0..2；越低越稳定。
+- 不填 `provider` 时是 OpenAI 手动模式：需要自行填写 `endpoint`、`apiKey`、`model`。
+- `provider` 的预设值可以被同名手动字段覆盖（例如把 `deepseek` 的 `model` 改成 `deepseek-pro`）。
+
+#### `sources`
+
 - 文件不存在时使用内置默认值，所有内置源都会启用。
 - 文件存在时，未提供配置节的 `IConfigReader` 源不会运行。
 - `envProgram`：提供空对象即启用 PATH 程序搜索。

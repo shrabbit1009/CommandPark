@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -42,23 +42,46 @@
         </ControlTheme>
     </UserControl.Resources>
 
-    <Grid RowDefinitions="120, Auto, *">
-        <!-- 输入框：窗口出现后立刻聚焦，输入不做任何耗时工作 -->
-        <TextBox Text="{Binding InputText}"
-                 HorizontalAlignment="Stretch"
-                 VerticalAlignment="Center"
-                 Margin="18"
-                 FontFamily="{StaticResource JetBrainsMono}"
-                 Background="Transparent"
-                 FontSize="18"
-                 Loaded="Control_OnLoaded"/>
+    <Grid RowDefinitions="120, Auto, Auto, *">
+        <Grid Grid.Row="0">
+            <!-- 输入框：窗口出现后立刻聚焦，输入不做任何耗时工作 -->
+            <TextBox Text="{Binding InputText}"
+                     PlaceholderText="{Binding InputWatermark}"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Center"
+                     Margin="18"
+                     FontFamily="{StaticResource JetBrainsMono}"
+                     Background="Transparent"
+                     FontSize="18"
+                     Loaded="Control_OnLoaded"/>
+
+            <!-- 模式徽标：只在 AI 处理模式下显示 -->
+            <Border IsVisible="{Binding IsAiMode}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Margin="18,0,0,4"
+                    Padding="8,2"
+                    CornerRadius="{StaticResource XlCornerRadius}"
+                    Background="{DynamicResource InfoColor20}">
+                <TextBlock Text="{Binding AiModeBadge}"
+                           FontSize="11"
+                           FontFamily="{StaticResource JetBrainsMono}"
+                           Foreground="{DynamicResource InfoColor}"/>
+            </Border>
+        </Grid>
 
         <!--
             状态条（单独一行，避免与结果列表重叠）：
             所有文本都不可见时这一行高度为 0，不占位置。
-            "搜索中" 只在搜索确实偏慢时才会出现，见 ParkMainViewModel.SlowSearchThreshold。
         -->
         <Panel Grid.Row="1">
+            <TextBlock Text="AI 正在筛选 Hint…"
+                       IsVisible="{Binding IsAiBusy}"
+                       Classes="p"
+                       Margin="18,0,18,8"
+                       Foreground="{DynamicResource Foreground50}"
+                       FontFamily="{StaticResource JetBrainsMono}"/>
+
             <TextBlock Text="搜索中…"
                        IsVisible="{Binding IsSearching}"
                        Classes="p"
@@ -66,7 +89,7 @@
                        Foreground="{DynamicResource Foreground50}"
                        FontFamily="{StaticResource JetBrainsMono}"/>
 
-            <TextBlock Text="输入关键字开始搜索"
+            <TextBlock Text="{Binding IdleHintText}"
                        IsVisible="{Binding IsIdle}"
                        Classes="p"
                        Margin="18,0,18,8"
@@ -89,8 +112,22 @@
                        FontFamily="{StaticResource JetBrainsMono}"/>
         </Panel>
 
+        <!-- AI 的筛选说明：只有 AI 模式且返回了说明文本时才显示 -->
+        <Border Grid.Row="2"
+                IsVisible="{Binding HasAiAnswer}"
+                Margin="18,0,18,8"
+                Padding="12,8"
+                CornerRadius="{StaticResource XlCornerRadius}"
+                Background="{DynamicResource Background25}">
+            <TextBlock Text="{Binding AiAnswer}"
+                       TextWrapping="Wrap"
+                       FontFamily="{StaticResource JetBrainsMono}"
+                       FontSize="13"
+                       Foreground="{DynamicResource Foreground50}"/>
+        </Border>
+
         <!-- 结果列表：首次打开时不创建任何结果控件 -->
-        <ListBox Grid.Row="2"
+        <ListBox Grid.Row="3"
                  x:Name="ResultsList"
                  ItemsSource="{Binding Results}"
                  SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"

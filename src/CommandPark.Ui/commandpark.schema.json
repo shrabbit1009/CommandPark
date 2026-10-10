@@ -37,6 +37,9 @@
     "quickSelect": {
       "$ref": "#/$defs/quickSelect"
     },
+    "ai": {
+      "$ref": "#/$defs/ai"
+    },
     "sources": {
       "type": "object",
       "description": "各搜索源的配置。未提供配置节的 IConfigReader 源不会运行。",
@@ -109,6 +112,71 @@
           "type": "boolean",
           "default": false,
           "description": "是否在结果右侧显示点击权重；默认关闭，避免出现一排 0。"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ai": {
+      "type": "object",
+      "description": "AI 处理模式与 AI 聊天模式使用的 OpenAI 兼容聊天补全 API 配置。填写 provider 预设会自动补齐端点、模型与必要的请求头；也可用 endpoint / apiKey / model 覆盖。",
+      "properties": {
+        "provider": {
+          "type": [
+            "string",
+            "object"
+          ],
+          "default": "",
+          "description": "提供商预设：kilo-free（KiloCode 免费网关，无需密钥，模型 kilo-auto/free）、deepseek（默认模型 deepseek-flash，可改 deepseek-pro）、opencode-go（需要密钥与模型，自动附带 UA 与 x-opencode-session 请求头）。也可以写成 { \"name\": \"deepseek\" }。留空时按通用 OpenAI 兼容端点处理。",
+          "examples": [
+            "kilo-free",
+            "deepseek",
+            "opencode-go"
+          ]
+        },
+        "endpoint": {
+          "type": "string",
+          "default": "",
+          "description": "聊天补全 API 端点。留空时使用 provider 预设的端点；也可直接写完整路径（如 https://api.openai.com/v1/chat/completions）。"
+        },
+        "apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API 密钥。kilo-free 可以留空；deepseek、opencode-go 与通用端点必填。"
+        },
+        "model": {
+          "type": "string",
+          "default": "",
+          "description": "聊天补全使用的模型 ID。留空时使用 provider 预设的默认模型（kilo-free → kilo-auto/free，deepseek → deepseek-flash）。"
+        },
+        "session": {
+          "type": "string",
+          "default": "",
+          "description": "opencode-go 使用的 x-opencode-session 请求头值；留空时自动生成一个会话 id。"
+        },
+        "headers": {
+          "type": "object",
+          "default": {},
+          "description": "自定义请求头（字符串键值对）。无 provider 的 OpenAI 手动模式与 provider 模式都会附带；与 provider 定义的请求头同名时，以 provider 为准。",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "maxResults": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 5,
+          "description": "AI 处理模式最终呈现给用户的结果条数。"
+        },
+        "temperature": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 2,
+          "default": 0.2,
+          "description": "采样温度，越低越稳定；默认 0.2。"
         }
       },
       "additionalProperties": false

@@ -54,6 +54,34 @@ public partial class ParkMainView : UserControl
             viewModel.ShowWeightEnabled = QuickSelectConfig.DefaultShowWeight;
             viewModel.FunctionKeysEnabled = QuickSelectConfig.DefaultFunctionKeys;
         }
+
+        // AI 配置由 AiRuntime 单独读取（配置损坏时视为未配置，不抛异常）。
+        viewModel.IsAiAvailable = AiRuntime.IsConfigured;
+    }
+
+    /// <summary>修饰键 + F2 打开简单 AI 聊天窗口（对话不保留，关闭即丢弃）。</summary>
+    private async Task OpenAiChatAsync(ParkMainViewModel viewModel)
+    {
+        if (!AiRuntime.IsConfigured)
+        {
+            viewModel.NotifyAiUnavailable();
+            return;
+        }
+
+        if (TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        try
+        {
+            var window = new AiChatWindow();
+            await window.ShowDialog(owner);
+        }
+        catch (Exception)
+        {
+            // 聊天窗口自身失败不能把主界面带崩。
+        }
     }
 
     /// <summary>
@@ -62,9 +90,34 @@ public partial class ParkMainView : UserControl
     /// </summary>
     private async void OnPreviewKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Handled ||
-            DataContext is not ParkMainViewModel viewModel ||
-            !viewModel.QuickSelectEnabled)
+        if (e.Handled || DataContext is not ParkMainViewModel viewModel)
+        {
+            return;
+        }
+
+        // AI 快捷键使用与 quickSelect.modifier「相对」的另一个修饰键 + 1 / 2：
+        // 默认 quickSelect 用 Alt，则 AI 用 Ctrl+1（切换 AI 处理模式）与 Ctrl+2（打开 AI 聊天）。
+        // 这样既不与「修饰键 + 1~9」的快速选择冲突，也避开了 Alt+F1 与 NVIDIA 截图的冲突。
+        var aiModifier = ToKeyModifiers(QuickSelectConfig.GetRelativeModifier(viewModel.QuickSelectModifier));
+        if (e.KeyModifiers == aiModifier)
+        {
+            switch (e.Key)
+            {
+                case Key.D1:
+                case Key.NumPad1:
+                    e.Handled = true;
+                    viewModel.ToggleAiMode();
+                    return;
+
+                case Key.D2:
+                case Key.NumPad2:
+                    e.Handled = true;
+                    await OpenAiChatAsync(viewModel);
+                    return;
+            }
+        }
+
+        if (!viewModel.QuickSelectEnabled)
         {
             return;
         }
@@ -141,7 +194,25 @@ public partial class ParkMainView : UserControl
     /// </summary>
     private async void View_OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (DataContext is not ParkMainViewModel viewModel || viewModel.Results.Count == 0)
+        if (DataContext is not ParkMainViewModel viewModel)
+        {
+            return;
+        }
+
+        // AI 模式：回车先让 AI 筛选；结果就绪后回车执行选中项。
+        if (viewModel.IsAiMode && e.Key == Key.Enter)
+        {
+            e.Handled = true;
+            var closeAfterRun = !e.KeyModifiers.HasFlag(KeyModifiers.Control);
+            if (await viewModel.SubmitAiAsync(closeAfterRun))
+            {
+                (TopLevel.GetTopLevel(this) as Window)?.Close();
+            }
+
+            return;
+        }
+
+        if (viewModel.Results.Count == 0)
         {
             return;
         }

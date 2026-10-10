@@ -123,6 +123,17 @@ public static class QuickSelectConfig
     /// </summary>
     public static int? GetKey(int index) => index >= 0 && index < MaxItems ? index + 1 : null;
 
+    /// <summary>
+    /// 返回与快速选择修饰键“相对”的另一个修饰键（<see cref="QuickSelectModifier.Alt"/> ↔
+    /// <see cref="QuickSelectModifier.Ctrl"/>）。
+    /// <para>
+    /// AI 模式等其它快捷键用它来组合，既不与「修饰键 + 1~9」的快速选择冲突，
+    /// 也不依赖具体的快速选择修饰键设置。
+    /// </para>
+    /// </summary>
+    public static QuickSelectModifier GetRelativeModifier(QuickSelectModifier modifier) =>
+        modifier == QuickSelectModifier.Ctrl ? QuickSelectModifier.Alt : QuickSelectModifier.Ctrl;
+
     private static JsonObject? GetSection(JsonNode? config) =>
         config?[SectionName] as JsonObject;
 }

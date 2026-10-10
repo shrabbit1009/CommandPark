@@ -63,6 +63,14 @@ public class QuickSelectConfigTest
     }
 
     [Theory]
+    [InlineData(QuickSelectModifier.Alt, QuickSelectModifier.Ctrl)]
+    [InlineData(QuickSelectModifier.Ctrl, QuickSelectModifier.Alt)]
+    public void GetRelativeModifier_ReturnsTheOtherModifier(QuickSelectModifier input, QuickSelectModifier expected)
+    {
+        Assert.Equal(expected, QuickSelectConfig.GetRelativeModifier(input));
+    }
+
+    [Theory]
     [InlineData(-1, null)]
     [InlineData(0, 1)]
     [InlineData(8, 9)]
