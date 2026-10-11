@@ -1,0 +1,10 @@
+﻿{
+    "ui":{
+        "ai":{
+            "you": "你",
+            "ai": "AI",
+            "notConfig": "尚未配置 AI：请在 commandpark.json 的 ai 节点填写 endpoint、apiKey 与 model。",
+            "send": "发送 ({0}+1 / Enter)"
+        }
+    }
+}
