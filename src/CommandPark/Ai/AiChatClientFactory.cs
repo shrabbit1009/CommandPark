@@ -27,7 +27,7 @@ public static class AiChatClientFactory
         if (!config.IsConfigured)
         {
             throw new InvalidOperationException(
-                Localization.Format("ai.errors.incomplete", string.Join(Localization.Get("common.listSeparator"), config.MissingFields)));
+                Localization.Format("ai.config.incomplete", string.Join(Localization.Get("common.listSeparator"), config.MissingFields)));
         }
 
         var options = new OpenAIClientOptions
@@ -72,7 +72,7 @@ public static class AiChatClientFactory
         if (!Uri.TryCreate(text, UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            throw new InvalidOperationException(Localization.Format("ai.errors.invalidEndpoint", endpoint));
+            throw new InvalidOperationException(Localization.Format("ai.config.invalidEndpoint", endpoint));
         }
 
         var normalized = uri.GetLeftPart(UriPartial.Path);

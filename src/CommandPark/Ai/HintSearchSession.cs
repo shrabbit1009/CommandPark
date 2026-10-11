@@ -52,12 +52,12 @@ public sealed class HintSearchSession
         AIFunctionFactory.Create(
             (Func<string, int, CancellationToken, Task<string>>)SearchHintsAsync,
             "search_hints",
-            Localization.Get("ai.tools.searchHints")),
+            Localization.Get("ai.tool.searchHints")),
 
         AIFunctionFactory.Create(
             (Func<string, string>)GetHint,
             "get_hint",
-            Localization.Get("ai.tools.getHint")),
+            Localization.Get("ai.tool.getHint")),
     ];
 
     /// <summary>搜索 Hint 并把结果格式化成模型可读的文本，同时记录短哈希用于最终解析。</summary>
@@ -102,14 +102,14 @@ public sealed class HintSearchSession
         }
 
         var sb = new StringBuilder();
-        sb.AppendLine(Localization.Format("ai.session.hash", HintHash.Short(hint, _hashLength)));
-        sb.AppendLine(Localization.Format("ai.session.id", Truncate(hint.Id, FieldDisplayLimit)));
-        sb.AppendLine(Localization.Format("ai.session.name", Truncate(hint.Name, FieldDisplayLimit)));
-        sb.AppendLine(Localization.Format("ai.session.description", Truncate(hint.Description, FieldDisplayLimit)));
+        sb.AppendLine(Localization.Format("ai.session.field.hash", HintHash.Short(hint, _hashLength)));
+        sb.AppendLine(Localization.Format("ai.session.field.id", Truncate(hint.Id, FieldDisplayLimit)));
+        sb.AppendLine(Localization.Format("ai.session.field.name", Truncate(hint.Name, FieldDisplayLimit)));
+        sb.AppendLine(Localization.Format("ai.session.field.description", Truncate(hint.Description, FieldDisplayLimit)));
 
         if (hint is IDetailedHint detailed && !string.IsNullOrWhiteSpace(detailed.Details))
         {
-            sb.AppendLine(Localization.Format("ai.session.details", Truncate(detailed.Details, FieldDisplayLimit * 2)));
+            sb.AppendLine(Localization.Format("ai.session.field.details", Truncate(detailed.Details, FieldDisplayLimit * 2)));
         }
 
         return sb.ToString().TrimEnd();

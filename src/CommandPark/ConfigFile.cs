@@ -61,7 +61,7 @@ public static class ConfigFile
 
         if (root is not JsonObject)
         {
-            throw new JsonException(Localization.Get("config.rootMustBeObject"));
+            throw new JsonException(Localization.Get("config.invalidRoot"));
         }
 
         return root;

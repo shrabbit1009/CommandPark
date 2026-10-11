@@ -101,6 +101,7 @@ AI 的实现（提示词、工具、短哈希、结果解析）位于 `src/Comma
 - 默认中文是基准：任何语言缺键都会回退到中文，不会出现空白或异常。
 - 随程序发布：`zh_CN`（基准）、`zh_TW`、`en_US`、`ja_JP`、`ko_KR`、`fr_FR`、`de_DE`、`es_ES`、`ru_RU`、`pt_BR`。
 - 新增语言只需往 `lang\` 放一个 JSON 文件，键与 `zh_CN.json` 对齐；单元测试会校验所有语言文件的键与占位符一致。
+- 文案按「领域」分组（`search.*`、`chat.*`、`sources.calc.*`……），键的摆法与命名规则见 **[docs/i18n.md](docs/i18n.md)**。
 
 ### 图标
 
@@ -458,10 +459,12 @@ dotnet publish src/CommandPark.Ui -c Release -r win-x64 `
 
 **入口**：`Localization` 是全局静态入口（`Get` / `Format` / `TryGet`）。主程序启动时
 `LocalizationSetup.Configure()` 先把它配好，之后 Hint 源、视图模型都从这里取文案；
-XAML 里用标记扩展 `{loc:Loc ui.ai.title}` 取值，加载窗口时解析一次。
+XAML 里用标记扩展 `{loc:Loc chat.title}` 取值，加载窗口时解析一次。
 
-**键的分类**：`ui.*` 界面文案、`sources.*` 各搜索源的 Hint 名称/描述、`ai.*` AI 提示词与工具输出、
-`background.*` 启动阶段提示、`common.*` 通用片段（如列表分隔符 `、`）。
+**键的布局**：按领域分组 —— `search` / `chat` / `error` / `details` 是各个窗口，`background` 是启动阶段，
+`ai` 是提示词与工具输出，`sources` 下每个搜索源一个分组，`common` / `config` 放跨领域的片段与配置报错。
+分组规则（深度、每段单词数、Hint 的 `name`/`description` 约定）写在 **[docs/i18n.md](docs/i18n.md)**，
+单测会校验「代码引用 ↔ 语言文件定义」双向一致、深度 ≤ 4、每段 ≤ 2 个单词、分组不过宽。
 
 **占位符**：文案里的 `{0}`、`{1}` 由 `string.Format` 填充；文案本身需要出现花括号时写成 `{{` / `}}`。
 单元测试会校验所有语言文件的键集合与占位符集合完全一致。
@@ -544,6 +547,8 @@ dotnet test
 :bug: fix(core): 修复 PATH 搜索递归枚举导致的异常中断
 :memo: docs: 补充使用说明与截图
 ```
+
+改文案、翻译或多语言相关代码之前，先读一遍 **[docs/i18n.md](docs/i18n.md)**：键的分组与命名规则、新增语言的步骤、以及单测兜住了哪些坑。
 
 ## 许可
 

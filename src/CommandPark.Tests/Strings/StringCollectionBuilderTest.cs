@@ -380,8 +380,8 @@ public class StringCollectionBuilderTest
                                            .Build();
 
         Assert.Equal(["en_US", "zh_CN"], ProviderNames(chain));
-        Assert.Equal("AI chat", chain.GetString("ui.ai.title"));
-        Assert.Equal("Send (Alt+1 / Enter)", chain.GetFormat("ui.ai.send", "Alt"));
+        Assert.Equal("AI chat", chain.GetString("chat.title"));
+        Assert.Equal("Send (Alt+1 / Enter)", chain.GetFormat("chat.button.send", "Alt"));
 
         // 打包的语言文件都是完整的，所以这里每一条都来自英文；
         // 缺键回退（英文 → 中文基准）由上面的临时目录用例覆盖。
@@ -391,8 +391,8 @@ public class StringCollectionBuilderTest
     public void ShippedLanguageFiles_DriveTheGlobalLocalization()
     {
         // TestLocalization 已把全局链固定成 zh_CN，这里顺带验证真实语言文件能被取到。
-        Assert.Equal("AI 聊天", Localization.Get("ui.ai.title"));
-        Assert.Equal("发送 (Alt+1 / Enter)", Localization.Format("ui.ai.send", "Alt"));
+        Assert.Equal("AI 聊天", Localization.Get("chat.title"));
+        Assert.Equal("发送 (Alt+1 / Enter)", Localization.Format("chat.button.send", "Alt"));
         Assert.False(Localization.TryGet("ui.not.exists", out _));
     }
 

@@ -50,8 +50,8 @@ public class BingSearchSource : IHintSource, IHintWithPrefix, IConfigReader
 
         yield return new Hint(
             "bing:search",
-            Localization.Format("sources.bing.name", keyword),
-            Localization.Get("sources.bing.description"),
+            Localization.Format("sources.bing.search.name", keyword),
+            Localization.Get("sources.bing.search.description"),
             1.0f + boost,
             ct => OpenUrlAsync(directUrl, ct))
         {

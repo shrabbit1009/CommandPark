@@ -3,61 +3,99 @@
         "listSeparator": "、"
     },
     "config": {
-        "rootMustBeObject": "設定檔的根節點必須是 JSON 物件。"
+        "invalidRoot": "設定檔的根節點必須是 JSON 物件。"
     },
     "background": {
-        "configCaption": "CommandPark",
+        "caption": "CommandPark",
         "noHotkey": "沒有設定全域快速鍵（commandpark.json 的 hotkey 為 null），無法用快速鍵喚起。",
         "programMissing": "程式目錄裡找不到背景程式 {0}，無法用快速鍵喚起。",
         "startFailed": "背景程式啟動失敗，無法用快速鍵喚起。",
         "started": "CommandPark 已在背景啟動。\n\n按 {0} 喚起搜尋視窗；右鍵點擊托盤圖示可以「修改設定」或「結束」。\n\n以 --no-display 啟動可不再顯示本提示（適合開機自動啟動）。"
     },
-    "ui": {
-        "main": {
-            "idleHint": "輸入關鍵字開始搜尋",
-            "idleHintAi": "送出後，AI 會自行篩選 Hint 並列出",
-            "watermark": "開始搜尋…",
-            "watermarkAi": "AI 搜尋",
-            "searching": "搜尋中…",
-            "searchingAi": "AI 正在篩選 Hint…",
-            "empty": "沒有找到符合的結果",
-            "aiBadge": "AI 模式 · {0}+1 結束，{0}+2 聊天",
-            "aiNotConfigured": "尚未設定 AI：請在 commandpark.json 的 ai 節點填寫 endpoint、apiKey 與 model。",
-            "aiIncomplete": "AI 設定不完整：缺少 {0}。",
-            "aiClientFailed": "AI 用戶端建立失敗，請檢查 commandpark.json 的 ai 設定。"
+    "search": {
+        "placeholder": {
+            "normal": "開始搜尋…",
+            "ai": "AI 搜尋"
         },
-        "ai": {
-            "you": "你",
-            "ai": "AI",
-            "notConfig": "尚未設定 AI：請在 commandpark.json 的 ai 節點填寫 endpoint、apiKey 與 model。",
+        "idle": {
+            "normal": "輸入關鍵字開始搜尋",
+            "ai": "送出後，AI 會自行篩選 Hint 並列出"
+        },
+        "searching": {
+            "normal": "搜尋中…",
+            "ai": "AI 正在篩選 Hint…"
+        },
+        "empty": "沒有找到符合的結果",
+        "aiBadge": "AI 模式 · {0}+1 結束，{0}+2 聊天"
+    },
+    "chat": {
+        "title": "AI 聊天",
+        "subtitle": "關閉後不保留對話",
+        "placeholder": "輸入提示詞，Enter 傳送，Shift+Enter 換行",
+        "replying": "AI 正在回覆…",
+        "role": {
+            "user": "你",
+            "assistant": "AI"
+        },
+        "button": {
             "send": "傳送 ({0}+1 / Enter)",
-            "title": "AI 聊天",
-            "subtitle": "關閉後不保留對話",
-            "replying": "AI 正在回覆…",
-            "placeholder": "輸入提示詞，Enter 傳送，Shift+Enter 換行",
             "copy": "複製對話 ({0}+2)",
             "export": "匯出對話 ({0}+3)",
-            "close": "關閉 (Esc)",
-            "exportTitle": "匯出 AI 對話",
-            "exportHeading": "CommandPark AI 對話",
-            "exportTime": "匯出時間：",
-            "fileTypeText": "文字檔"
+            "close": "關閉 (Esc)"
         },
-        "error": {
-            "title": "命令執行失敗",
-            "elevationRequired": "「{0}」需要管理員權限，而 CommandPark 目前不是以管理員身分執行的。\n請以管理員身分重新啟動 CommandPark，或改選不需要提權的命令。",
-            "elevationCanceled": "「{0}」的權限提升要求被取消了，命令沒有執行。",
-            "accessDenied": "「{0}」被系統拒絕存取（存取被拒），通常需要更高的權限。",
-            "unauthorized": "沒有權限執行「{0}」。",
-            "fileNotFound": "找不到「{0}」對應的檔案，可能已被移動或刪除。",
-            "launchFailed": "啟動「{0}」失敗：{1}（Win32 錯誤碼 {2}）",
-            "unknown": "執行「{0}」時發生錯誤：{1}",
-            "stackTraceHeader": "顯示堆疊追蹤",
-            "confirm": "確定（Enter / ESC）"
+        "export": {
+            "title": "匯出 AI 對話",
+            "heading": "CommandPark AI 對話",
+            "time": "匯出時間：",
+            "fileType": "文字檔"
+        }
+    },
+    "error": {
+        "title": "命令執行失敗",
+        "elevation": {
+            "required": "「{0}」需要管理員權限，而 CommandPark 目前不是以管理員身分執行的。\n請以管理員身分重新啟動 CommandPark，或改選不需要提權的命令。",
+            "canceled": "「{0}」的權限提升要求被取消了，命令沒有執行。"
         },
-        "details": {
-            "title": "詳細資料",
-            "close": "關閉（Enter / ESC）"
+        "permission": {
+            "denied": "「{0}」被系統拒絕存取（存取被拒），通常需要更高的權限。",
+            "unauthorized": "沒有權限執行「{0}」。"
+        },
+        "notFound": "找不到「{0}」對應的檔案，可能已被移動或刪除。",
+        "launchFailed": "啟動「{0}」失敗：{1}（Win32 錯誤碼 {2}）",
+        "unknown": "執行「{0}」時發生錯誤：{1}",
+        "stackTrace": "顯示堆疊追蹤",
+        "confirm": "確定（Enter / ESC）"
+    },
+    "details": {
+        "title": "詳細資料",
+        "close": "關閉（Enter / ESC）"
+    },
+    "ai": {
+        "config": {
+            "notConfigured": "尚未設定 AI：請在 commandpark.json 的 ai 節點填寫 endpoint、apiKey 與 model。",
+            "incomplete": "AI 設定不完整，缺少：{0}。",
+            "clientFailed": "AI 用戶端建立失敗，請檢查 commandpark.json 的 ai 設定。",
+            "invalidEndpoint": "AI 端點不是合法的 http(s) 網址：{0}"
+        },
+        "prompt": {
+            "chat": "你是 CommandPark 命令面板內建的 AI 助理，負責用簡潔、準確的繁體中文回答使用者的各種問題，並在適合的時候給出可執行的建議。直接輸出答案本身，不要複述本段說明。",
+            "hintFilter": "你是 CommandPark 的命令篩選助理。使用者會用自然語言描述他想做什麼，你需要呼叫工具在本機 Hint（命令面板項目）裡自行檢索並篩選，最後挑出最合適的幾個結果。\n\n運作方式：\n1. 充分呼叫 search_hints，用不同的關鍵字、同義詞或英文名多次檢索，擴大候選範圍；必要時可以用命令前置詞限定來源。\n2. 需要更多資訊時呼叫 get_hint 讀取候選的完整資訊。\n3. 只能挑選 search_hints 回傳過的 Hint，且最多挑 {0} 個。\n\n可用來源前置詞（可加在 query 前）：\n- 無前置詞：PATH 程式、已安裝程式等一般搜尋。\n- #：Everything 全機檔案/資料夾搜尋。\n- @：執行輸入的命令。\n- c:：數學計算。\n- b:：Bing 網路搜尋。\n\n輸出規則（必須嚴格遵守）：\n- 可以用一兩句繁體中文簡要說明你的篩選理由。\n- 最後一行必須是且只能是單行 JSON 字串陣列，元素是你選中的 Hint 短雜湊，例如：[\"a1b2c3d4\",\"0f9e8d7c\"]\n- 禁止使用 Markdown 程式碼區塊（不要用三個反引號），禁止任何包裝或額外欄位（不要寫成 {{\"hashes\":[...]}}）。\n- 陣列必須是純字串陣列，只能使用工具真實回傳過的短雜湊，不得編造。\n- 如果確實沒有合適結果，最後一行輸出空陣列 []。"
+        },
+        "tool": {
+            "searchHints": "在命令面板的所有來源中依關鍵字搜尋 Hint（命令項目），回傳候選的短雜湊、名稱與說明。query 是搜尋關鍵字；maxResults 是本次最多回傳筆數（1~100）。",
+            "getHint": "依短雜湊讀取某個 Hint 的完整資訊（ID、名稱、說明、詳細資料）。hash 必須來自 search_hints 的回傳結果，不能自行編造。"
+        },
+        "session": {
+            "noMatch": "沒有找到與「{0}」相符的 Hint。",
+            "candidates": "找到 {0} 筆候選（格式：短雜湊 | 名稱 | 說明）：",
+            "unknownHash": "未知的短雜湊：{0}。請先用 search_hints 搜尋，並且只使用它回傳的短雜湊。",
+            "field": {
+                "hash": "短雜湊: {0}",
+                "id": "ID: {0}",
+                "name": "名稱: {0}",
+                "description": "說明: {0}",
+                "details": "詳細資料: {0}"
+            }
         }
     },
     "sources": {
@@ -67,31 +105,49 @@
             "missingProgram": "無法執行程式：沒有提供任何要執行的程式。"
         },
         "bing": {
-            "name": "Bing 搜尋：{0}",
-            "description": "在 Bing 中執行精確搜尋。",
+            "search": {
+                "name": "Bing 搜尋：{0}",
+                "description": "在 Bing 中執行精確搜尋。"
+            },
             "suggestion": "Bing 搜尋建議。"
         },
         "calc": {
-            "timeoutName": "計算逾時",
-            "timeoutDescription": "運算式計算超過 {0} 秒，已取消。",
-            "errorName": "運算式不正確",
-            "detailInput": "輸入: {0}",
-            "detailResult": "結果: {0}",
-            "description": "進階計算機，按 Enter 查看詳細資料",
-            "desmosName": "在 Desmos 中開啟",
-            "desmosDescription": "將 {0} 轉換為 LaTeX 並開啟圖表。",
-            "desmosAction": "在 Desmos 中開啟 (Alt+D)"
+            "result": {
+                "description": "進階計算機，按 Enter 查看詳細資料",
+                "action": "在 Desmos 中開啟 (Alt+D)"
+            },
+            "detail": {
+                "input": "輸入: {0}",
+                "output": "結果: {0}"
+            },
+            "timeout": {
+                "name": "計算逾時",
+                "description": "運算式計算超過 {0} 秒，已取消。"
+            },
+            "invalidExpression": "運算式不正確",
+            "desmos": {
+                "name": "在 Desmos 中開啟",
+                "description": "將 {0} 轉換為 LaTeX 並開啟圖表。"
+            }
         },
         "everything": {
-            "notAvailableName": "Everything 主程式未運作",
-            "notAvailableDescription": "需要安裝或讓 Everything 在背景執行。",
-            "busyName": "Everything 正在運作中",
-            "busyDescription": "Everything 搜尋暫時無法使用。",
-            "unsupportedName": "Everything 搜尋未啟用",
-            "unsupportedDescription": "該搜尋來源只在 Windows 上運作。",
-            "open": "開啟 {0}",
-            "openDrive": "開啟磁碟機 {0}",
-            "openFolder": "開啟資料夾 {0}"
+            "unavailable": {
+                "name": "Everything 主程式未運作",
+                "description": "需要安裝或讓 Everything 在背景執行。"
+            },
+            "busy": {
+                "name": "Everything 正在運作中",
+                "description": "Everything 搜尋暫時無法使用。"
+            },
+            "unsupported": {
+                "name": "Everything 搜尋未啟用",
+                "description": "該搜尋來源只在 Windows 上運作。"
+            },
+            "open": {
+                "file": "開啟 {0}",
+                "drive": "開啟磁碟機 {0}",
+                "folder": "開啟資料夾 {0}"
+            }
         },
         "envProgram": {
             "name": "系統程式 {0}",
@@ -101,37 +157,19 @@
             "name": "開啟 {0}"
         },
         "welcome": {
-            "changeConfigName": "修改 CommandPark 設定檔",
-            "changeConfigDescription": "使用預設文字編輯器開啟設定檔。",
-            "repoName": "讓 CommandPark 更好！",
-            "repoDescription": "[預設網頁瀏覽器] 進入本專案倉庫，參與貢獻或提出你遇到的問題。",
-            "officialName": "shRabbit 官方網站",
-            "officialDescription": "[預設網頁瀏覽器] 前往並了解最新內容。",
-            "backgroundUnavailableName": "全域快速鍵無法使用"
-        }
-    },
-    "ai": {
-        "errors": {
-            "incomplete": "AI 設定不完整，缺少：{0}。",
-            "invalidEndpoint": "AI 端點不是合法的 http(s) 網址：{0}"
-        },
-        "session": {
-            "noMatch": "沒有找到與「{0}」相符的 Hint。",
-            "candidates": "找到 {0} 筆候選（格式：短雜湊 | 名稱 | 說明）：",
-            "unknownHash": "未知的短雜湊：{0}。請先用 search_hints 搜尋，並且只使用它回傳的短雜湊。",
-            "hash": "短雜湊: {0}",
-            "id": "ID: {0}",
-            "name": "名稱: {0}",
-            "description": "說明: {0}",
-            "details": "詳細資料: {0}"
-        },
-        "tools": {
-            "searchHints": "在命令面板的所有來源中依關鍵字搜尋 Hint（命令項目），回傳候選的短雜湊、名稱與說明。query 是搜尋關鍵字；maxResults 是本次最多回傳筆數（1~100）。",
-            "getHint": "依短雜湊讀取某個 Hint 的完整資訊（ID、名稱、說明、詳細資料）。hash 必須來自 search_hints 的回傳結果，不能自行編造。"
-        },
-        "prompt": {
-            "chat": "你是 CommandPark 命令面板內建的 AI 助理，負責用簡潔、準確的繁體中文回答使用者的各種問題，並在適合的時候給出可執行的建議。直接輸出答案本身，不要複述本段說明。",
-            "hintFilter": "你是 CommandPark 的命令篩選助理。使用者會用自然語言描述他想做什麼，你需要呼叫工具在本機 Hint（命令面板項目）裡自行檢索並篩選，最後挑出最合適的幾個結果。\n\n運作方式：\n1. 充分呼叫 search_hints，用不同的關鍵字、同義詞或英文名多次檢索，擴大候選範圍；必要時可以用命令前置詞限定來源。\n2. 需要更多資訊時呼叫 get_hint 讀取候選的完整資訊。\n3. 只能挑選 search_hints 回傳過的 Hint，且最多挑 {0} 個。\n\n可用來源前置詞（可加在 query 前）：\n- 無前置詞：PATH 程式、已安裝程式等一般搜尋。\n- #：Everything 全機檔案/資料夾搜尋。\n- @：執行輸入的命令。\n- c:：數學計算。\n- b:：Bing 網路搜尋。\n\n輸出規則（必須嚴格遵守）：\n- 可以用一兩句繁體中文簡要說明你的篩選理由。\n- 最後一行必須是且只能是單行 JSON 字串陣列，元素是你選中的 Hint 短雜湊，例如：[\"a1b2c3d4\",\"0f9e8d7c\"]\n- 禁止使用 Markdown 程式碼區塊（不要用三個反引號），禁止任何包裝或額外欄位（不要寫成 {{\"hashes\":[...]}}）。\n- 陣列必須是純字串陣列，只能使用工具真實回傳過的短雜湊，不得編造。\n- 如果確實沒有合適結果，最後一行輸出空陣列 []。"
+            "changeConfig": {
+                "name": "修改 CommandPark 設定檔",
+                "description": "使用預設文字編輯器開啟設定檔。"
+            },
+            "repo": {
+                "name": "讓 CommandPark 更好！",
+                "description": "[預設網頁瀏覽器] 進入本專案倉庫，參與貢獻或提出你遇到的問題。"
+            },
+            "official": {
+                "name": "shRabbit 官方網站",
+                "description": "[預設網頁瀏覽器] 前往並了解最新內容。"
+            },
+            "backgroundUnavailable": "全域快速鍵無法使用"
         }
     }
 }

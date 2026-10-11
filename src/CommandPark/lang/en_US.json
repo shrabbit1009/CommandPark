@@ -3,61 +3,99 @@
         "listSeparator": ", "
     },
     "config": {
-        "rootMustBeObject": "The root node of the configuration file must be a JSON object."
+        "invalidRoot": "The root node of the configuration file must be a JSON object."
     },
     "background": {
-        "configCaption": "CommandPark",
+        "caption": "CommandPark",
         "noHotkey": "No global hotkey is configured (hotkey is null in commandpark.json), so the hotkey cannot open the search window.",
         "programMissing": "The background program {0} was not found next to the main program, so the hotkey cannot open the search window.",
         "startFailed": "The background program failed to start, so the hotkey cannot open the search window.",
         "started": "CommandPark is now running in the background.\n\nPress {0} to open the search window; right-click the tray icon to change the configuration or to exit.\n\nStart with --no-display to skip this message (handy for starting at login)."
     },
-    "ui": {
-        "main": {
-            "idleHint": "Type a keyword to start searching",
-            "idleHintAi": "Press Enter and the AI will pick the matching hints",
-            "watermark": "Search…",
-            "watermarkAi": "AI search",
-            "searching": "Searching…",
-            "searchingAi": "AI is filtering hints…",
-            "empty": "No matching results",
-            "aiBadge": "AI mode · {0}+1 to exit, {0}+2 to chat",
-            "aiNotConfigured": "AI is not configured yet. Fill in endpoint, apiKey and model under the ai node of commandpark.json.",
-            "aiIncomplete": "The AI configuration is incomplete: missing {0}.",
-            "aiClientFailed": "Failed to create the AI client. Check the ai configuration in commandpark.json."
+    "search": {
+        "placeholder": {
+            "normal": "Search…",
+            "ai": "AI search"
         },
-        "ai": {
-            "you": "You",
-            "ai": "AI",
-            "notConfig": "AI is not configured yet. Fill in endpoint, apiKey and model under the ai node of commandpark.json.",
+        "idle": {
+            "normal": "Type a keyword to start searching",
+            "ai": "Press Enter and the AI will pick the matching hints"
+        },
+        "searching": {
+            "normal": "Searching…",
+            "ai": "AI is filtering hints…"
+        },
+        "empty": "No matching results",
+        "aiBadge": "AI mode · {0}+1 to exit, {0}+2 to chat"
+    },
+    "chat": {
+        "title": "AI chat",
+        "subtitle": "The conversation is discarded when the window closes",
+        "placeholder": "Type a prompt; Enter sends, Shift+Enter inserts a new line",
+        "replying": "AI is replying…",
+        "role": {
+            "user": "You",
+            "assistant": "AI"
+        },
+        "button": {
             "send": "Send ({0}+1 / Enter)",
-            "title": "AI chat",
-            "subtitle": "The conversation is discarded when the window closes",
-            "replying": "AI is replying…",
-            "placeholder": "Type a prompt; Enter sends, Shift+Enter inserts a new line",
             "copy": "Copy chat ({0}+2)",
             "export": "Export chat ({0}+3)",
-            "close": "Close (Esc)",
-            "exportTitle": "Export AI chat",
-            "exportHeading": "CommandPark AI chat",
-            "exportTime": "Exported at: ",
-            "fileTypeText": "Text file"
+            "close": "Close (Esc)"
         },
-        "error": {
-            "title": "Command failed",
-            "elevationRequired": "\"{0}\" needs administrator privileges and CommandPark is not running as administrator.\nRestart CommandPark as administrator, or pick a command that does not need elevation.",
-            "elevationCanceled": "The elevation request for \"{0}\" was cancelled, so nothing ran.",
-            "accessDenied": "Access to \"{0}\" was denied; it usually needs higher privileges.",
-            "unauthorized": "No permission to run \"{0}\".",
-            "fileNotFound": "The file behind \"{0}\" could not be found; it may have been moved or deleted.",
-            "launchFailed": "Failed to start \"{0}\": {1} (Win32 error {2})",
-            "unknown": "Something went wrong while running \"{0}\": {1}",
-            "stackTraceHeader": "Show stack trace",
-            "confirm": "OK (Enter / ESC)"
+        "export": {
+            "title": "Export AI chat",
+            "heading": "CommandPark AI chat",
+            "time": "Exported at: ",
+            "fileType": "Text file"
+        }
+    },
+    "error": {
+        "title": "Command failed",
+        "elevation": {
+            "required": "\"{0}\" needs administrator privileges and CommandPark is not running as administrator.\nRestart CommandPark as administrator, or pick a command that does not need elevation.",
+            "canceled": "The elevation request for \"{0}\" was cancelled, so nothing ran."
         },
-        "details": {
-            "title": "Details",
-            "close": "Close (Enter / ESC)"
+        "permission": {
+            "denied": "Access to \"{0}\" was denied; it usually needs higher privileges.",
+            "unauthorized": "No permission to run \"{0}\"."
+        },
+        "notFound": "The file behind \"{0}\" could not be found; it may have been moved or deleted.",
+        "launchFailed": "Failed to start \"{0}\": {1} (Win32 error {2})",
+        "unknown": "Something went wrong while running \"{0}\": {1}",
+        "stackTrace": "Show stack trace",
+        "confirm": "OK (Enter / ESC)"
+    },
+    "details": {
+        "title": "Details",
+        "close": "Close (Enter / ESC)"
+    },
+    "ai": {
+        "config": {
+            "notConfigured": "AI is not configured yet. Fill in endpoint, apiKey and model under the ai node of commandpark.json.",
+            "incomplete": "The AI configuration is incomplete; missing: {0}.",
+            "clientFailed": "Failed to create the AI client. Check the ai configuration in commandpark.json.",
+            "invalidEndpoint": "The AI endpoint is not a valid http(s) address: {0}"
+        },
+        "prompt": {
+            "chat": "You are the AI assistant built into the CommandPark command palette. Answer the user's questions concisely and accurately in the language the user writes in, and offer actionable advice when it helps. Output the answer itself; do not repeat these instructions.",
+            "hintFilter": "You are the command filtering assistant of CommandPark. The user describes in natural language what they want to do; you call tools to search and filter the local hints (command palette entries) yourself, then pick the best few results.\n\nHow to work:\n1. Call search_hints thoroughly, using different keywords, synonyms or English names to widen the candidate pool; use command prefixes to narrow the source when useful.\n2. When you need more context, call get_hint to read the full information of a candidate.\n3. Only pick hints that search_hints returned, and pick at most {0} of them.\n\nAvailable source prefixes (may be prepended to query):\n- no prefix: regular search over PATH programs and installed applications.\n- #: Everything search over files and folders on every drive.\n- @: run the typed command.\n- c: : math evaluation.\n- b: : Bing web search.\n\nOutput rules (must be followed strictly):\n- You may add one or two sentences explaining your choice, in the user's language.\n- The last line must be exactly one single-line JSON array of strings holding the short hashes of the hints you picked, for example: [\"a1b2c3d4\",\"0f9e8d7c\"]\n- Do not use Markdown code fences (no triple backticks) and do not wrap the array in any object or add extra fields (never write {{\"hashes\":[...]}}).\n- The array must contain only strings, only short hashes that the tools really returned, and nothing invented.\n- If there is genuinely no good match, output an empty array [] as the last line."
+        },
+        "tool": {
+            "searchHints": "Search hints (command palette entries) by keyword across every source and return the short hashes, names and descriptions of the candidates. query is the search keyword; maxResults is the maximum number of results to return (1-100).",
+            "getHint": "Read the full information of one hint (ID, name, description, details) by its short hash. hash must come from a previous search_hints result and must never be invented."
+        },
+        "session": {
+            "noMatch": "No hints matched \"{0}\".",
+            "candidates": "Found {0} candidates (format: short hash | name | description):",
+            "unknownHash": "Unknown short hash: {0}. Call search_hints first and only use the short hashes it returned.",
+            "field": {
+                "hash": "Short hash: {0}",
+                "id": "ID: {0}",
+                "name": "Name: {0}",
+                "description": "Description: {0}",
+                "details": "Details: {0}"
+            }
         }
     },
     "sources": {
@@ -67,31 +105,49 @@
             "missingProgram": "Cannot run a program: nothing was provided to run."
         },
         "bing": {
-            "name": "Bing search: {0}",
-            "description": "Run an exact search on Bing.",
+            "search": {
+                "name": "Bing search: {0}",
+                "description": "Run an exact search on Bing."
+            },
             "suggestion": "Bing search suggestion."
         },
         "calc": {
-            "timeoutName": "Calculation timed out",
-            "timeoutDescription": "The expression took longer than {0} seconds and was cancelled.",
-            "errorName": "Invalid expression",
-            "detailInput": "Input: {0}",
-            "detailResult": "Result: {0}",
-            "description": "Advanced calculator — press Enter for details",
-            "desmosName": "Open in Desmos",
-            "desmosDescription": "Convert {0} to LaTeX and open the graph.",
-            "desmosAction": "Open in Desmos (Alt+D)"
+            "result": {
+                "description": "Advanced calculator — press Enter for details",
+                "action": "Open in Desmos (Alt+D)"
+            },
+            "detail": {
+                "input": "Input: {0}",
+                "output": "Result: {0}"
+            },
+            "timeout": {
+                "name": "Calculation timed out",
+                "description": "The expression took longer than {0} seconds and was cancelled."
+            },
+            "invalidExpression": "Invalid expression",
+            "desmos": {
+                "name": "Open in Desmos",
+                "description": "Convert {0} to LaTeX and open the graph."
+            }
         },
         "everything": {
-            "notAvailableName": "Everything is not running",
-            "notAvailableDescription": "Install Everything or keep it running in the background.",
-            "busyName": "Everything is busy",
-            "busyDescription": "Everything search is temporarily unavailable.",
-            "unsupportedName": "Everything search is not enabled",
-            "unsupportedDescription": "This search source only works on Windows.",
-            "open": "Open {0}",
-            "openDrive": "Open drive {0}",
-            "openFolder": "Open folder {0}"
+            "unavailable": {
+                "name": "Everything is not running",
+                "description": "Install Everything or keep it running in the background."
+            },
+            "busy": {
+                "name": "Everything is busy",
+                "description": "Everything search is temporarily unavailable."
+            },
+            "unsupported": {
+                "name": "Everything search is not enabled",
+                "description": "This search source only works on Windows."
+            },
+            "open": {
+                "file": "Open {0}",
+                "drive": "Open drive {0}",
+                "folder": "Open folder {0}"
+            }
         },
         "envProgram": {
             "name": "System program {0}",
@@ -101,37 +157,19 @@
             "name": "Open {0}"
         },
         "welcome": {
-            "changeConfigName": "Edit the CommandPark configuration",
-            "changeConfigDescription": "Open the configuration file in the default text editor.",
-            "repoName": "Make CommandPark better!",
-            "repoDescription": "[Default web browser] Visit the repository to contribute or to report a problem.",
-            "officialName": "shRabbit official site",
-            "officialDescription": "[Default web browser] Visit the site for the latest news.",
-            "backgroundUnavailableName": "Global hotkey unavailable"
-        }
-    },
-    "ai": {
-        "errors": {
-            "incomplete": "The AI configuration is incomplete; missing: {0}.",
-            "invalidEndpoint": "The AI endpoint is not a valid http(s) address: {0}"
-        },
-        "session": {
-            "noMatch": "No hints matched \"{0}\".",
-            "candidates": "Found {0} candidates (format: short hash | name | description):",
-            "unknownHash": "Unknown short hash: {0}. Call search_hints first and only use the short hashes it returned.",
-            "hash": "Short hash: {0}",
-            "id": "ID: {0}",
-            "name": "Name: {0}",
-            "description": "Description: {0}",
-            "details": "Details: {0}"
-        },
-        "tools": {
-            "searchHints": "Search hints (command palette entries) by keyword across every source and return the short hashes, names and descriptions of the candidates. query is the search keyword; maxResults is the maximum number of results to return (1-100).",
-            "getHint": "Read the full information of one hint (ID, name, description, details) by its short hash. hash must come from a previous search_hints result and must never be invented."
-        },
-        "prompt": {
-            "chat": "You are the AI assistant built into the CommandPark command palette. Answer the user's questions concisely and accurately in the language the user writes in, and offer actionable advice when it helps. Output the answer itself; do not repeat these instructions.",
-            "hintFilter": "You are the command filtering assistant of CommandPark. The user describes in natural language what they want to do; you call tools to search and filter the local hints (command palette entries) yourself, then pick the best few results.\n\nHow to work:\n1. Call search_hints thoroughly, using different keywords, synonyms or English names to widen the candidate pool; use command prefixes to narrow the source when useful.\n2. When you need more context, call get_hint to read the full information of a candidate.\n3. Only pick hints that search_hints returned, and pick at most {0} of them.\n\nAvailable source prefixes (may be prepended to query):\n- no prefix: regular search over PATH programs and installed applications.\n- #: Everything search over files and folders on every drive.\n- @: run the typed command.\n- c: : math evaluation.\n- b: : Bing web search.\n\nOutput rules (must be followed strictly):\n- You may add one or two sentences explaining your choice, in the user's language.\n- The last line must be exactly one single-line JSON array of strings holding the short hashes of the hints you picked, for example: [\"a1b2c3d4\",\"0f9e8d7c\"]\n- Do not use Markdown code fences (no triple backticks) and do not wrap the array in any object or add extra fields (never write {{\"hashes\":[...]}}).\n- The array must contain only strings, only short hashes that the tools really returned, and nothing invented.\n- If there is genuinely no good match, output an empty array [] as the last line."
+            "changeConfig": {
+                "name": "Edit the CommandPark configuration",
+                "description": "Open the configuration file in the default text editor."
+            },
+            "repo": {
+                "name": "Make CommandPark better!",
+                "description": "[Default web browser] Visit the repository to contribute or to report a problem."
+            },
+            "official": {
+                "name": "shRabbit official site",
+                "description": "[Default web browser] Visit the site for the latest news."
+            },
+            "backgroundUnavailable": "Global hotkey unavailable"
         }
     }
 }

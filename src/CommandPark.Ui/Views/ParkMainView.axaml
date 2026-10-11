@@ -76,14 +76,14 @@
             所有文本都不可见时这一行高度为 0，不占位置。
         -->
         <Panel Grid.Row="1">
-            <TextBlock Text="{loc:Loc ui.main.searchingAi}"
+            <TextBlock Text="{loc:Loc search.searching.ai}"
                        IsVisible="{Binding IsAiBusy}"
                        Classes="p"
                        Margin="18,0,18,8"
                        Foreground="{DynamicResource Foreground50}"
                        FontFamily="{StaticResource JetBrainsMono}"/>
 
-            <TextBlock Text="{loc:Loc ui.main.searching}"
+            <TextBlock Text="{loc:Loc search.searching.normal}"
                        IsVisible="{Binding IsSearching}"
                        Classes="p"
                        Margin="18,0,18,8"
@@ -97,7 +97,7 @@
                        Foreground="{DynamicResource Foreground50}"
                        FontFamily="{StaticResource JetBrainsMono}"/>
 
-            <TextBlock Text="{loc:Loc ui.main.empty}"
+            <TextBlock Text="{loc:Loc search.empty}"
                        IsVisible="{Binding IsEmpty}"
                        Classes="p"
                        Margin="18,0,18,8"

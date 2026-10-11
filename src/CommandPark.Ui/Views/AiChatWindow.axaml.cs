@@ -184,13 +184,13 @@ public partial class AiChatWindow : Window
 
         var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = Localization.Get("ui.ai.exportTitle"),
+            Title = Localization.Get("chat.export.title"),
             SuggestedFileName = $"commandpark-ai-chat-{DateTime.Now:yyyyMMdd-HHmmss}.md",
             DefaultExtension = "md",
             FileTypeChoices =
             [
                 new FilePickerFileType("Markdown") { Patterns = ["*.md"] },
-                new FilePickerFileType(Localization.Get("ui.ai.fileTypeText")) { Patterns = ["*.txt"] },
+                new FilePickerFileType(Localization.Get("chat.export.fileType")) { Patterns = ["*.txt"] },
             ],
         });
 

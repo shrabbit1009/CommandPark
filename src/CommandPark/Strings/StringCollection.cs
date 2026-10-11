@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 namespace CommandPark.Strings;
 
 /// <summary>
-/// 从单个 JSON 文档读取字符串，路径形如 <c>ui.ai.send</c>。
+/// 从单个 JSON 文档读取字符串，路径形如 <c>chat.button.send</c>。
 /// <para>
 /// 只有路径真的命中一个字符串时才返回它；节点缺失、或节点不是字符串时，
 /// 按 <see cref="ThrowIfNotFound"/> / <see cref="ThrowIfNotString"/> 决定是抛异常还是回退成路径。

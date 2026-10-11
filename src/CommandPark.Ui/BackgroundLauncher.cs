@@ -94,7 +94,7 @@ internal static class BackgroundLauncher
     {
         var message = Localization.Format("background.started", hotkey);
 
-        MessageBoxW(IntPtr.Zero, message, Localization.Get("background.configCaption"), MessageBoxOk | MessageBoxIconInformation);
+        MessageBoxW(IntPtr.Zero, message, Localization.Get("background.caption"), MessageBoxOk | MessageBoxIconInformation);
     }
 
     /// <summary>

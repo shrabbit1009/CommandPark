@@ -5,7 +5,7 @@
         xmlns:lucide="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
         x:Class="CommandPark.Ui.Views.HintDetailsWindow"
         x:DataType="viewModels:HintDetailsWindowViewModel"
-        Title="{loc:Loc ui.details.title}"
+        Title="{loc:Loc details.title}"
         Width="640"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
@@ -67,7 +67,7 @@
                         IsVisible="{Binding HasAction}"
                         Classes="Primary"/>
                 <Button x:Name="CloseButton"
-                        Content="{loc:Loc ui.details.close}"
+                        Content="{loc:Loc details.close}"
                         IsDefault="True"
                         IsCancel="True"
                         Classes="Primary"

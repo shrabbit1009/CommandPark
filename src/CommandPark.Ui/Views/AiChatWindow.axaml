@@ -5,7 +5,7 @@
         xmlns:lucide="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
         x:Class="CommandPark.Ui.Views.AiChatWindow"
         x:DataType="viewModels:AiChatWindowViewModel"
-        Title="{loc:Loc ui.ai.title}"
+        Title="{loc:Loc chat.title}"
         Width="660"
         Height="620"
         MinWidth="480"
@@ -38,11 +38,11 @@
                                StrokeWidth="1.8"
                                Foreground="{DynamicResource InfoColor}"
                                VerticalAlignment="Center"/>
-            <TextBlock Text="{loc:Loc ui.ai.title}"
+            <TextBlock Text="{loc:Loc chat.title}"
                        Classes="h4"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource ForegroundColor}"/>
-            <TextBlock Text="{loc:Loc ui.ai.subtitle}"
+            <TextBlock Text="{loc:Loc chat.subtitle}"
                        VerticalAlignment="Center"
                        FontSize="12"
                        Foreground="{DynamicResource Foreground50}"/>
@@ -93,14 +93,14 @@
                  MinHeight="72"
                  MaxHeight="140"
                  Margin="0,12,0,0"
-                 PlaceholderText="{loc:Loc ui.ai.placeholder}"
+                 PlaceholderText="{loc:Loc chat.placeholder}"
                  FontFamily="{StaticResource JetBrainsMono}"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
 
         <!-- 状态与操作 -->
         <Grid Grid.Row="3" ColumnDefinitions="*, Auto" Margin="0,12,0,0">
             <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
-                <TextBlock Text="{loc:Loc ui.ai.replying}"
+                <TextBlock Text="{loc:Loc chat.replying}"
                            IsVisible="{Binding IsBusy}"
                            FontSize="12"
                            Foreground="{DynamicResource Foreground50}"/>

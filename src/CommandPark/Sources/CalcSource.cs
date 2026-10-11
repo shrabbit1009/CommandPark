@@ -78,8 +78,8 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
         {
             yield return new Hint(
                 "lcalc:timeout",
-                Localization.Get("sources.calc.timeoutName"),
-                Localization.Format("sources.calc.timeoutDescription", Math.Clamp(TimeoutSeconds, 1, 30)),
+                Localization.Get("sources.calc.timeout.name"),
+                Localization.Format("sources.calc.timeout.description", Math.Clamp(TimeoutSeconds, 1, 30)),
                 1,
                 _ => Task.CompletedTask)
             {
@@ -97,7 +97,7 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
         {
             yield return new Hint(
                 "lcalc:error",
-                Localization.Get("sources.calc.errorName"),
+                Localization.Get("sources.calc.invalidExpression"),
                 error.Message,
                 1,
                 _ => Task.CompletedTask)
@@ -113,17 +113,17 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
         }
 
         var details =
-            Localization.Format("sources.calc.detailInput", expression) + Environment.NewLine +
-            Localization.Format("sources.calc.detailResult", result);
+            Localization.Format("sources.calc.detail.input", expression) + Environment.NewLine +
+            Localization.Format("sources.calc.detail.output", result);
 
         yield return new DetailedHint(
             "calc:result",
             $"= {result}",
-            Localization.Get("sources.calc.description"),
+            Localization.Get("sources.calc.result.description"),
             1,
             ct => OpenDesmosAsync(expression, ct),
             details,
-            Localization.Get("sources.calc.desmosAction"))
+            Localization.Get("sources.calc.result.action"))
         {
             Icon = new LucideIdHintIcon("Calculator"),
         };
@@ -145,8 +145,8 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
 
         return new Hint(
             "calc:desmos",
-            Localization.Get("sources.calc.desmosName"),
-            Localization.Format("sources.calc.desmosDescription", expression),
+            Localization.Get("sources.calc.desmos.name"),
+            Localization.Format("sources.calc.desmos.description", expression),
             0.95f,
             ct => OpenDesmosAsync(expression, ct))
         {

@@ -16,7 +16,7 @@ public sealed class ErrorWindowViewModel
 
     public ErrorWindowViewModel(IHint hint, Exception exception)
     {
-        Title   = Localization.Get("ui.error.title");
+        Title   = Localization.Get("error.title");
         Message = Describe(hint, exception);
         Details = BuildDetails(hint, exception);
     }
@@ -41,26 +41,26 @@ public sealed class ErrorWindowViewModel
         {
             // 740 = ERROR_ELEVATION_REQUIRED：目标程序要求管理员权限
             Win32Exception { NativeErrorCode: 740 } =>
-                Localization.Format("ui.error.elevationRequired", name),
+                Localization.Format("error.elevation.required", name),
 
             // 1223 = 用户在 UAC 弹窗里点了“否”
             Win32Exception { NativeErrorCode: 1223 } =>
-                Localization.Format("ui.error.elevationCanceled", name),
+                Localization.Format("error.elevation.canceled", name),
 
             // 5 = ERROR_ACCESS_DENIED
             Win32Exception { NativeErrorCode: 5 } =>
-                Localization.Format("ui.error.accessDenied", name),
+                Localization.Format("error.permission.denied", name),
 
             UnauthorizedAccessException =>
-                Localization.Format("ui.error.unauthorized", name),
+                Localization.Format("error.permission.unauthorized", name),
 
             FileNotFoundException or DirectoryNotFoundException =>
-                Localization.Format("ui.error.fileNotFound", name),
+                Localization.Format("error.notFound", name),
 
             Win32Exception win32 =>
-                Localization.Format("ui.error.launchFailed", name, win32.Message, win32.NativeErrorCode),
+                Localization.Format("error.launchFailed", name, win32.Message, win32.NativeErrorCode),
 
-            _ => Localization.Format("ui.error.unknown", name, exception.Message),
+            _ => Localization.Format("error.unknown", name, exception.Message),
         };
     }
 

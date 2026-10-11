@@ -29,8 +29,8 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
         {
             yield return new Hint(
                 "welcome:changeConfigFile",
-                Localization.Get("sources.welcome.changeConfigName"),
-                Localization.Get("sources.welcome.changeConfigDescription"),
+                Localization.Get("sources.welcome.changeConfig.name"),
+                Localization.Get("sources.welcome.changeConfig.description"),
                 ct =>
                 {
                     Process.Start("explorer.exe", Path.Join(AppDomain.CurrentDomain.BaseDirectory, "commandpark.json"));
@@ -45,8 +45,8 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
         {
             yield return new Hint(
                 "welcome:repo",
-                Localization.Get("sources.welcome.repoName"),
-                Localization.Get("sources.welcome.repoDescription"),
+                Localization.Get("sources.welcome.repo.name"),
+                Localization.Get("sources.welcome.repo.description"),
                 ct =>
                 {
                     Process.Start("explorer.exe", "https://shrabbit.com:4000/gitlab/shrabbit/commandpark");
@@ -61,8 +61,8 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
         {
             yield return new Hint(
                 "welcome:official",
-                Localization.Get("sources.welcome.officialName"),
-                Localization.Get("sources.welcome.officialDescription"),
+                Localization.Get("sources.welcome.official.name"),
+                Localization.Get("sources.welcome.official.description"),
                 ct =>
                 {
                     Process.Start("explorer.exe", "https://shrabbit.com:4000/gitlab/shrabbit/commandpark");
@@ -87,7 +87,7 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
         {
             yield return new Hint(
                 "welcome:backgroundUnavailable",
-                Localization.Get("sources.welcome.backgroundUnavailableName"),
+                Localization.Get("sources.welcome.backgroundUnavailable"),
                 backgroundUnavailableReason,
                 _ => Task.CompletedTask)
             {

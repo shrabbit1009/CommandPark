@@ -43,7 +43,7 @@ public class EverythingSource : IHintWithPrefix, IConfigReader
             if (!SearchClient.IsEverythingAvailable())
             {
                 Console.WriteLine("EverythingNotAvailable");
-                yield return new Hint("everything:everythingNotAvailableError", Localization.Get("sources.everything.notAvailableName"), Localization.Get("sources.everything.notAvailableDescription"));
+                yield return new Hint("everything:everythingNotAvailableError", Localization.Get("sources.everything.unavailable.name"), Localization.Get("sources.everything.unavailable.description"));
                 yield break;
             }
 
@@ -51,8 +51,8 @@ public class EverythingSource : IHintWithPrefix, IConfigReader
             {
                 Console.WriteLine("EverythingBusy");
                 yield return new Hint("everything:everythingNotAvailableError",
-                                      Localization.Get("sources.everything.busyName"),
-                                      Localization.Get("sources.everything.busyDescription"));
+                                      Localization.Get("sources.everything.busy.name"),
+                                      Localization.Get("sources.everything.busy.description"));
                 yield break;
             }
             
@@ -99,13 +99,13 @@ public class EverythingSource : IHintWithPrefix, IConfigReader
 
                     // 根据类型设定文本。
                     
-                    var hint = Localization.Format("sources.everything.open", name);
+                    var hint = Localization.Format("sources.everything.open.file", name);
 
                     if (item.Flags.HasFlag(Result.ItemFlags.Drive))
-                        hint = Localization.Format("sources.everything.openDrive", name);
+                        hint = Localization.Format("sources.everything.open.drive", name);
 
                     if (item.Flags.HasFlag(Result.ItemFlags.Folder))
-                        hint = Localization.Format("sources.everything.openFolder", name);
+                        hint = Localization.Format("sources.everything.open.folder", name);
                     
                     yield return new EverythingHint("everything:searchResult", hint, path, sim, ct => OnRun(path, ct))
                     {
@@ -119,7 +119,7 @@ public class EverythingSource : IHintWithPrefix, IConfigReader
         }
         else
         {
-            yield return new Hint("everything:platformNotSupportedError", Localization.Get("sources.everything.unsupportedName"), Localization.Get("sources.everything.unsupportedDescription"));
+            yield return new Hint("everything:platformNotSupportedError", Localization.Get("sources.everything.unsupported.name"), Localization.Get("sources.everything.unsupported.description"));
         }
     }
 

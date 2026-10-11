@@ -148,11 +148,11 @@ public partial class ParkMainViewModel : ViewModelBase
 
     /// <summary>输入框水印文本，随模式变化。</summary>
     public string InputWatermark =>
-        Localization.Get(IsAiMode ? "ui.main.watermarkAi" : "ui.main.watermark");
+        Localization.Get(IsAiMode ? "search.placeholder.ai" : "search.placeholder.normal");
 
     /// <summary>空闲提示文本，随模式变化。</summary>
     public string IdleHintText =>
-        Localization.Get(IsAiMode ? "ui.main.idleHintAi" : "ui.main.idleHint");
+        Localization.Get(IsAiMode ? "search.idle.ai" : "search.idle.normal");
 
     /// <summary>AI 模式徽标文本：使用与快速选择相对的修饰键（Alt ↔ Ctrl）+ 1 / 2。</summary>
     public string AiModeBadge
@@ -161,7 +161,7 @@ public partial class ParkMainViewModel : ViewModelBase
         {
             var relative = QuickSelectConfig.GetRelativeModifier(QuickSelectModifier);
             var name = relative == QuickSelectModifier.Ctrl ? "Ctrl" : "Alt";
-            return Localization.Format("ui.main.aiBadge", name);
+            return Localization.Format("search.aiBadge", name);
         }
     }
 
@@ -225,7 +225,7 @@ public partial class ParkMainViewModel : ViewModelBase
 
     /// <summary>提示用户尚未配置 AI。</summary>
     public void NotifyAiUnavailable() =>
-        ErrorMessage = Localization.Get("ui.main.aiNotConfigured");
+        ErrorMessage = Localization.Get("ai.config.notConfigured");
 
     /// <summary>切换 AI 处理模式（修饰键 + F1）。配置不完整时返回 false 并给出提示。</summary>
     public bool ToggleAiMode() => SetAiMode(!IsAiMode);
@@ -306,9 +306,9 @@ public partial class ParkMainViewModel : ViewModelBase
         if (config is null || !config.IsConfigured)
         {
             ErrorMessage = config is null
-                ? Localization.Get("ui.main.aiNotConfigured")
+                ? Localization.Get("ai.config.notConfigured")
                 : Localization.Format(
-                    "ui.main.aiIncomplete",
+                    "ai.config.incomplete",
                     string.Join(Localization.Get("common.listSeparator"), config.MissingFields));
             return;
         }
@@ -329,7 +329,7 @@ public partial class ParkMainViewModel : ViewModelBase
             var client = AiRuntime.TryGetClient();
             if (client is null)
             {
-                ErrorMessage = Localization.Get("ui.main.aiClientFailed");
+                ErrorMessage = Localization.Get("ai.config.clientFailed");
                 return;
             }
 

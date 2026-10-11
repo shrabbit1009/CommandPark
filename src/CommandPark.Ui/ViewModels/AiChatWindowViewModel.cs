@@ -28,7 +28,7 @@ public partial class AiChatWindowViewModel : ViewModelBase
 
         if (chat is null)
         {
-            ErrorMessage = Localization.Get("ui.ai.notConfig");
+            ErrorMessage = Localization.Get("ai.config.notConfigured");
         }
 
         Messages.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasMessages));
@@ -41,16 +41,16 @@ public partial class AiChatWindowViewModel : ViewModelBase
     public string ModifierName { get; }
 
     /// <summary>发送按钮文案。</summary>
-    public string SendLabel => Localization.Format("ui.ai.send", ModifierName);
+    public string SendLabel => Localization.Format("chat.button.send", ModifierName);
 
     /// <summary>复制按钮文案。</summary>
-    public string CopyLabel => Localization.Format("ui.ai.copy", ModifierName);
+    public string CopyLabel => Localization.Format("chat.button.copy", ModifierName);
 
     /// <summary>导出按钮文案。</summary>
-    public string ExportLabel => Localization.Format("ui.ai.export", ModifierName);
+    public string ExportLabel => Localization.Format("chat.button.export", ModifierName);
 
     /// <summary>关闭按钮文案。</summary>
-    public string CloseLabel => Localization.Get("ui.ai.close");
+    public string CloseLabel => Localization.Get("chat.button.close");
 
     /// <summary>是否已有对话可复制 / 导出。</summary>
     public bool HasMessages => Messages.Count > 0;
@@ -119,14 +119,14 @@ public partial class AiChatWindowViewModel : ViewModelBase
     public string BuildExport()
     {
         var sb = new StringBuilder();
-        sb.AppendLine("# " + Localization.Get("ui.ai.exportHeading"));
+        sb.AppendLine("# " + Localization.Get("chat.export.heading"));
         sb.AppendLine();
-        sb.Append(Localization.Get("ui.ai.exportTime")).AppendLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+        sb.Append(Localization.Get("chat.export.time")).AppendLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
         sb.AppendLine();
 
         foreach (var message in Messages)
         {
-            sb.AppendLine("## " + (message.IsUser ? Localization.Get("ui.ai.you") : Localization.Get("ui.ai.ai")));
+            sb.AppendLine("## " + (message.IsUser ? Localization.Get("chat.role.user") : Localization.Get("chat.role.assistant")));
             sb.AppendLine(message.Text);
             sb.AppendLine();
         }

@@ -18,7 +18,7 @@ public sealed class AiChatMessageViewModel
     public bool IsAssistant => !IsUser;
 
     /// <summary>消息角色显示名。</summary>
-    public string Role => IsUser ? Localization.Get("ui.ai.you") : Localization.Get("ui.ai.ai");
+    public string Role => IsUser ? Localization.Get("chat.role.user") : Localization.Get("chat.role.assistant");
 
     /// <summary>消息正文。</summary>
     public string Text { get; }

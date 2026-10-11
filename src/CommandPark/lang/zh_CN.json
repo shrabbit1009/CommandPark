@@ -3,61 +3,99 @@
         "listSeparator": "、"
     },
     "config": {
-        "rootMustBeObject": "配置文件根节点必须是 JSON 对象。"
+        "invalidRoot": "配置文件根节点必须是 JSON 对象。"
     },
     "background": {
-        "configCaption": "CommandPark",
+        "caption": "CommandPark",
         "noHotkey": "没有配置全局快捷键（commandpark.json 的 hotkey 为 null），无法用热键唤起。",
         "programMissing": "程序目录里找不到后台程序 {0}，无法用热键唤起。",
         "startFailed": "后台程序启动失败，无法用热键唤起。",
         "started": "CommandPark 已在后台启动。\n\n按 {0} 唤起搜索窗口；右键托盘图标可以「修改配置」或「退出」。\n\n以 --no-display 启动可不再显示本提示（适合开机自启动）。"
     },
-    "ui": {
-        "main": {
-            "idleHint": "输入关键字开始搜索",
-            "idleHintAi": "提交后，AI 会自行筛选 Hint 并列出",
-            "watermark": "开始搜索…",
-            "watermarkAi": "AI 搜索",
-            "searching": "搜索中…",
-            "searchingAi": "AI 正在筛选 Hint…",
-            "empty": "没有找到匹配的结果",
-            "aiBadge": "AI 模式 · {0}+1 退出，{0}+2 聊天",
-            "aiNotConfigured": "尚未配置 AI：请在 commandpark.json 的 ai 节点填写 endpoint、apiKey 与 model。",
-            "aiIncomplete": "AI 配置不完整：缺少 {0}。",
-            "aiClientFailed": "AI 客户端创建失败，请检查 commandpark.json 的 ai 配置。"
+    "search": {
+        "placeholder": {
+            "normal": "开始搜索…",
+            "ai": "AI 搜索"
         },
-        "ai": {
-            "you": "你",
-            "ai": "AI",
-            "notConfig": "尚未配置 AI：请在 commandpark.json 的 ai 节点填写 endpoint、apiKey 与 model。",
+        "idle": {
+            "normal": "输入关键字开始搜索",
+            "ai": "提交后，AI 会自行筛选 Hint 并列出"
+        },
+        "searching": {
+            "normal": "搜索中…",
+            "ai": "AI 正在筛选 Hint…"
+        },
+        "empty": "没有找到匹配的结果",
+        "aiBadge": "AI 模式 · {0}+1 退出，{0}+2 聊天"
+    },
+    "chat": {
+        "title": "AI 聊天",
+        "subtitle": "关闭后不保留对话",
+        "placeholder": "输入提示词，Enter 发送，Shift+Enter 换行",
+        "replying": "AI 正在回复…",
+        "role": {
+            "user": "你",
+            "assistant": "AI"
+        },
+        "button": {
             "send": "发送 ({0}+1 / Enter)",
-            "title": "AI 聊天",
-            "subtitle": "关闭后不保留对话",
-            "replying": "AI 正在回复…",
-            "placeholder": "输入提示词，Enter 发送，Shift+Enter 换行",
             "copy": "复制对话 ({0}+2)",
             "export": "导出对话 ({0}+3)",
-            "close": "关闭 (Esc)",
-            "exportTitle": "导出 AI 对话",
-            "exportHeading": "CommandPark AI 对话",
-            "exportTime": "导出时间：",
-            "fileTypeText": "文本文件"
+            "close": "关闭 (Esc)"
         },
-        "error": {
-            "title": "命令执行失败",
-            "elevationRequired": "「{0}」需要管理员权限，而 CommandPark 当前不是以管理员身份运行的。\n请用管理员身份重新启动 CommandPark，或改选不需要提权的命令。",
-            "elevationCanceled": "「{0}」的权限提升请求被取消了，命令没有执行。",
-            "accessDenied": "「{0}」被系统拒绝访问（访问被拒绝），通常需要更高的权限。",
-            "unauthorized": "没有权限执行「{0}」。",
-            "fileNotFound": "找不到「{0}」对应的文件，可能已被移动或删除。",
-            "launchFailed": "启动「{0}」失败：{1}（Win32 错误码 {2}）",
-            "unknown": "执行「{0}」时出错：{1}",
-            "stackTraceHeader": "显示堆栈跟踪",
-            "confirm": "确定（Enter / ESC）"
+        "export": {
+            "title": "导出 AI 对话",
+            "heading": "CommandPark AI 对话",
+            "time": "导出时间：",
+            "fileType": "文本文件"
+        }
+    },
+    "error": {
+        "title": "命令执行失败",
+        "elevation": {
+            "required": "「{0}」需要管理员权限，而 CommandPark 当前不是以管理员身份运行的。\n请用管理员身份重新启动 CommandPark，或改选不需要提权的命令。",
+            "canceled": "「{0}」的权限提升请求被取消了，命令没有执行。"
         },
-        "details": {
-            "title": "详情",
-            "close": "关闭（Enter / ESC）"
+        "permission": {
+            "denied": "「{0}」被系统拒绝访问（访问被拒绝），通常需要更高的权限。",
+            "unauthorized": "没有权限执行「{0}」。"
+        },
+        "notFound": "找不到「{0}」对应的文件，可能已被移动或删除。",
+        "launchFailed": "启动「{0}」失败：{1}（Win32 错误码 {2}）",
+        "unknown": "执行「{0}」时出错：{1}",
+        "stackTrace": "显示堆栈跟踪",
+        "confirm": "确定（Enter / ESC）"
+    },
+    "details": {
+        "title": "详情",
+        "close": "关闭（Enter / ESC）"
+    },
+    "ai": {
+        "config": {
+            "notConfigured": "尚未配置 AI：请在 commandpark.json 的 ai 节点填写 endpoint、apiKey 与 model。",
+            "incomplete": "AI 配置不完整，缺少：{0}。",
+            "clientFailed": "AI 客户端创建失败，请检查 commandpark.json 的 ai 配置。",
+            "invalidEndpoint": "AI 端点不是合法的 http(s) 地址：{0}"
+        },
+        "prompt": {
+            "chat": "你是 CommandPark 命令面板内置的 AI 助手，负责用简洁、准确的中文回答用户的各种问题，并在合适的时候给出可操作的建议。直接输出答案本身，不要复述本段说明。",
+            "hintFilter": "你是 CommandPark 的命令筛选助手。用户会用自然语言描述他想做什么，你需要调用工具在本地 Hint（命令面板条目）里自行检索并筛选，最后挑出最合适的几个结果。\n\n工作方式：\n1. 充分调用 search_hints，用不同的关键词、同义词或英文名多次检索，扩大候选范围；必要时可以用命令前缀限定来源。\n2. 需要更多信息时调用 get_hint 读取候选的完整信息。\n3. 只能挑选 search_hints 返回过的 Hint，且最多挑 {0} 个。\n\n可用来源前缀（可加在 query 前）：\n- 无前缀：PATH 程序、已安装程序等常规搜索。\n- #：Everything 全盘文件/文件夹搜索。\n- @：运行输入的命令。\n- c:：数学计算。\n- b:：Bing 网络搜索。\n\n输出规则（必须严格遵守）：\n- 可以用一两句中文简要说明你的筛选理由。\n- 最后一行必须是且只能是一个单行 JSON 字符串数组，元素是你选中的 Hint 短哈希，例如：[\"a1b2c3d4\",\"0f9e8d7c\"]\n- 禁止使用 Markdown 代码块（不要用三个反引号），禁止任何包装或额外字段（不要写成 {{\"hashes\":[...]}}）。\n- 数组必须是纯字符串数组，只能使用工具真实返回过的短哈希，不得编造。\n- 如果确实没有合适结果，最后一行输出空数组 []。"
+        },
+        "tool": {
+            "searchHints": "在命令面板的全部来源中按关键词搜索 Hint（命令条目），返回候选的短哈希、名称与描述。query 是搜索关键字；maxResults 是本次最多返回条数（1~100）。",
+            "getHint": "按短哈希读取某个 Hint 的完整信息（ID、名称、描述、详情）。hash 必须来自 search_hints 的返回结果，不能自行编造。"
+        },
+        "session": {
+            "noMatch": "没有找到与“{0}”匹配的 Hint。",
+            "candidates": "找到 {0} 条候选（格式：短哈希 | 名称 | 描述）：",
+            "unknownHash": "未知的短哈希：{0}。请先用 search_hints 搜索，并且只使用它返回的短哈希。",
+            "field": {
+                "hash": "短哈希: {0}",
+                "id": "ID: {0}",
+                "name": "名称: {0}",
+                "description": "描述: {0}",
+                "details": "详情: {0}"
+            }
         }
     },
     "sources": {
@@ -67,31 +105,49 @@
             "missingProgram": "无法运行程序：没有提供任何要运行的程序。"
         },
         "bing": {
-            "name": "Bing 搜索：{0}",
-            "description": "在 Bing 中执行精确搜索。",
+            "search": {
+                "name": "Bing 搜索：{0}",
+                "description": "在 Bing 中执行精确搜索。"
+            },
             "suggestion": "Bing 搜索建议。"
         },
         "calc": {
-            "timeoutName": "计算超时",
-            "timeoutDescription": "表达式计算超过 {0} 秒，已取消。",
-            "errorName": "表达式不正确",
-            "detailInput": "输入: {0}",
-            "detailResult": "结果: {0}",
-            "description": "高级计算器，按 Enter 查看详情",
-            "desmosName": "在 Desmos 中打开",
-            "desmosDescription": "将 {0} 转换为 LaTeX 并打开图表。",
-            "desmosAction": "在 Desmos 中打开 (Alt+D)"
+            "result": {
+                "description": "高级计算器，按 Enter 查看详情",
+                "action": "在 Desmos 中打开 (Alt+D)"
+            },
+            "detail": {
+                "input": "输入: {0}",
+                "output": "结果: {0}"
+            },
+            "timeout": {
+                "name": "计算超时",
+                "description": "表达式计算超过 {0} 秒，已取消。"
+            },
+            "invalidExpression": "表达式不正确",
+            "desmos": {
+                "name": "在 Desmos 中打开",
+                "description": "将 {0} 转换为 LaTeX 并打开图表。"
+            }
         },
         "everything": {
-            "notAvailableName": "Everything 主程序未工作",
-            "notAvailableDescription": "需要安装或将 Everything 处于后台运行。",
-            "busyName": "Everything 正在工作中",
-            "busyDescription": "Everything 搜索暂时不可用。",
-            "unsupportedName": "Everything 搜索未启用",
-            "unsupportedDescription": "该搜索源只在 Windows 上工作。",
-            "open": "打开 {0}",
-            "openDrive": "打开驱动器 {0}",
-            "openFolder": "打开文件夹 {0}"
+            "unavailable": {
+                "name": "Everything 主程序未工作",
+                "description": "需要安装或将 Everything 处于后台运行。"
+            },
+            "busy": {
+                "name": "Everything 正在工作中",
+                "description": "Everything 搜索暂时不可用。"
+            },
+            "unsupported": {
+                "name": "Everything 搜索未启用",
+                "description": "该搜索源只在 Windows 上工作。"
+            },
+            "open": {
+                "file": "打开 {0}",
+                "drive": "打开驱动器 {0}",
+                "folder": "打开文件夹 {0}"
+            }
         },
         "envProgram": {
             "name": "系统程序 {0}",
@@ -101,37 +157,19 @@
             "name": "打开 {0}"
         },
         "welcome": {
-            "changeConfigName": "修改 CommandPark 配置文件",
-            "changeConfigDescription": "使用默认文本编辑器打开配置文件。",
-            "repoName": "让 CommandPark 更好！",
-            "repoDescription": "[默认 Web 浏览器] 进入本项目仓库，参与贡献或者提出你遇到的问题。",
-            "officialName": "shRabbit 官方网站",
-            "officialDescription": "[默认 Web 浏览器] 访问并了解最新内容。",
-            "backgroundUnavailableName": "全局热键不可用"
-        }
-    },
-    "ai": {
-        "errors": {
-            "incomplete": "AI 配置不完整，缺少：{0}。",
-            "invalidEndpoint": "AI 端点不是合法的 http(s) 地址：{0}"
-        },
-        "session": {
-            "noMatch": "没有找到与“{0}”匹配的 Hint。",
-            "candidates": "找到 {0} 条候选（格式：短哈希 | 名称 | 描述）：",
-            "unknownHash": "未知的短哈希：{0}。请先用 search_hints 搜索，并且只使用它返回的短哈希。",
-            "hash": "短哈希: {0}",
-            "id": "ID: {0}",
-            "name": "名称: {0}",
-            "description": "描述: {0}",
-            "details": "详情: {0}"
-        },
-        "tools": {
-            "searchHints": "在命令面板的全部来源中按关键词搜索 Hint（命令条目），返回候选的短哈希、名称与描述。query 是搜索关键字；maxResults 是本次最多返回条数（1~100）。",
-            "getHint": "按短哈希读取某个 Hint 的完整信息（ID、名称、描述、详情）。hash 必须来自 search_hints 的返回结果，不能自行编造。"
-        },
-        "prompt": {
-            "chat": "你是 CommandPark 命令面板内置的 AI 助手，负责用简洁、准确的中文回答用户的各种问题，并在合适的时候给出可操作的建议。直接输出答案本身，不要复述本段说明。",
-            "hintFilter": "你是 CommandPark 的命令筛选助手。用户会用自然语言描述他想做什么，你需要调用工具在本地 Hint（命令面板条目）里自行检索并筛选，最后挑出最合适的几个结果。\n\n工作方式：\n1. 充分调用 search_hints，用不同的关键词、同义词或英文名多次检索，扩大候选范围；必要时可以用命令前缀限定来源。\n2. 需要更多信息时调用 get_hint 读取候选的完整信息。\n3. 只能挑选 search_hints 返回过的 Hint，且最多挑 {0} 个。\n\n可用来源前缀（可加在 query 前）：\n- 无前缀：PATH 程序、已安装程序等常规搜索。\n- #：Everything 全盘文件/文件夹搜索。\n- @：运行输入的命令。\n- c:：数学计算。\n- b:：Bing 网络搜索。\n\n输出规则（必须严格遵守）：\n- 可以用一两句中文简要说明你的筛选理由。\n- 最后一行必须是且只能是一个单行 JSON 字符串数组，元素是你选中的 Hint 短哈希，例如：[\"a1b2c3d4\",\"0f9e8d7c\"]\n- 禁止使用 Markdown 代码块（不要用三个反引号），禁止任何包装或额外字段（不要写成 {{\"hashes\":[...]}}）。\n- 数组必须是纯字符串数组，只能使用工具真实返回过的短哈希，不得编造。\n- 如果确实没有合适结果，最后一行输出空数组 []。"
+            "changeConfig": {
+                "name": "修改 CommandPark 配置文件",
+                "description": "使用默认文本编辑器打开配置文件。"
+            },
+            "repo": {
+                "name": "让 CommandPark 更好！",
+                "description": "[默认 Web 浏览器] 进入本项目仓库，参与贡献或者提出你遇到的问题。"
+            },
+            "official": {
+                "name": "shRabbit 官方网站",
+                "description": "[默认 Web 浏览器] 访问并了解最新内容。"
+            },
+            "backgroundUnavailable": "全局热键不可用"
         }
     }
 }
