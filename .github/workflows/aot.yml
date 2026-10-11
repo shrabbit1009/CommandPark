@@ -1,9 +1,14 @@
-name: AOT Publish
+name: Release (AOT + installer)
 
 on:
-  # 手动跑一次完整 AOT 发布（产物见 Actions artifact）
+  # 手动跑一次完整发布（AOT 产物 + 安装程序，见 Actions artifact）
   workflow_dispatch:
-  # 推送 v* tag 时同样发布，并把 zip 附加到 GitHub Release
+    inputs:
+      version:
+        description: "版本号（数字点分，如 1.2.3，最多四段）。留空时：tag 构建取 tag，其余取 0.0.0"
+        required: false
+        default: ""
+  # 推送 v* tag 时同样发布，并把产物附加到 GitHub Release
   push:
     tags:
       - 'v*'
@@ -19,7 +24,7 @@ env:
 
 jobs:
   publish-aot:
-    name: Native AOT publish (win-x64)
+    name: Release build (win-x64)
     runs-on: windows-latest
 
     steps:
@@ -65,6 +70,39 @@ jobs:
             -o publish/aot 2>&1 | Tee-Object -FilePath aot-publish.log
           exit $LASTEXITCODE
 
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $version = ''
+          if ($env:GITHUB_REF_TYPE -eq 'tag') { $version = $env:GITHUB_REF_NAME -replace '^v', '' }
+          if (-not $version) { $version = '${{ github.event.inputs.version }}' }
+          if (-not $version) { $version = '0.0.0' }
+          if ($version -notmatch '^\d+(\.\d+){0,3}$') {
+            throw "版本号必须是数字点分（最多四段），例如 1.2.3；当前是 '$version'"
+          }
+          Write-Host "版本号: $version"
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          if ($LASTEXITCODE -ne 0) { throw 'Inno Setup 安装失败' }
+
+      # 压缩包版 + 安装程序：都用同一份 publish 目录，脚本里排除 *.pdb、
+      # 保留 lang\ 与 licenses\ 的目录结构（细节见 installer\build.ps1）
+      - name: Package zip + installer
+        shell: pwsh
+        run: |
+          pwsh -NoProfile -File installer\build.ps1 `
+            -Version ${{ steps.version.outputs.version }} `
+            -SkipPublish `
+            -PublishDir publish/aot `
+            -OutputDir publish/installer
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-ChildItem publish/installer | Select-Object Name, Length | Format-Table
+
       - name: AOT warning summary
         if: always()
         shell: pwsh
@@ -84,20 +122,13 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Package (without PDBs)
-        shell: pwsh
-        run: |
-          Get-ChildItem publish\aot | Select-Object Name, Length | Format-Table
-          # 顶层文件 + lang\ 等子目录一起打包（语言文件在 lang\ 下，不能漏）；只排除 PDB。
-          $items = Get-ChildItem publish\aot | Where-Object { $_.Extension -ne '.pdb' }
-          Compress-Archive -Path $items.FullName -DestinationPath CommandPark-win-x64-aot.zip -Force
-          Get-Item CommandPark-win-x64-aot.zip | Format-Table Name, Length
-
-      - name: Upload AOT artifact
+      # 安装程序与压缩包内容一致，只是一个装进系统、一个解压即用
+      - name: Upload release artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: CommandPark-win-x64-aot
-          path: CommandPark-win-x64-aot.zip
+          name: CommandPark-win-x64
+          path: publish/installer/CommandPark-*
+          if-no-files-found: error
           retention-days: 14
 
       - name: Create/Update GitHub Release
@@ -110,4 +141,4 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             gh release create "${{ github.ref_name }}" --repo "${{ github.repository }}" --generate-notes
           }
-          gh release upload "${{ github.ref_name }}" CommandPark-win-x64-aot.zip --clobber --repo "${{ github.repository }}"
+          gh release upload "${{ github.ref_name }}" publish/installer/CommandPark-* --clobber --repo "${{ github.repository }}"

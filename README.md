@@ -40,6 +40,8 @@ CommandPark 当前包含七个来源。除首屏欢迎项外，它们会并发�
 - 快捷键格式为「修饰符+按键」，例如 `Ctrl+Alt+Space`、`Win+Shift+S`、`Ctrl+F12`，至少需要一个修饰键。
 - 托盘图标右键菜单提供「修改配置」和「退出」；「修改配置」用默认程序打开 `commandpark.json`，资源管理器重启后会自动重建托盘图标。
 - 启动参数带 `--no-display` 时不弹「已在后台启动」提示，适合放进开机自启动。
+- 用安装程序安装时会**默认勾选开机自启动**：写 `HKCU\...\Run`，命令行带 `--no-display`，开机后静默常驻、不弹提示；
+  安装向导里取消勾选即可关掉，卸载时也会清理（见「发布产物」）。
 - `hotkey` 不填时使用默认值 `Ctrl+Alt+D`；显式写 `null` 时不拉起后台程序，双击直接运行主程序。
 - 后台不可用（后台程序缺失、`hotkey` 为 `null`、后台启动失败等）时，主程序照常显示输入窗口，并在首屏欢迎项**最后**追加一条提示。
 
@@ -392,9 +394,38 @@ dotnet build
 # 单元测试
 dotnet test
 
-# 发布（推荐：ReadyToRun 预编译，启动更快）
-dotnet publish src/CommandPark.Ui -c Release -r win-x64 -p:PublishReadyToRun=true --self-contained true -o src/CommandPark.Ui/bin/Release/r2r-win-x64
+# 只发布（框架依赖 / R2R / AOT 自行加参数）
+dotnet publish src/CommandPark.Ui -c Release -r win-x64 -p:PublishReadyToRun=true --self-contained true -o publish/r2r
 ```
+
+### 发布产物（压缩包 / 安装程序）
+
+一条命令同时产出两种发布形式 —— 内容完全一致（同一份 publish 目录），只差「怎么装进系统」：
+
+```powershell
+# 1) 先构建后台程序（可选；不构建就没有全局热键）
+msbuild src/CommandPark.Background.Cpp/CommandPark.Background.Cpp.vcxproj -p:Configuration=Release -p:Platform=x64
+
+# 2) 发布 + 打包，产物在 publish\installer\
+pwsh installer/build.ps1 -Version 1.2.3
+```
+
+- **`CommandPark-1.2.3-win-x64.zip`**：解压即用。含主程序、后台程序、`lang\` 翻译、`LICENSE`、
+  `THIRD-PARTY-NOTICES.md` 与 `licenses\`；不含 `*.pdb`。
+- **`CommandPark-1.2.3-setup.exe`**：Inno Setup 安装程序（编译需要 Inno Setup 6.5+ / 7）。安装行为：
+  - 默认装到 `Program Files\CommandPark`；向导里也可以选择「只为我安装」（装到 `%LocalAppData%\Programs`，无需管理员）。
+  - 开始菜单快捷方式总是创建，桌面快捷方式默认不勾。
+  - **默认勾选「开机自动启动」**：写 `HKCU\...\Run`，命令行是 `"...\CommandPark.Ui.exe" --no-display`，
+    开机后静默拉起后台常驻、不弹提示；取消勾选会删掉该项，升级时沿用上次的选择。只对安装它的那个用户生效。
+  - `commandpark.json` 只在不存在时释放：升级不会覆盖你改过的配置。
+  - 卸载会删除程序目录（含 `commandpark.json`）、开始菜单项与自启动项；`clicks.htt` 等自己的数据在
+    `%APPDATA%\shRabbit\CommandPark\`，不受影响。
+  - 安装向导支持简体中文与英文，跟随系统语言自动选择。
+- 常用参数：`-Mode Aot`（改用 Native AOT 发布）、`-SkipPublish`（复用已有 publish 目录，只重新打包）、
+  `-SkipZip`（只要安装程序）、`-Iscc <路径>`（指定 ISCC.exe）。
+
+> 安装脚本本体在 `installer\CommandPark.iss`：版本号、发布目录、输出目录都能用 `/D` 覆盖，
+> CI 里就是这么调用的（见 `.github/workflows/aot.yml`）。
 
 ### 后台程序（C++）
 
@@ -428,18 +459,22 @@ dotnet build src/CommandPark.Ui -c Release
 - 当前 AOT 发布仍会报告 COM P/Invoke、Everything、RestSharp 等 trimming/AOT 警告，需要继续做功能回归。
 - `DesmosHelper` 的 DTO 已使用 `DesmosJsonContext` 的 source-generated JSON 元数据，避免反射序列化路径。
 
-发布命令：
+发布命令（`installer\build.ps1` 里的 `-Mode` 就是下面两种，外加打包）：
 
 ```bash
-dotnet publish src/CommandPark.Ui -c Release -r win-x64 -p:PublishReadyToRun=true --self-contained true -o src/CommandPark.Ui/bin/Release/r2r-win-x64
+# ReadyToRun + 自包含
+pwsh installer/build.ps1 -Version 1.2.3 -Mode ReadyToRun
 
 # 或 Native AOT
+pwsh installer/build.ps1 -Version 1.2.3 -Mode Aot
+
+# 只要发布目录（不打 zip / 安装包）
 dotnet publish src/CommandPark.Ui -c Release -r win-x64 `
-  -p:PublishAot=true `
+  -p:PublishAot=true -p:SelfContained=true `
   -p:OptimizationPreference=Speed `
   -p:StackTraceSupport=false `
   -p:DebugType=None -p:DebugSymbols=false `
-  -o src/CommandPark.Ui/bin/Release/aot-win-x64
+  -o publish/aot
 ```
 
 ## 内部说明
@@ -552,4 +587,8 @@ dotnet test
 
 ## 许可
 
-尚未指定。
+本项目以 **MIT** 授权，见 [LICENSE](LICENSE)。
+
+- 随程序分发的第三方组件、它们的许可证与版权声明列在 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)，
+  完整许可证文本在 [`licenses/`](licenses/)；结论是全部与 MIT 兼容（MIT / Apache-2.0 / BSD-3-Clause / CC0-1.0 / SIL OFL-1.1）。
+- 已知待办：拼音搜索依赖的 `NPinyin.Core` 没有声明许可证，详见 THIRD-PARTY-NOTICES.md 的「待处理事项」。

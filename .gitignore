@@ -8,3 +8,5 @@ riderModule.iml
 Debug/
 !.github/
 !.github/**
+# 发布产物（压缩包版 / 安装包）
+/publish/
