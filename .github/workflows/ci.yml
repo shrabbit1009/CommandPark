@@ -40,6 +40,11 @@ jobs:
       - name: Build UI (Release)
         run: dotnet build src/CommandPark.Ui/CommandPark.Ui.csproj -c Release --no-restore
 
+      # src\CommandPark.Background 是早期 C# 原型（发布包里不包含，真正的后台是 C++ 那个）。
+      # UI 已经不再引用它，这里单独编译一次，避免它悄悄烂掉。
+      - name: Build managed background prototype (Release)
+        run: dotnet build src/CommandPark.Background/CommandPark.Background.csproj -c Release
+
       - name: Test
         run: dotnet test src/CommandPark.Tests/CommandPark.Tests.csproj -c Release --no-restore --logger "trx;LogFileName=test-results.trx"
 

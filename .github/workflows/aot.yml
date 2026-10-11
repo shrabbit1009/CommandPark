@@ -39,7 +39,9 @@ jobs:
           dotnet-version: 10.0.x
 
       # 后台守护程序是 C++ 工程（本机 VS2026 / v145；GitHub 运行器当前同为 windows-2025-vs2026）。
-      # 先按工程自带工具集构建，失败再回退 v143；即使构建不出来也不影响主程序 AOT 产物。
+      # 先按工程自带工具集构建，失败再回退 v143。
+      # 允许这一步失败（工具链偶尔抽风），但下面打包时 build.ps1 会校验产物里必须有
+      # CommandPark.Background.Cpp.exe：没有就报错终止，不会发出一个没有全局热键的版本。
       - name: Build C++ background helper (best effort)
         continue-on-error: true
         shell: pwsh
@@ -61,15 +63,7 @@ jobs:
               Select-Object FullName, Length | Format-Table
           }
 
-      - name: Native AOT publish
-        shell: pwsh
-        run: |
-          dotnet publish src/CommandPark.Ui/CommandPark.Ui.csproj `
-            -c Release -r win-x64 `
-            -p:PublishAot=true -p:SelfContained=true `
-            -o publish/aot 2>&1 | Tee-Object -FilePath aot-publish.log
-          exit $LASTEXITCODE
-
+      # 版本号：tag 名（去 v）→ 手动输入 → 0.0.0；同时写进 exe 版本信息与安装包文件名
       - name: Resolve version
         id: version
         shell: pwsh
@@ -83,6 +77,16 @@ jobs:
           }
           Write-Host "版本号: $version"
           "version=$version" >> $env:GITHUB_OUTPUT
+      - name: Native AOT publish
+        shell: pwsh
+        run: |
+          dotnet publish src/CommandPark.Ui/CommandPark.Ui.csproj `
+            -c Release -r win-x64 `
+            -p:PublishAot=true -p:SelfContained=true `
+            -p:Version=${{ steps.version.outputs.version }} `
+            -o publish/aot 2>&1 | Tee-Object -FilePath aot-publish.log
+          exit $LASTEXITCODE
+
 
       - name: Install Inno Setup
         shell: pwsh
@@ -97,7 +101,7 @@ jobs:
         run: |
           pwsh -NoProfile -File installer\build.ps1 `
             -Version ${{ steps.version.outputs.version }} `
-            -SkipPublish `
+            -SkipPublish -RequireAot `
             -PublishDir publish/aot `
             -OutputDir publish/installer
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

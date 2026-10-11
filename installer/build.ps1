@@ -38,7 +38,9 @@ param(
     [string]$OutputDir,
     [string]$Iscc,
     [switch]$SkipPublish,
-    [switch]$SkipZip
+    [switch]$SkipZip,
+    # 要求发布包必须是 Native AOT（CI 发布时用；-Mode Aot 会自动打开）
+    [switch]$RequireAot
 )
 
 $ErrorActionPreference = "Stop"
@@ -104,6 +106,41 @@ elseif (-not (Test-Path (Join-Path $PublishDir "CommandPark.Ui.exe"))) {
 $published = Get-ChildItem $PublishDir -Recurse -File
 Write-Host ("    产物 {0} 个文件，{1:N1} MB" -f $published.Count, (($published | Measure-Object Length -Sum).Sum / 1MB))
 
+# ---------------------------------------------------------------------------
+# 2) 产物校验：发布包 = AOT 主程序 + C++ 后台程序 + 数据文件（lang\ / licenses\ / 许可证）
+# ---------------------------------------------------------------------------
+$required = @(
+    "CommandPark.Ui.exe",
+    "CommandPark.Background.Cpp.exe",
+    "commandpark.json",
+    "lang\zh_CN.json",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md"
+)
+$missing = $required | Where-Object { -not (Test-Path (Join-Path $PublishDir $_)) }
+if ($missing) {
+    throw "发布目录缺少必需文件（$PublishDir）：$($missing -join '、')"
+}
+
+# 形态判定：AOT 会把托管程序集编进原生 exe，所以没有 CommandPark.Ui.dll
+$hasManagedApp = Test-Path (Join-Path $PublishDir "CommandPark.Ui.dll")
+$hasCoreLib = Test-Path (Join-Path $PublishDir "System.Private.CoreLib.dll")
+$flavor = if (-not $hasManagedApp) { "Native AOT" } elseif ($hasCoreLib) { "自包含（含运行时）" } else { "框架依赖（需要 .NET 运行时）" }
+Write-Host ("    形态：{0}" -f $flavor)
+
+if (-not $hasManagedApp -and -not (Test-Path (Join-Path $PublishDir "CommandPark.Ui.runtimeconfig.json"))) {
+    Write-Host "    检查：无托管程序集、无运行时配置 → 确认是 Native AOT"
+}
+
+if ($RequireAot -or $Mode -eq "Aot") {
+    $managedLeftovers = Get-ChildItem $PublishDir -File |
+        Where-Object { $_.Name -like "CommandPark*.dll" -or $_.Name -like "CommandPark*.deps.json" -or $_.Name -like "CommandPark*.runtimeconfig.json" }
+    if ($managedLeftovers) {
+        throw ("要求 AOT 发布，但目录里还有托管产物：{0}`n（AOT 发布只会有一个原生 exe；出现这些通常说明用了非 AOT 的 publish 目录）" -f
+            (($managedLeftovers | Select-Object -ExpandProperty Name) -join '、'))
+    }
+    if (-not $hasManagedApp) { Write-Host "    AOT 校验通过" }
+}
 # ---------------------------------------------------------------------------
 # 2) 压缩包（与安装包内容一致：同一份目录，排除 *.pdb）
 # ---------------------------------------------------------------------------

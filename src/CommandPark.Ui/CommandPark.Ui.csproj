@@ -66,7 +66,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CommandPark.Background\CommandPark.Background.csproj" />
+      <!-- 真正的后台程序是 C++ 那个（上面用 None 复制过来）；
+           src\CommandPark.Background 是早期 C# 原型、UI 没有用到它的任何类型，
+           不引用它，发布目录里就不会混进非 AOT 的托管 exe/dll。 -->
       <ProjectReference Include="..\CommandPark\CommandPark.csproj" />
     </ItemGroup>
 </Project>
