@@ -1,0 +1,137 @@
+{
+    "common": {
+        "listSeparator": ", "
+    },
+    "config": {
+        "rootMustBeObject": "Der Wurzelknoten der Konfigurationsdatei muss ein JSON-Objekt sein."
+    },
+    "background": {
+        "configCaption": "CommandPark",
+        "noHotkey": "Es ist kein globales Tastenkürzel konfiguriert (hotkey ist null in commandpark.json); das Suchfenster lässt sich nicht per Tastenkürzel öffnen.",
+        "programMissing": "Das Hintergrundprogramm {0} wurde neben dem Hauptprogramm nicht gefunden; das Tastenkürzel kann das Suchfenster nicht öffnen.",
+        "startFailed": "Das Hintergrundprogramm konnte nicht gestartet werden; das Tastenkürzel kann das Suchfenster nicht öffnen.",
+        "started": "CommandPark läuft jetzt im Hintergrund.\n\nMit {0} öffnen Sie das Suchfenster; ein Rechtsklick auf das Taskleistensymbol erlaubt Konfigurieren oder Beenden.\n\nMit --no-display starten, um diesen Hinweis zu unterdrücken (praktisch für den Autostart)."
+    },
+    "ui": {
+        "main": {
+            "idleHint": "Schlüsselwort eingeben, um die Suche zu starten",
+            "idleHintAi": "Mit Enter wählt die KI passende Hints aus",
+            "watermark": "Suchen…",
+            "watermarkAi": "KI-Suche",
+            "searching": "Suche läuft…",
+            "searchingAi": "KI filtert Hints…",
+            "empty": "Keine passenden Ergebnisse",
+            "aiBadge": "KI-Modus · {0}+1 beenden, {0}+2 chatten",
+            "aiNotConfigured": "Die KI ist noch nicht konfiguriert: endpoint, apiKey und model im Knoten ai der commandpark.json ausfüllen.",
+            "aiIncomplete": "Die KI-Konfiguration ist unvollständig: {0} fehlt.",
+            "aiClientFailed": "Der KI-Client konnte nicht erstellt werden. Prüfen Sie die ai-Konfiguration in der commandpark.json."
+        },
+        "ai": {
+            "you": "Du",
+            "ai": "KI",
+            "notConfig": "Die KI ist noch nicht konfiguriert: endpoint, apiKey und model im Knoten ai der commandpark.json ausfüllen.",
+            "send": "Senden ({0}+1 / Enter)",
+            "title": "KI-Chat",
+            "subtitle": "Beim Schließen wird die Unterhaltung verworfen",
+            "replying": "Die KI antwortet…",
+            "placeholder": "Prompt eingeben; Enter sendet, Umschalt+Enter fügt eine neue Zeile ein",
+            "copy": "Unterhaltung kopieren ({0}+2)",
+            "export": "Unterhaltung exportieren ({0}+3)",
+            "close": "Schließen (Esc)",
+            "exportTitle": "KI-Unterhaltung exportieren",
+            "exportHeading": "CommandPark KI-Unterhaltung",
+            "exportTime": "Exportiert am: ",
+            "fileTypeText": "Textdatei"
+        },
+        "error": {
+            "title": "Befehl fehlgeschlagen",
+            "elevationRequired": "„{0}“ benötigt Administratorrechte, aber CommandPark läuft nicht als Administrator.\nStarten Sie CommandPark als Administrator neu oder wählen Sie einen Befehl ohne Erhöhung.",
+            "elevationCanceled": "Die Erhöhungsanfrage für „{0}“ wurde abgebrochen; der Befehl wurde nicht ausgeführt.",
+            "accessDenied": "Der Zugriff auf „{0}“ wurde verweigert; meist sind höhere Rechte nötig.",
+            "unauthorized": "Keine Berechtigung zum Ausführen von „{0}“.",
+            "fileNotFound": "Die Datei zu „{0}“ wurde nicht gefunden; sie wurde möglicherweise verschoben oder gelöscht.",
+            "launchFailed": "„{0}“ konnte nicht gestartet werden: {1} (Win32-Fehler {2})",
+            "unknown": "Beim Ausführen von „{0}“ ist ein Fehler aufgetreten: {1}",
+            "stackTraceHeader": "Stapelüberwachung anzeigen",
+            "confirm": "OK (Enter / Esc)"
+        },
+        "details": {
+            "title": "Details",
+            "close": "Schließen (Enter / Esc)"
+        }
+    },
+    "sources": {
+        "run": {
+            "name": "{0} ausführen",
+            "description": "Den eingegebenen Befehl als Administrator ausführen",
+            "missingProgram": "Programm kann nicht ausgeführt werden: Es wurde kein Programm angegeben."
+        },
+        "bing": {
+            "name": "Bing-Suche: {0}",
+            "description": "Eine exakte Suche bei Bing ausführen.",
+            "suggestion": "Bing-Suchvorschlag."
+        },
+        "calc": {
+            "timeoutName": "Berechnung abgelaufen",
+            "timeoutDescription": "Die Berechnung dauerte länger als {0} Sekunden und wurde abgebrochen.",
+            "errorName": "Ungültiger Ausdruck",
+            "detailInput": "Eingabe: {0}",
+            "detailResult": "Ergebnis: {0}",
+            "description": "Erweiterter Taschenrechner, Enter zeigt Details",
+            "desmosName": "In Desmos öffnen",
+            "desmosDescription": "{0} in LaTeX umwandeln und den Graphen öffnen.",
+            "desmosAction": "In Desmos öffnen (Alt+D)"
+        },
+        "everything": {
+            "notAvailableName": "Everything läuft nicht",
+            "notAvailableDescription": "Everything installieren oder im Hintergrund laufen lassen.",
+            "busyName": "Everything ist beschäftigt",
+            "busyDescription": "Die Everything-Suche ist vorübergehend nicht verfügbar.",
+            "unsupportedName": "Everything-Suche ist nicht aktiviert",
+            "unsupportedDescription": "Diese Suchquelle funktioniert nur unter Windows.",
+            "open": "{0} öffnen",
+            "openDrive": "Laufwerk {0} öffnen",
+            "openFolder": "Ordner {0} öffnen"
+        },
+        "envProgram": {
+            "name": "Systemprogramm {0}",
+            "description": "Ein Programm aus der PATH-Umgebungsvariable"
+        },
+        "installedApplication": {
+            "name": "{0} öffnen"
+        },
+        "welcome": {
+            "changeConfigName": "CommandPark-Konfiguration bearbeiten",
+            "changeConfigDescription": "Die Konfigurationsdatei im Standard-Texteditor öffnen.",
+            "repoName": "Mach CommandPark besser!",
+            "repoDescription": "[Standard-Webbrowser] Besuche das Repository, um beizutragen oder ein Problem zu melden.",
+            "officialName": "shRabbit-Website",
+            "officialDescription": "[Standard-Webbrowser] Besuche die Website für aktuelle Neuigkeiten.",
+            "backgroundUnavailableName": "Globales Tastenkürzel nicht verfügbar"
+        }
+    },
+    "ai": {
+        "errors": {
+            "incomplete": "Die KI-Konfiguration ist unvollständig; es fehlt: {0}.",
+            "invalidEndpoint": "Der KI-Endpunkt ist keine gültige http(s)-Adresse: {0}"
+        },
+        "session": {
+            "noMatch": "Keine Hints passen zu „{0}“.",
+            "candidates": "{0} Kandidaten gefunden (Format: kurzer Hash | Name | Beschreibung):",
+            "unknownHash": "Unbekannter kurzer Hash: {0}. Rufe zuerst search_hints auf und verwende nur die dort zurückgegebenen kurzen Hashes.",
+            "hash": "Kurzer Hash: {0}",
+            "id": "ID: {0}",
+            "name": "Name: {0}",
+            "description": "Beschreibung: {0}",
+            "details": "Details: {0}"
+        },
+        "tools": {
+            "searchHints": "Hints (Einträge der Befehlspalette) per Schlüsselwort über alle Quellen suchen und kurze Hashes, Namen und Beschreibungen der Kandidaten zurückgeben. query ist das Suchwort; maxResults ist die maximale Anzahl zurückgegebener Ergebnisse (1-100).",
+            "getHint": "Die vollständigen Informationen eines Hints (ID, Name, Beschreibung, Details) über seinen kurzen Hash lesen. hash muss aus einem Ergebnis von search_hints stammen und darf nie erfunden werden."
+        },
+        "prompt": {
+            "chat": "Du bist der in CommandPark eingebaute KI-Assistent. Antworte auf die Fragen des Nutzers knapp und präzise in der Sprache, die er verwendet, und gib bei Bedarf umsetzbare Hinweise. Gib die Antwort selbst aus und wiederhole diese Anweisung nicht.",
+            "hintFilter": "Du bist der Befehlsfilter-Assistent von CommandPark. Der Nutzer beschreibt in natürlicher Sprache, was er tun möchte; du rufst Werkzeuge auf, durchsuchst und filterst die lokalen Hints (Einträge der Befehlspalette) selbst und wählst am Ende die passendsten Ergebnisse aus.\n\nVorgehen:\n1. Rufe search_hints gründlich auf, mit verschiedenen Schlüsselwörtern, Synonymen oder englischen Namen, um die Kandidaten zu erweitern; bei Bedarf schränkst du die Quelle mit einem Befehlspräfix ein.\n2. Wenn du mehr Kontext brauchst, rufe get_hint auf, um die vollständigen Informationen eines Kandidaten zu lesen.\n3. Wähle nur Hints aus, die search_hints zurückgegeben hat, und höchstens {0} davon.\n\nVerfügbare Quellpräfixe (können query vorangestellt werden):\n- kein Präfix: normale Suche in PATH-Programmen und installierten Anwendungen.\n- #: Everything-Suche über Dateien und Ordner aller Laufwerke.\n- @: den eingegebenen Befehl ausführen.\n- c: : mathematische Berechnung.\n- b: : Bing-Websuche.\n\nAusgaberegeln (unbedingt einhalten):\n- Du darfst ein bis zwei Sätze zur Begründung ergänzen, in der Sprache des Nutzers.\n- Die letzte Zeile muss genau ein einzeiliges JSON-String-Array mit den kurzen Hashes der gewählten Hints sein, zum Beispiel: [\"a1b2c3d4\",\"0f9e8d7c\"]\n- Keine Markdown-Codeblöcke (keine dreifachen Backticks), keine Verpackung in ein Objekt und keine zusätzlichen Felder (schreibe nie {{\"hashes\":[...]}}).\n- Das Array enthält nur Strings, ausschließlich kurze Hashes, die die Werkzeuge wirklich zurückgegeben haben, nichts Erfundenes.\n- Gibt es wirklich kein passendes Ergebnis, gib als letzte Zeile ein leeres Array [] aus."
+        }
+    }
+}

@@ -1,6 +1,10 @@
 {
   "$schema": "./commandpark.schema.json",
   "theme": "auto",
+  "language": {
+    "current": "auto",
+    "fallback": ["zh_CN"]
+  },
   "hotkey": "Ctrl+Alt+D",
   "clicks": {
     "maxEntries": 10000

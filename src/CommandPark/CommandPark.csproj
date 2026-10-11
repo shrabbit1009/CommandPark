@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -14,6 +14,18 @@
       <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.1" />
       <PackageReference Include="NPinyin.Core" Version="3.0.0" />
       <PackageReference Include="RestSharp" Version="114.0.0" />
+    </ItemGroup>
+
+    <!--
+      语言文件：程序目录 lang\ 下每个 <语言标记>.json 就是一份翻译，
+      全部“如果较新则复制”到输出目录，由 StringCollectionBuilder 按语言标记加载。
+      新增语言只需往 lang\ 里放文件，不需要改这里。
+    -->
+    <ItemGroup>
+      <None Update="lang\*.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:loc="clr-namespace:CommandPark.Ui.Markup"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -75,14 +76,14 @@
             所有文本都不可见时这一行高度为 0，不占位置。
         -->
         <Panel Grid.Row="1">
-            <TextBlock Text="AI 正在筛选 Hint…"
+            <TextBlock Text="{loc:Loc ui.main.searchingAi}"
                        IsVisible="{Binding IsAiBusy}"
                        Classes="p"
                        Margin="18,0,18,8"
                        Foreground="{DynamicResource Foreground50}"
                        FontFamily="{StaticResource JetBrainsMono}"/>
 
-            <TextBlock Text="搜索中…"
+            <TextBlock Text="{loc:Loc ui.main.searching}"
                        IsVisible="{Binding IsSearching}"
                        Classes="p"
                        Margin="18,0,18,8"
@@ -96,7 +97,7 @@
                        Foreground="{DynamicResource Foreground50}"
                        FontFamily="{StaticResource JetBrainsMono}"/>
 
-            <TextBlock Text="没有找到匹配的结果"
+            <TextBlock Text="{loc:Loc ui.main.empty}"
                        IsVisible="{Binding IsEmpty}"
                        Classes="p"
                        Margin="18,0,18,8"

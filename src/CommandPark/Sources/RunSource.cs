@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
+using CommandPark.Strings;
 
 namespace CommandPark.Sources;
 
@@ -39,8 +40,8 @@ public class RunSource : IHintWithPrefix, IConfigReader
         await Task.Yield();
         yield return new Hint(
             "run",
-            $"运行 {commandLine}",
-            "以管理员身份运行输入的命令",
+            Localization.Format("sources.run.name", commandLine),
+            Localization.Get("sources.run.description"),
             hasPrefix ? 1.0f : 0.0f,
             ct => OnRun(commandLine, ct));
     }
@@ -51,7 +52,7 @@ public class RunSource : IHintWithPrefix, IConfigReader
 
         if (string.IsNullOrWhiteSpace(input))
         {
-            throw new RunException("无法运行程序：没有提供任何要运行的程序。");
+            throw new RunException(Localization.Get("sources.run.missingProgram"));
         }
 
         var (fileName, arguments) = SplitCommandLine(input);

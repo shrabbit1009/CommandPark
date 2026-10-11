@@ -88,8 +88,9 @@ jobs:
         shell: pwsh
         run: |
           Get-ChildItem publish\aot | Select-Object Name, Length | Format-Table
-          $files = Get-ChildItem publish\aot -File | Where-Object { $_.Extension -ne '.pdb' }
-          Compress-Archive -Path $files.FullName -DestinationPath CommandPark-win-x64-aot.zip -Force
+          # 顶层文件 + lang\ 等子目录一起打包（语言文件在 lang\ 下，不能漏）；只排除 PDB。
+          $items = Get-ChildItem publish\aot | Where-Object { $_.Extension -ne '.pdb' }
+          Compress-Archive -Path $items.FullName -DestinationPath CommandPark-win-x64-aot.zip -Force
           Get-Item CommandPark-win-x64-aot.zip | Format-Table Name, Length
 
       - name: Upload AOT artifact

@@ -11,6 +11,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommandPark.Ai;
+using CommandPark.Strings;
 using CommandPark.Ui.ViewModels;
 
 namespace CommandPark.Ui.Views;
@@ -183,13 +184,13 @@ public partial class AiChatWindow : Window
 
         var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "导出 AI 对话",
+            Title = Localization.Get("ui.ai.exportTitle"),
             SuggestedFileName = $"commandpark-ai-chat-{DateTime.Now:yyyyMMdd-HHmmss}.md",
             DefaultExtension = "md",
             FileTypeChoices =
             [
                 new FilePickerFileType("Markdown") { Patterns = ["*.md"] },
-                new FilePickerFileType("文本文件") { Patterns = ["*.txt"] },
+                new FilePickerFileType(Localization.Get("ui.ai.fileTypeText")) { Patterns = ["*.txt"] },
             ],
         });
 

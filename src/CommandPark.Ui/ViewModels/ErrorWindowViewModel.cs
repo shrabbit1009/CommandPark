@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using CommandPark.Strings;
 using System.ComponentModel;
 using System.IO;
 
@@ -15,7 +16,7 @@ public sealed class ErrorWindowViewModel
 
     public ErrorWindowViewModel(IHint hint, Exception exception)
     {
-        Title   = "命令执行失败";
+        Title   = Localization.Get("ui.error.title");
         Message = Describe(hint, exception);
         Details = BuildDetails(hint, exception);
     }
@@ -40,27 +41,26 @@ public sealed class ErrorWindowViewModel
         {
             // 740 = ERROR_ELEVATION_REQUIRED：目标程序要求管理员权限
             Win32Exception { NativeErrorCode: 740 } =>
-                $"「{name}」需要管理员权限，而 CommandPark 当前不是以管理员身份运行的。\n" +
-                "请用管理员身份重新启动 CommandPark，或改选不需要提权的命令。",
+                Localization.Format("ui.error.elevationRequired", name),
 
             // 1223 = 用户在 UAC 弹窗里点了“否”
             Win32Exception { NativeErrorCode: 1223 } =>
-                $"「{name}」的权限提升请求被取消了，命令没有执行。",
+                Localization.Format("ui.error.elevationCanceled", name),
 
             // 5 = ERROR_ACCESS_DENIED
             Win32Exception { NativeErrorCode: 5 } =>
-                $"「{name}」被系统拒绝访问（访问被拒绝），通常需要更高的权限。",
+                Localization.Format("ui.error.accessDenied", name),
 
             UnauthorizedAccessException =>
-                $"没有权限执行「{name}」。",
+                Localization.Format("ui.error.unauthorized", name),
 
             FileNotFoundException or DirectoryNotFoundException =>
-                $"找不到「{name}」对应的文件，可能已被移动或删除。",
+                Localization.Format("ui.error.fileNotFound", name),
 
             Win32Exception win32 =>
-                $"启动「{name}」失败：{win32.Message}（Win32 错误码 {win32.NativeErrorCode}）",
+                Localization.Format("ui.error.launchFailed", name, win32.Message, win32.NativeErrorCode),
 
-            _ => $"执行「{name}」时出错：{exception.Message}",
+            _ => Localization.Format("ui.error.unknown", name, exception.Message),
         };
     }
 

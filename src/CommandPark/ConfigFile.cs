@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using CommandPark.Strings;
 
 namespace CommandPark;
 
@@ -60,7 +61,7 @@ public static class ConfigFile
 
         if (root is not JsonObject)
         {
-            throw new JsonException("配置文件根节点必须是 JSON 对象。");
+            throw new JsonException(Localization.Get("config.rootMustBeObject"));
         }
 
         return root;

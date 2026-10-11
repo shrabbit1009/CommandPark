@@ -1,10 +1,11 @@
 <Window xmlns="https://github.com/avaloniaui"
+        xmlns:loc="clr-namespace:CommandPark.Ui.Markup"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewModels="clr-namespace:CommandPark.Ui.ViewModels"
         xmlns:lucide="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
         x:Class="CommandPark.Ui.Views.AiChatWindow"
         x:DataType="viewModels:AiChatWindowViewModel"
-        Title="AI 聊天"
+        Title="{loc:Loc ui.ai.title}"
         Width="660"
         Height="620"
         MinWidth="480"
@@ -37,11 +38,11 @@
                                StrokeWidth="1.8"
                                Foreground="{DynamicResource InfoColor}"
                                VerticalAlignment="Center"/>
-            <TextBlock Text="AI 聊天"
+            <TextBlock Text="{loc:Loc ui.ai.title}"
                        Classes="h4"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource ForegroundColor}"/>
-            <TextBlock Text="关闭后不保留对话"
+            <TextBlock Text="{loc:Loc ui.ai.subtitle}"
                        VerticalAlignment="Center"
                        FontSize="12"
                        Foreground="{DynamicResource Foreground50}"/>
@@ -92,14 +93,14 @@
                  MinHeight="72"
                  MaxHeight="140"
                  Margin="0,12,0,0"
-                 PlaceholderText="输入提示词，Enter 发送，Shift+Enter 换行"
+                 PlaceholderText="{loc:Loc ui.ai.placeholder}"
                  FontFamily="{StaticResource JetBrainsMono}"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
 
         <!-- 状态与操作 -->
         <Grid Grid.Row="3" ColumnDefinitions="*, Auto" Margin="0,12,0,0">
             <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
-                <TextBlock Text="AI 正在回复…"
+                <TextBlock Text="{loc:Loc ui.ai.replying}"
                            IsVisible="{Binding IsBusy}"
                            FontSize="12"
                            Foreground="{DynamicResource Foreground50}"/>

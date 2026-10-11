@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
+using CommandPark.Strings;
 
 namespace CommandPark.Sources;
 
@@ -28,8 +29,8 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
         {
             yield return new Hint(
                 "welcome:changeConfigFile",
-                "修改 CommandPark 配置文件",
-                "使用默认文本编辑器打开配置文件。",
+                Localization.Get("sources.welcome.changeConfigName"),
+                Localization.Get("sources.welcome.changeConfigDescription"),
                 ct =>
                 {
                     Process.Start("explorer.exe", Path.Join(AppDomain.CurrentDomain.BaseDirectory, "commandpark.json"));
@@ -44,8 +45,8 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
         {
             yield return new Hint(
                 "welcome:repo",
-                "让 CommandPark 更好！",
-                "[默认 Web 浏览器] 进入本项目仓库，参与贡献或者提出你遇到的问题。",
+                Localization.Get("sources.welcome.repoName"),
+                Localization.Get("sources.welcome.repoDescription"),
                 ct =>
                 {
                     Process.Start("explorer.exe", "https://shrabbit.com:4000/gitlab/shrabbit/commandpark");
@@ -60,8 +61,8 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
         {
             yield return new Hint(
                 "welcome:official",
-                "shRabbit 官方网站",
-                "[默认 Web 浏览器] 访问并了解最新内容。",
+                Localization.Get("sources.welcome.officialName"),
+                Localization.Get("sources.welcome.officialDescription"),
                 ct =>
                 {
                     Process.Start("explorer.exe", "https://shrabbit.com:4000/gitlab/shrabbit/commandpark");
@@ -86,7 +87,7 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
         {
             yield return new Hint(
                 "welcome:backgroundUnavailable",
-                "全局热键不可用",
+                Localization.Get("sources.welcome.backgroundUnavailableName"),
                 backgroundUnavailableReason,
                 _ => Task.CompletedTask)
             {

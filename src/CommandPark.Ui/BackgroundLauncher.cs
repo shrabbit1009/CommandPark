@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
+using CommandPark.Strings;
 
 namespace CommandPark.Ui;
 
@@ -53,7 +54,7 @@ internal static class BackgroundLauncher
         if (string.IsNullOrWhiteSpace(hotkey))
         {
             BackgroundStatus.UnavailableReason =
-                "没有配置全局快捷键（commandpark.json 的 hotkey 为 null），无法用热键唤起。";
+                Localization.Get("background.noHotkey");
             return false;
         }
 
@@ -62,7 +63,7 @@ internal static class BackgroundLauncher
         {
             // 没带后台程序（例如没有构建 C++ 项目）：照常显示主窗口。
             BackgroundStatus.UnavailableReason =
-                $"程序目录里找不到后台程序 {BackgroundProgramFileName}，无法用热键唤起。";
+                Localization.Format("background.programMissing", BackgroundProgramFileName);
             return false;
         }
 
@@ -76,7 +77,7 @@ internal static class BackgroundLauncher
         // 首次启动：只拉起后台程序，不弹输入窗口。
         if (!TryStartBackgroundProgram(backgroundProgramPath))
         {
-            BackgroundStatus.UnavailableReason = "后台程序启动失败，无法用热键唤起。";
+            BackgroundStatus.UnavailableReason = Localization.Get("background.startFailed");
             return false;
         }
 
@@ -91,14 +92,9 @@ internal static class BackgroundLauncher
     /// <summary>提示“已经在后台启动”，随后调用方直接退出。</summary>
     private static void ShowStartedNotification(string hotkey)
     {
-        var message =
-            "CommandPark 已在后台启动。" + Environment.NewLine +
-            Environment.NewLine +
-            $"按 {hotkey} 唤起搜索窗口；右键托盘图标可以「修改配置」或「退出」。" + Environment.NewLine +
-            Environment.NewLine +
-            "以 --no-display 启动可不再显示本提示（适合开机自启动）。";
+        var message = Localization.Format("background.started", hotkey);
 
-        MessageBoxW(IntPtr.Zero, message, "CommandPark", MessageBoxOk | MessageBoxIconInformation);
+        MessageBoxW(IntPtr.Zero, message, Localization.Get("background.configCaption"), MessageBoxOk | MessageBoxIconInformation);
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommandPark.Ai;
+using CommandPark.Strings;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommandPark.Ui.ViewModels;
@@ -147,11 +148,11 @@ public partial class ParkMainViewModel : ViewModelBase
 
     /// <summary>输入框水印文本，随模式变化。</summary>
     public string InputWatermark =>
-        IsAiMode ? "AI 搜索" : "开始搜索…";
+        Localization.Get(IsAiMode ? "ui.main.watermarkAi" : "ui.main.watermark");
 
     /// <summary>空闲提示文本，随模式变化。</summary>
     public string IdleHintText =>
-        IsAiMode ? "提交后，AI 会自行筛选 Hint 并列出" : "输入关键字开始搜索";
+        Localization.Get(IsAiMode ? "ui.main.idleHintAi" : "ui.main.idleHint");
 
     /// <summary>AI 模式徽标文本：使用与快速选择相对的修饰键（Alt ↔ Ctrl）+ 1 / 2。</summary>
     public string AiModeBadge
@@ -160,7 +161,7 @@ public partial class ParkMainViewModel : ViewModelBase
         {
             var relative = QuickSelectConfig.GetRelativeModifier(QuickSelectModifier);
             var name = relative == QuickSelectModifier.Ctrl ? "Ctrl" : "Alt";
-            return $"AI 模式 · {name}+1 退出，{name}+2 聊天";
+            return Localization.Format("ui.main.aiBadge", name);
         }
     }
 
@@ -224,7 +225,7 @@ public partial class ParkMainViewModel : ViewModelBase
 
     /// <summary>提示用户尚未配置 AI。</summary>
     public void NotifyAiUnavailable() =>
-        ErrorMessage = "尚未配置 AI：请在 commandpark.json 的 ai 节点填写 endpoint、apiKey 与 model。";
+        ErrorMessage = Localization.Get("ui.main.aiNotConfigured");
 
     /// <summary>切换 AI 处理模式（修饰键 + F1）。配置不完整时返回 false 并给出提示。</summary>
     public bool ToggleAiMode() => SetAiMode(!IsAiMode);
@@ -305,8 +306,10 @@ public partial class ParkMainViewModel : ViewModelBase
         if (config is null || !config.IsConfigured)
         {
             ErrorMessage = config is null
-                ? "尚未配置 AI：请在 commandpark.json 的 ai 节点填写 endpoint、apiKey 与 model。"
-                : $"AI 配置不完整：缺少 {string.Join("、", config.MissingFields)}。";
+                ? Localization.Get("ui.main.aiNotConfigured")
+                : Localization.Format(
+                    "ui.main.aiIncomplete",
+                    string.Join(Localization.Get("common.listSeparator"), config.MissingFields));
             return;
         }
 
@@ -326,7 +329,7 @@ public partial class ParkMainViewModel : ViewModelBase
             var client = AiRuntime.TryGetClient();
             if (client is null)
             {
-                ErrorMessage = "AI 客户端创建失败，请检查 commandpark.json 的 ai 配置。";
+                ErrorMessage = Localization.Get("ui.main.aiClientFailed");
                 return;
             }
 

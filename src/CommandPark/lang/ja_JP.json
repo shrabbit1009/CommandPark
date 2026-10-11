@@ -1,0 +1,137 @@
+{
+    "common": {
+        "listSeparator": "、"
+    },
+    "config": {
+        "rootMustBeObject": "設定ファイルのルートノードは JSON オブジェクトである必要があります。"
+    },
+    "background": {
+        "configCaption": "CommandPark",
+        "noHotkey": "グローバルホットキーが設定されていません（commandpark.json の hotkey が null）。ホットキーで検索ウィンドウを開けません。",
+        "programMissing": "プログラムディレクトリにバックグラウンドプログラム {0} が見つからないため、ホットキーで起動できません。",
+        "startFailed": "バックグラウンドプログラムの起動に失敗したため、ホットキーで起動できません。",
+        "started": "CommandPark をバックグラウンドで起動しました。\n\n{0} を押すと検索ウィンドウが開きます。トレイアイコンを右クリックすると、設定の変更や終了ができます。\n\n--no-display を付けて起動するとこのメッセージを表示しません（自動起動向け）。"
+    },
+    "ui": {
+        "main": {
+            "idleHint": "キーワードを入力して検索を開始",
+            "idleHintAi": "Enter を押すと、AI が Hint を選別して一覧表示します",
+            "watermark": "検索…",
+            "watermarkAi": "AI 検索",
+            "searching": "検索中…",
+            "searchingAi": "AI が Hint を選別中…",
+            "empty": "一致する結果がありません",
+            "aiBadge": "AI モード · {0}+1 で終了、{0}+2 でチャット",
+            "aiNotConfigured": "AI が未設定です。commandpark.json の ai ノードに endpoint、apiKey、model を入力してください。",
+            "aiIncomplete": "AI の設定が不完全です。{0} が不足しています。",
+            "aiClientFailed": "AI クライアントの作成に失敗しました。commandpark.json の ai 設定を確認してください。"
+        },
+        "ai": {
+            "you": "あなた",
+            "ai": "AI",
+            "notConfig": "AI が未設定です。commandpark.json の ai ノードに endpoint、apiKey、model を入力してください。",
+            "send": "送信 ({0}+1 / Enter)",
+            "title": "AI チャット",
+            "subtitle": "閉じると会話は破棄されます",
+            "replying": "AI が返信中…",
+            "placeholder": "プロンプトを入力、Enter で送信、Shift+Enter で改行",
+            "copy": "会話をコピー ({0}+2)",
+            "export": "会話をエクスポート ({0}+3)",
+            "close": "閉じる (Esc)",
+            "exportTitle": "AI 会話をエクスポート",
+            "exportHeading": "CommandPark AI 会話",
+            "exportTime": "エクスポート日時：",
+            "fileTypeText": "テキストファイル"
+        },
+        "error": {
+            "title": "コマンドの実行に失敗しました",
+            "elevationRequired": "「{0}」には管理者権限が必要ですが、CommandPark は管理者として実行されていません。\nCommandPark を管理者として再起動するか、昇格が不要なコマンドを選び直してください。",
+            "elevationCanceled": "「{0}」の昇格要求が取り消されたため、コマンドは実行されませんでした。",
+            "accessDenied": "「{0}」へのアクセスが拒否されました。通常はより高い権限が必要です。",
+            "unauthorized": "「{0}」を実行する権限がありません。",
+            "fileNotFound": "「{0}」に対応するファイルが見つかりません。移動または削除された可能性があります。",
+            "launchFailed": "「{0}」の起動に失敗しました：{1}（Win32 エラー {2}）",
+            "unknown": "「{0}」の実行中にエラーが発生しました：{1}",
+            "stackTraceHeader": "スタックトレースを表示",
+            "confirm": "OK（Enter / ESC）"
+        },
+        "details": {
+            "title": "詳細",
+            "close": "閉じる（Enter / ESC）"
+        }
+    },
+    "sources": {
+        "run": {
+            "name": "{0} を実行",
+            "description": "入力したコマンドを管理者として実行します",
+            "missingProgram": "プログラムを実行できません：実行するプログラムが指定されていません。"
+        },
+        "bing": {
+            "name": "Bing 検索：{0}",
+            "description": "Bing で完全一致検索を実行します。",
+            "suggestion": "Bing の検索候補です。"
+        },
+        "calc": {
+            "timeoutName": "計算がタイムアウトしました",
+            "timeoutDescription": "式の計算が {0} 秒を超えたため中止しました。",
+            "errorName": "式が正しくありません",
+            "detailInput": "入力: {0}",
+            "detailResult": "結果: {0}",
+            "description": "高機能電卓。Enter で詳細を表示",
+            "desmosName": "Desmos で開く",
+            "desmosDescription": "{0} を LaTeX に変換してグラフを開きます。",
+            "desmosAction": "Desmos で開く (Alt+D)"
+        },
+        "everything": {
+            "notAvailableName": "Everything が起動していません",
+            "notAvailableDescription": "Everything をインストールするか、バックグラウンドで起動してください。",
+            "busyName": "Everything が処理中です",
+            "busyDescription": "Everything 検索は一時的に利用できません。",
+            "unsupportedName": "Everything 検索は有効になっていません",
+            "unsupportedDescription": "この検索ソースは Windows でのみ動作します。",
+            "open": "{0} を開く",
+            "openDrive": "ドライブ {0} を開く",
+            "openFolder": "フォルダー {0} を開く"
+        },
+        "envProgram": {
+            "name": "システムプログラム {0}",
+            "description": "環境変数 PATH にあるプログラム"
+        },
+        "installedApplication": {
+            "name": "{0} を開く"
+        },
+        "welcome": {
+            "changeConfigName": "CommandPark の設定を編集",
+            "changeConfigDescription": "既定のテキストエディターで設定ファイルを開きます。",
+            "repoName": "CommandPark をもっと良くしよう！",
+            "repoDescription": "[既定の Web ブラウザー] リポジトリにアクセスして、貢献や問題の報告ができます。",
+            "officialName": "shRabbit 公式サイト",
+            "officialDescription": "[既定の Web ブラウザー] アクセスして最新情報を確認できます。",
+            "backgroundUnavailableName": "グローバルホットキーを利用できません"
+        }
+    },
+    "ai": {
+        "errors": {
+            "incomplete": "AI の設定が不完全です。不足：{0}。",
+            "invalidEndpoint": "AI エンドポイントが有効な http(s) アドレスではありません：{0}"
+        },
+        "session": {
+            "noMatch": "「{0}」に一致する Hint は見つかりませんでした。",
+            "candidates": "{0} 件の候補が見つかりました（形式：短縮ハッシュ | 名前 | 説明）：",
+            "unknownHash": "不明な短縮ハッシュ：{0}。まず search_hints で検索し、返された短縮ハッシュだけを使ってください。",
+            "hash": "短縮ハッシュ: {0}",
+            "id": "ID: {0}",
+            "name": "名前: {0}",
+            "description": "説明: {0}",
+            "details": "詳細: {0}"
+        },
+        "tools": {
+            "searchHints": "コマンドパレットのすべてのソースからキーワードで Hint（コマンド項目）を検索し、候補の短縮ハッシュ・名前・説明を返します。query は検索キーワード、maxResults は今回返す最大件数（1〜100）です。",
+            "getHint": "短縮ハッシュから 1 つの Hint の完全な情報（ID、名前、説明、詳細）を読み取ります。hash は search_hints が返した結果から取り、自分で作ってはいけません。"
+        },
+        "prompt": {
+            "chat": "あなたは CommandPark コマンドパレットに内蔵された AI アシスタントです。ユーザーの質問に簡潔かつ正確に、ユーザーが使った言語で回答し、必要に応じて実行可能な提案をしてください。この説明を繰り返さず、回答そのものを出力してください。",
+            "hintFilter": "あなたは CommandPark のコマンド選別アシスタントです。ユーザーはやりたいことを自然言語で説明します。あなたはツールを呼び出してローカルの Hint（コマンドパレットの項目）を自分で検索・選別し、最後に最適なものをいくつか選び出します。\n\n進め方：\n1. search_hints を十分に呼び出し、異なるキーワード・同義語・英語名で何度も検索して候補を広げてください。必要ならコマンドプレフィックスでソースを限定できます。\n2. より多くの情報が必要なときは get_hint を呼び出して候補の完全な情報を読み取ってください。\n3. 選べるのは search_hints が返した Hint だけで、最大 {0} 個です。\n\n利用できるソースプレフィックス（query の前に付けられます）：\n- プレフィックスなし：PATH のプログラムやインストール済みアプリなどの通常検索。\n- #：Everything による全ドライブのファイル/フォルダー検索。\n- @：入力したコマンドの実行。\n- c:：数式の計算。\n- b:：Bing の Web 検索。\n\n出力ルール（必ず厳守してください）：\n- 選別理由をユーザーの言語で 1〜2 文だけ添えてもかまいません。\n- 最終行は、選んだ Hint の短縮ハッシュだけを要素にした 1 行の JSON 文字列配列でなければなりません。例：[\"a1b2c3d4\",\"0f9e8d7c\"]\n- Markdown のコードブロック（三連バッククォート）は禁止です。配列を他のオブジェクトで包んだり、余分なフィールドを足したりしないでください（{{\"hashes\":[...]}} のように書かないこと）。\n- 配列は文字列だけの配列にし、ツールが実際に返した短縮ハッシュだけを使ってください。でっち上げは禁止です。\n- 適切な結果が本当にない場合は、最終行に空の配列 [] を出力してください。"
+        }
+    }
+}

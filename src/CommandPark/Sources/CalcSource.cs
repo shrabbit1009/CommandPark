@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using AngouriMath;
 using AngouriMath.Extensions;
+using CommandPark.Strings;
 using CommandPark.Utils.SourceHelpers;
 using RestSharp;
 
@@ -77,8 +78,8 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
         {
             yield return new Hint(
                 "lcalc:timeout",
-                "计算超时",
-                $"表达式计算超过 {Math.Clamp(TimeoutSeconds, 1, 30)} 秒，已取消。",
+                Localization.Get("sources.calc.timeoutName"),
+                Localization.Format("sources.calc.timeoutDescription", Math.Clamp(TimeoutSeconds, 1, 30)),
                 1,
                 _ => Task.CompletedTask)
             {
@@ -96,7 +97,7 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
         {
             yield return new Hint(
                 "lcalc:error",
-                "表达式不正确",
+                Localization.Get("sources.calc.errorName"),
                 error.Message,
                 1,
                 _ => Task.CompletedTask)
@@ -112,17 +113,17 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
         }
 
         var details =
-            $"输入: {expression}{Environment.NewLine}" +
-            $"结果: {result}";
+            Localization.Format("sources.calc.detailInput", expression) + Environment.NewLine +
+            Localization.Format("sources.calc.detailResult", result);
 
         yield return new DetailedHint(
             "calc:result",
             $"= {result}",
-            "高级计算器，按 Enter 查看详情",
+            Localization.Get("sources.calc.description"),
             1,
             ct => OpenDesmosAsync(expression, ct),
             details,
-            "在 Desmos 中打开 (Alt+D)")
+            Localization.Get("sources.calc.desmosAction"))
         {
             Icon = new LucideIdHintIcon("Calculator"),
         };
@@ -144,8 +145,8 @@ public class CalcSource : IHintSource, IHintWithPrefix, IConfigReader
 
         return new Hint(
             "calc:desmos",
-            "在 Desmos 中打开",
-            $"将 {expression} 转换为 LaTeX 并打开图表。",
+            Localization.Get("sources.calc.desmosName"),
+            Localization.Format("sources.calc.desmosDescription", expression),
             0.95f,
             ct => OpenDesmosAsync(expression, ct))
         {

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Nodes;
+using CommandPark.Strings;
 using NPinyin;
 
 namespace CommandPark.Sources;
@@ -99,7 +100,7 @@ public class InstalledApplicationSource : IHintWithPrefix, IConfigReader
 
             yield return new Hint(
                 "installedApplication",
-                $"打开 {app.Name}",
+                Localization.Format("sources.installedApplication.name", app.Name),
                 string.IsNullOrWhiteSpace(app.Description) ? app.RunPath : app.Description,
                 score,
                 ct => OnRun(app, ct))

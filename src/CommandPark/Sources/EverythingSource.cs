@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using CommandPark.Utils;
+using CommandPark.Strings;
 using EverythingSearchClient;
 
 namespace CommandPark.Sources;
@@ -42,7 +43,7 @@ public class EverythingSource : IHintWithPrefix, IConfigReader
             if (!SearchClient.IsEverythingAvailable())
             {
                 Console.WriteLine("EverythingNotAvailable");
-                yield return new Hint("everything:everythingNotAvailableError", "Everything 主程序未工作", "需要安装或将 Everything 处于后台运行。");
+                yield return new Hint("everything:everythingNotAvailableError", Localization.Get("sources.everything.notAvailableName"), Localization.Get("sources.everything.notAvailableDescription"));
                 yield break;
             }
 
@@ -50,8 +51,8 @@ public class EverythingSource : IHintWithPrefix, IConfigReader
             {
                 Console.WriteLine("EverythingBusy");
                 yield return new Hint("everything:everythingNotAvailableError",
-                                      "Everything 正在工作中",
-                                      "Everything 搜索暂时不可用。");
+                                      Localization.Get("sources.everything.busyName"),
+                                      Localization.Get("sources.everything.busyDescription"));
                 yield break;
             }
             
@@ -98,13 +99,13 @@ public class EverythingSource : IHintWithPrefix, IConfigReader
 
                     // 根据类型设定文本。
                     
-                    var hint = $"打开 {name}";
+                    var hint = Localization.Format("sources.everything.open", name);
 
                     if (item.Flags.HasFlag(Result.ItemFlags.Drive))
-                        hint = $"打开驱动器 {name}";
+                        hint = Localization.Format("sources.everything.openDrive", name);
 
                     if (item.Flags.HasFlag(Result.ItemFlags.Folder))
-                        hint = $"打开文件夹 {name}";
+                        hint = Localization.Format("sources.everything.openFolder", name);
                     
                     yield return new EverythingHint("everything:searchResult", hint, path, sim, ct => OnRun(path, ct))
                     {
@@ -118,7 +119,7 @@ public class EverythingSource : IHintWithPrefix, IConfigReader
         }
         else
         {
-            yield return new Hint("everything:platformNotSupportedError", "Everything 搜索未启用", "该搜索源只在 Windows 上工作。");
+            yield return new Hint("everything:platformNotSupportedError", Localization.Get("sources.everything.unsupportedName"), Localization.Get("sources.everything.unsupportedDescription"));
         }
     }
 

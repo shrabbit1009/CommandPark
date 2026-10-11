@@ -31,6 +31,9 @@
       "default": "Ctrl+Alt+D",
       "description": "后台程序监听的全局快捷键，例如 Ctrl+Alt+D、Win+Shift+S；不填时使用默认值 Ctrl+Alt+D，显式写 null 时不启动后台热键监听。"
     },
+    "language": {
+      "$ref": "#/$defs/language"
+    },
     "clicks": {
       "$ref": "#/$defs/clicks"
     },
@@ -74,6 +77,43 @@
   ],
   "additionalProperties": false,
   "$defs": {
+    "language": {
+      "type": "object",
+      "description": "界面语言：字符串来自程序目录 lang\\<语言标记>.json。",
+      "properties": {
+        "current": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": "auto",
+          "description": "界面语言，例如 zh-CN、en-US；写 auto、null 或不填时跟随系统 UI 语言。"
+        },
+        "fallback": {
+          "type": [
+            "array",
+            "string",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "zh_CN"
+          ],
+          "description": "当前语言缺少某个键时的回退顺序，可以写一个字符串或字符串数组；默认以中文 zh_CN 为基准。"
+        },
+        "base": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": "zh_CN",
+          "description": "基准语言，始终排在查找顺序的最后一位；默认中文。"
+        }
+      },
+      "additionalProperties": false
+    },
     "clicks": {
       "type": "object",
       "description": "点击权重（htt）配置。提供该节点即启用；点击越多，结果越靠前。",

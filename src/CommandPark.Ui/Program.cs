@@ -13,7 +13,11 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        // --no-display：自启动模式，首次拉起后台程序后不弹“已在后台启动”提示。
+        // 界面语言：先按 commandpark.json 的 language 节点与 lang\ 目录配置好，
+        // 之后所有界面文案（含下面的后台提示）都从 Localization 取。
+        LocalizationSetup.Configure();
+
+        // --no-display：自启动模式，首次拉起后台程序后不再显示提示。
         var noDisplay = args.Any(static arg =>
             string.Equals(arg, "--no-display", StringComparison.OrdinalIgnoreCase));
 

@@ -92,6 +92,16 @@ AI 的实现（提示词、工具、短哈希、结果解析）位于 `src/Comma
 
 ![背景模糊效果](docs/images/background-blur.png)
 
+### 多语言
+
+界面文案（含 Hint 名称与描述、错误说明、后台提示、AI 提示词）全部由 `StringCollection` 提供，不再硬编码在代码里：
+
+- 语言文件放在程序目录的 `lang\` 下，文件名就是语言标记（`zh_CN.json`、`en_US.json`……），构建时按「如果较新则复制」进输出目录。
+- 查找顺序是**当前语言 → `fallback` → `base`**，由 `MultiStringCollection` 把多个语言文件拼成一条链；顺序可以在 `commandpark.json` 的 `language` 节点里改（见「配置文件 → `language`」）。
+- 默认中文是基准：任何语言缺键都会回退到中文，不会出现空白或异常。
+- 随程序发布：`zh_CN`（基准）、`zh_TW`、`en_US`、`ja_JP`、`ko_KR`、`fr_FR`、`de_DE`、`es_ES`、`ru_RU`、`pt_BR`。
+- 新增语言只需往 `lang\` 放一个 JSON 文件，键与 `zh_CN.json` 对齐；单元测试会校验所有语言文件的键与占位符一致。
+
 ### 图标
 
 - **程序**：读取可执行文件自带的图标（取系统能给出的最大尺寸）
@@ -220,6 +230,10 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
   "$schema": "./commandpark.schema.json",
   "theme": "auto",
   "hotkey": "Ctrl+Alt+D",
+  "language": {
+    "current": "auto",
+    "fallback": ["zh_CN"]
+  },
   "clicks": {
     "maxEntries": 10000
   },
@@ -279,6 +293,29 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 
 - `theme`：`auto`、`light` 或 `dark`；为 `null` 或不填写时跟随系统，默认值也是 `auto`。
 - `hotkey`：后台程序监听的全局快捷键，默认 `Ctrl+Alt+D`；显式写 `null` 时不启动后台热键监听。
+- `language`：界面语言与回退顺序，详见下面的 `language` 小节。
+
+#### `language`
+
+界面语言与所有文案都来自程序目录 `lang\` 下的语言文件：文件名就是语言标记（`zh_CN.json`、`en_US.json`……），内容是一棵 `键 → 文案` 的 JSON 树。
+
+- `current`：界面语言，例如 `zh-CN`、`en_US`、`ja-JP`；写 `auto`、`null` 或不填写时跟随系统 UI 语言。
+- `fallback`：当前语言缺少某个键时的回退顺序，可以写一个字符串或字符串数组；默认 `["zh_CN"]`，也就是默认以中文为基准。
+- `base`：基准语言，始终排在查找顺序的最后一位；默认 `zh_CN`。
+
+查找顺序是 **当前语言 → `fallback` → `base`**，逐个语言文件问过去，第一个命中的胜出；全都没有时把键路径原样显示出来（便于发现漏翻译）。随程序发布的中文基准是 `lang\zh_CN.json`，另有 `zh_TW`、`en_US`、`ja_JP`、`ko_KR`、`fr_FR`、`de_DE`、`es_ES`、`ru_RU`、`pt_BR`。
+
+```json
+{
+  "language": {
+    "current": "en-US",
+    "fallback": ["ja_JP", "zh_CN"],
+    "base": "zh_CN"
+  }
+}
+```
+
+新增一门语言只需往 `lang\` 放一个 `<语言标记>.json`（键与 `zh_CN.json` 对齐即可），不需要改代码或改配置。
 
 #### `clicks`
 
@@ -406,6 +443,29 @@ dotnet publish src/CommandPark.Ui -c Release -r win-x64 `
 
 ## 内部说明
 
+### 字符串提供与多语言
+
+**组成**：`IStringCollection` 是「按 `a.b.c` 路径取字符串」的最小接口，三个实现各司其职：
+
+- `StringCollection`：包一份语言文件的 JSON，路径逐级下钻（对象按名字、数组按数字下标），
+  解析结果按路径缓存在 `ConcurrentDictionary` 里，多个搜索线程同时取键是安全的；
+  只有值真的是字符串才算命中，否则（默认）回退成键路径，便于一眼看出漏翻译。
+- `MultiStringCollection`：把多个提供者按优先级拼成链，第一个命中的胜出，全都没命中时回退成键路径。
+- `StringCollectionBuilder`：从 `lang\` 目录按语言标记读文件，顺序是**当前语言 → `fallback` → `base`**
+  （默认基准中文），顺序来自 `commandpark.json` 的 `language` 节点（`LanguageConfig`）。
+  语言标记容错匹配：`en` / `en-US` / `en_US` 都能找到 `en_US.json`，`zh-Hans-CN` 会先找 `zh_CN.json`。
+  缺失或损坏的语言文件会被跳过，不会拦住启动。
+
+**入口**：`Localization` 是全局静态入口（`Get` / `Format` / `TryGet`）。主程序启动时
+`LocalizationSetup.Configure()` 先把它配好，之后 Hint 源、视图模型都从这里取文案；
+XAML 里用标记扩展 `{loc:Loc ui.ai.title}` 取值，加载窗口时解析一次。
+
+**键的分类**：`ui.*` 界面文案、`sources.*` 各搜索源的 Hint 名称/描述、`ai.*` AI 提示词与工具输出、
+`background.*` 启动阶段提示、`common.*` 通用片段（如列表分隔符 `、`）。
+
+**占位符**：文案里的 `{0}`、`{1}` 由 `string.Format` 填充；文案本身需要出现花括号时写成 `{{` / `}}`。
+单元测试会校验所有语言文件的键集合与占位符集合完全一致。
+
 ### 点击权重（htt）
 
 **它解决什么**：在原有相关度排序之上叠加「用户更常点哪一条」的偏好，让常用命令逐步上浮。
@@ -461,6 +521,7 @@ dotnet publish src/CommandPark.Ui -c Release -r win-x64 `
 
 ## 路线图
 
+- [ ] 校对已发布的非中文翻译（`zh_TW` / `en_US` / `ja_JP` / `ko_KR` / `fr_FR` / `de_DE` / `es_ES` / `ru_RU` / `pt_BR` 目前是初版，欢迎母语者修订）
 - [ ] 更多搜索源（浏览器书签 / 历史、进程、窗口……）
 - [ ] `cp:` 前缀：查看与修改 CommandPark 自身配置
 - [ ] 执行失败写入本地日志，便于事后排查

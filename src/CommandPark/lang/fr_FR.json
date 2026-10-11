@@ -1,0 +1,137 @@
+{
+    "common": {
+        "listSeparator": ", "
+    },
+    "config": {
+        "rootMustBeObject": "Le nœud racine du fichier de configuration doit être un objet JSON."
+    },
+    "background": {
+        "configCaption": "CommandPark",
+        "noHotkey": "Aucun raccourci global n'est configuré (hotkey vaut null dans commandpark.json) : impossible d'ouvrir la fenêtre de recherche au clavier.",
+        "programMissing": "Le programme d'arrière-plan {0} est introuvable à côté du programme principal : le raccourci ne peut pas ouvrir la fenêtre.",
+        "startFailed": "Le programme d'arrière-plan n'a pas pu démarrer : le raccourci ne peut pas ouvrir la fenêtre.",
+        "started": "CommandPark est maintenant en arrière-plan.\n\nAppuyez sur {0} pour ouvrir la fenêtre de recherche ; faites un clic droit sur l'icône de la zone de notification pour modifier la configuration ou quitter.\n\nLancez avec --no-display pour masquer ce message (pratique au démarrage automatique)."
+    },
+    "ui": {
+        "main": {
+            "idleHint": "Saisissez un mot-clé pour lancer la recherche",
+            "idleHintAi": "Appuyez sur Entrée : l'IA sélectionnera les hints à afficher",
+            "watermark": "Rechercher…",
+            "watermarkAi": "Recherche IA",
+            "searching": "Recherche…",
+            "searchingAi": "L'IA filtre les hints…",
+            "empty": "Aucun résultat correspondant",
+            "aiBadge": "Mode IA · {0}+1 pour quitter, {0}+2 pour discuter",
+            "aiNotConfigured": "L'IA n'est pas encore configurée : renseignez endpoint, apiKey et model sous le nœud ai de commandpark.json.",
+            "aiIncomplete": "La configuration de l'IA est incomplète : {0} manquant.",
+            "aiClientFailed": "Échec de la création du client IA. Vérifiez la configuration ai de commandpark.json."
+        },
+        "ai": {
+            "you": "Vous",
+            "ai": "IA",
+            "notConfig": "L'IA n'est pas encore configurée : renseignez endpoint, apiKey et model sous le nœud ai de commandpark.json.",
+            "send": "Envoyer ({0}+1 / Entrée)",
+            "title": "Discussion IA",
+            "subtitle": "La conversation est perdue à la fermeture",
+            "replying": "L'IA répond…",
+            "placeholder": "Saisissez une invite ; Entrée envoie, Maj+Entrée insère un retour à la ligne",
+            "copy": "Copier la conversation ({0}+2)",
+            "export": "Exporter la conversation ({0}+3)",
+            "close": "Fermer (Échap)",
+            "exportTitle": "Exporter la discussion IA",
+            "exportHeading": "Discussion IA CommandPark",
+            "exportTime": "Exporté le : ",
+            "fileTypeText": "Fichier texte"
+        },
+        "error": {
+            "title": "Échec de l'exécution de la commande",
+            "elevationRequired": "« {0} » nécessite des droits d'administrateur, or CommandPark n'est pas exécuté en tant qu'administrateur.\nRedémarrez CommandPark en administrateur ou choisissez une commande sans élévation.",
+            "elevationCanceled": "La demande d'élévation pour « {0} » a été annulée : la commande n'a pas été exécutée.",
+            "accessDenied": "L'accès à « {0} » a été refusé ; des privilèges plus élevés sont généralement nécessaires.",
+            "unauthorized": "Aucune autorisation pour exécuter « {0} ».",
+            "fileNotFound": "Le fichier correspondant à « {0} » est introuvable ; il a peut-être été déplacé ou supprimé.",
+            "launchFailed": "Échec du lancement de « {0} » : {1} (erreur Win32 {2})",
+            "unknown": "Une erreur est survenue pendant l'exécution de « {0} » : {1}",
+            "stackTraceHeader": "Afficher la trace de pile",
+            "confirm": "OK (Entrée / Échap)"
+        },
+        "details": {
+            "title": "Détails",
+            "close": "Fermer (Entrée / Échap)"
+        }
+    },
+    "sources": {
+        "run": {
+            "name": "Exécuter {0}",
+            "description": "Exécuter la commande saisie en tant qu'administrateur",
+            "missingProgram": "Impossible d'exécuter un programme : aucun programme n'a été fourni."
+        },
+        "bing": {
+            "name": "Recherche Bing : {0}",
+            "description": "Lancer une recherche exacte sur Bing.",
+            "suggestion": "Suggestion de recherche Bing."
+        },
+        "calc": {
+            "timeoutName": "Délai de calcul dépassé",
+            "timeoutDescription": "Le calcul de l'expression a dépassé {0} secondes et a été annulé.",
+            "errorName": "Expression incorrecte",
+            "detailInput": "Entrée : {0}",
+            "detailResult": "Résultat : {0}",
+            "description": "Calculatrice avancée, appuyez sur Entrée pour les détails",
+            "desmosName": "Ouvrir dans Desmos",
+            "desmosDescription": "Convertir {0} en LaTeX et ouvrir le graphique.",
+            "desmosAction": "Ouvrir dans Desmos (Alt+D)"
+        },
+        "everything": {
+            "notAvailableName": "Everything n'est pas en cours d'exécution",
+            "notAvailableDescription": "Installez Everything ou laissez-le tourner en arrière-plan.",
+            "busyName": "Everything est occupé",
+            "busyDescription": "La recherche Everything est temporairement indisponible.",
+            "unsupportedName": "La recherche Everything n'est pas activée",
+            "unsupportedDescription": "Cette source de recherche ne fonctionne que sous Windows.",
+            "open": "Ouvrir {0}",
+            "openDrive": "Ouvrir le lecteur {0}",
+            "openFolder": "Ouvrir le dossier {0}"
+        },
+        "envProgram": {
+            "name": "Programme système {0}",
+            "description": "Programme trouvé dans la variable PATH"
+        },
+        "installedApplication": {
+            "name": "Ouvrir {0}"
+        },
+        "welcome": {
+            "changeConfigName": "Modifier la configuration de CommandPark",
+            "changeConfigDescription": "Ouvrir le fichier de configuration dans l'éditeur de texte par défaut.",
+            "repoName": "Améliorez CommandPark !",
+            "repoDescription": "[Navigateur web par défaut] Consultez le dépôt du projet pour contribuer ou signaler un problème.",
+            "officialName": "Site officiel de shRabbit",
+            "officialDescription": "[Navigateur web par défaut] Consultez le site pour les dernières nouveautés.",
+            "backgroundUnavailableName": "Raccourci global indisponible"
+        }
+    },
+    "ai": {
+        "errors": {
+            "incomplete": "La configuration de l'IA est incomplète ; il manque : {0}.",
+            "invalidEndpoint": "Le point de terminaison de l'IA n'est pas une adresse http(s) valide : {0}"
+        },
+        "session": {
+            "noMatch": "Aucun hint ne correspond à « {0} ».",
+            "candidates": "{0} candidats trouvés (format : hash court | nom | description) :",
+            "unknownHash": "Hash court inconnu : {0}. Appelez d'abord search_hints et n'utilisez que les hash courts qu'il a renvoyés.",
+            "hash": "Hash court : {0}",
+            "id": "ID : {0}",
+            "name": "Nom : {0}",
+            "description": "Description : {0}",
+            "details": "Détails : {0}"
+        },
+        "tools": {
+            "searchHints": "Rechercher des hints (entrées de la palette de commandes) par mot-clé dans toutes les sources et renvoyer les hash courts, noms et descriptions des candidats. query est le mot-clé ; maxResults est le nombre maximal de résultats à renvoyer (1-100).",
+            "getHint": "Lire les informations complètes d'un hint (ID, nom, description, détails) à partir de son hash court. hash doit provenir d'un résultat de search_hints et ne jamais être inventé."
+        },
+        "prompt": {
+            "chat": "Vous êtes l'assistant IA intégré à la palette de commandes CommandPark. Répondez aux questions de l'utilisateur de façon concise et exacte, dans la langue qu'il emploie, et proposez des actions concrètes lorsque c'est utile. Produisez la réponse elle-même et ne répétez pas ces instructions.",
+            "hintFilter": "Vous êtes l'assistant de filtrage de commandes de CommandPark. L'utilisateur décrit en langage naturel ce qu'il veut faire ; vous appelez des outils pour parcourir et filtrer vous-même les hints locaux (entrées de la palette de commandes), puis vous retenez les meilleurs résultats.\n\nMéthode :\n1. Appelez search_hints autant que nécessaire, avec des mots-clés, des synonymes ou des noms anglais différents, pour élargir les candidats ; au besoin, limitez la source avec un préfixe de commande.\n2. Si vous avez besoin de plus d'informations, appelez get_hint pour lire la fiche complète d'un candidat.\n3. Ne retenez que des hints renvoyés par search_hints, et au maximum {0}.\n\nPréfixes de source disponibles (à placer devant query) :\n- aucun préfixe : recherche classique dans les programmes du PATH et les applications installées.\n- # : recherche Everything sur tous les lecteurs (fichiers et dossiers).\n- @ : exécuter la commande saisie.\n- c: : calcul mathématique.\n- b: : recherche web Bing.\n\nRègles de sortie (à respecter impérativement) :\n- Vous pouvez ajouter une ou deux phrases expliquant votre choix, dans la langue de l'utilisateur.\n- La dernière ligne doit être exactement un tableau JSON de chaînes sur une seule ligne, contenant les hash courts des hints retenus, par exemple : [\"a1b2c3d4\",\"0f9e8d7c\"]\n- Pas de bloc de code Markdown (pas de triples accents graves), aucun emboîtement dans un objet ni champ supplémentaire (n'écrivez jamais {{\"hashes\":[...]}}).\n- Le tableau ne contient que des chaînes, uniquement des hash courts réellement renvoyés par les outils, rien d'inventé.\n- S'il n'y a vraiment aucun bon résultat, la dernière ligne doit être un tableau vide []."
+        }
+    }
+}

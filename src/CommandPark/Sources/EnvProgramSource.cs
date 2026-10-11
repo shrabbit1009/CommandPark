@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
+using CommandPark.Strings;
 using CommandPark.Utils;
 
 namespace CommandPark.Sources;
@@ -75,8 +76,8 @@ public class EnvProgramSource : IHintSource, IConfigReader
 
             yield return new Hint(
                 "executable:env",
-                $"系统程序 {match.Name}",
-                "位于环境变量的程序",
+                Localization.Format("sources.envProgram.name", match.Name),
+                Localization.Get("sources.envProgram.description"),
                 match.Score,
                 ct => OnRun(match.Path, ct))
             {

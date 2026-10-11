@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using CommandPark.Utils;
+using CommandPark.Strings;
 using CommandPark.Utils.SourceHelpers;
 
 namespace CommandPark.Sources;
@@ -49,8 +50,8 @@ public class BingSearchSource : IHintSource, IHintWithPrefix, IConfigReader
 
         yield return new Hint(
             "bing:search",
-            $"Bing 搜索：{keyword}",
-            "在 Bing 中执行精确搜索。",
+            Localization.Format("sources.bing.name", keyword),
+            Localization.Get("sources.bing.description"),
             1.0f + boost,
             ct => OpenUrlAsync(directUrl, ct))
         {
@@ -91,7 +92,7 @@ public class BingSearchSource : IHintSource, IHintWithPrefix, IConfigReader
             yield return new Hint(
                 "bing:suggestion",
                 text,
-                "Bing 搜索建议。",
+                Localization.Get("sources.bing.suggestion"),
                 Math.Max(0.5f, similarity) + boost,
                 ct => OpenUrlAsync(_helper.BuildSearchUrl(text), ct))
             {

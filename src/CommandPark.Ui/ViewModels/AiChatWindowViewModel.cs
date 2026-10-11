@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
 using CommandPark.Ai;
+using CommandPark.Strings;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommandPark.Ui.ViewModels;
@@ -27,7 +28,7 @@ public partial class AiChatWindowViewModel : ViewModelBase
 
         if (chat is null)
         {
-            ErrorMessage = "尚未配置 AI：请在 commandpark.json 的 ai 节点填写 endpoint、apiKey 与 model。";
+            ErrorMessage = Localization.Get("ui.ai.notConfig");
         }
 
         Messages.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasMessages));
@@ -40,16 +41,16 @@ public partial class AiChatWindowViewModel : ViewModelBase
     public string ModifierName { get; }
 
     /// <summary>发送按钮文案。</summary>
-    public string SendLabel => $"发送 ({ModifierName}+1 / Enter)";
+    public string SendLabel => Localization.Format("ui.ai.send", ModifierName);
 
     /// <summary>复制按钮文案。</summary>
-    public string CopyLabel => $"复制对话 ({ModifierName}+2)";
+    public string CopyLabel => Localization.Format("ui.ai.copy", ModifierName);
 
     /// <summary>导出按钮文案。</summary>
-    public string ExportLabel => $"导出对话 ({ModifierName}+3)";
+    public string ExportLabel => Localization.Format("ui.ai.export", ModifierName);
 
     /// <summary>关闭按钮文案。</summary>
-    public string CloseLabel => "关闭 (Esc)";
+    public string CloseLabel => Localization.Get("ui.ai.close");
 
     /// <summary>是否已有对话可复制 / 导出。</summary>
     public bool HasMessages => Messages.Count > 0;
@@ -118,14 +119,14 @@ public partial class AiChatWindowViewModel : ViewModelBase
     public string BuildExport()
     {
         var sb = new StringBuilder();
-        sb.AppendLine("# CommandPark AI 对话");
+        sb.AppendLine("# " + Localization.Get("ui.ai.exportHeading"));
         sb.AppendLine();
-        sb.Append("导出时间：").AppendLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+        sb.Append(Localization.Get("ui.ai.exportTime")).AppendLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
         sb.AppendLine();
 
         foreach (var message in Messages)
         {
-            sb.AppendLine(message.IsUser ? "## 你" : "## AI");
+            sb.AppendLine("## " + (message.IsUser ? Localization.Get("ui.ai.you") : Localization.Get("ui.ai.ai")));
             sb.AppendLine(message.Text);
             sb.AppendLine();
         }

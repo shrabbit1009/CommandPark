@@ -1,4 +1,5 @@
 using System.Text;
+using CommandPark.Strings;
 using Microsoft.Extensions.AI;
 
 namespace CommandPark.Ai;
@@ -51,14 +52,12 @@ public sealed class HintSearchSession
         AIFunctionFactory.Create(
             (Func<string, int, CancellationToken, Task<string>>)SearchHintsAsync,
             "search_hints",
-            "在命令面板的全部来源中按关键词搜索 Hint（命令条目），返回候选的短哈希、名称与描述。" +
-            "query 是搜索关键字；maxResults 是本次最多返回条数（1~100）。"),
+            Localization.Get("ai.tools.searchHints")),
 
         AIFunctionFactory.Create(
             (Func<string, string>)GetHint,
             "get_hint",
-            "按短哈希读取某个 Hint 的完整信息（ID、名称、描述、详情）。" +
-            "hash 必须来自 search_hints 的返回结果，不能自行编造。"),
+            Localization.Get("ai.tools.getHint")),
     ];
 
     /// <summary>搜索 Hint 并把结果格式化成模型可读的文本，同时记录短哈希用于最终解析。</summary>
@@ -76,11 +75,11 @@ public sealed class HintSearchSession
         var collected = await SearchAsync(query, maxResults, cancellationToken).ConfigureAwait(false);
         if (collected.Count == 0)
         {
-            return $"没有找到与“{query}”匹配的 Hint。";
+            return Localization.Format("ai.session.noMatch", query);
         }
 
         var sb = new StringBuilder();
-        sb.Append("找到 ").Append(collected.Count).AppendLine(" 条候选（格式：短哈希 | 名称 | 描述）：");
+        sb.AppendLine(Localization.Format("ai.session.candidates", collected.Count));
         foreach (var hint in collected)
         {
             sb.Append(HintHash.Short(hint, _hashLength))
@@ -99,18 +98,18 @@ public sealed class HintSearchSession
     {
         if (!TryResolve(hash, out var hint))
         {
-            return $"未知的短哈希：{hash}。请先用 search_hints 搜索，并且只使用它返回的短哈希。";
+            return Localization.Format("ai.session.unknownHash", hash);
         }
 
         var sb = new StringBuilder();
-        sb.Append("短哈希: ").AppendLine(HintHash.Short(hint, _hashLength));
-        sb.Append("ID: ").AppendLine(Truncate(hint.Id, FieldDisplayLimit));
-        sb.Append("名称: ").AppendLine(Truncate(hint.Name, FieldDisplayLimit));
-        sb.Append("描述: ").AppendLine(Truncate(hint.Description, FieldDisplayLimit));
+        sb.AppendLine(Localization.Format("ai.session.hash", HintHash.Short(hint, _hashLength)));
+        sb.AppendLine(Localization.Format("ai.session.id", Truncate(hint.Id, FieldDisplayLimit)));
+        sb.AppendLine(Localization.Format("ai.session.name", Truncate(hint.Name, FieldDisplayLimit)));
+        sb.AppendLine(Localization.Format("ai.session.description", Truncate(hint.Description, FieldDisplayLimit)));
 
         if (hint is IDetailedHint detailed && !string.IsNullOrWhiteSpace(detailed.Details))
         {
-            sb.Append("详情: ").AppendLine(Truncate(detailed.Details, FieldDisplayLimit * 2));
+            sb.AppendLine(Localization.Format("ai.session.details", Truncate(detailed.Details, FieldDisplayLimit * 2)));
         }
 
         return sb.ToString().TrimEnd();
