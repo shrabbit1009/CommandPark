@@ -4,6 +4,8 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <!-- 发布者（公司）：与 installer\CommandPark.iss 的 MyAppPublisher、UI 工程的 Company 保持一致 -->
+        <Company>shRabbit</Company>
     </PropertyGroup>
 
     <ItemGroup>

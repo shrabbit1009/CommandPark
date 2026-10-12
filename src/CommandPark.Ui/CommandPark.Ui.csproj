@@ -4,6 +4,8 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
+        <!-- 发布者（公司）：exe 属性页与任务管理器显示它；安装程序里的同名信息在 installer\CommandPark.iss 的 MyAppPublisher -->
+        <Company>shRabbit</Company>
         <!-- 可执行文件图标（资源管理器、开始菜单、任务管理器、托盘、卸载列表都用它）。源文件在 assets\logo\out\，改图标时把新版复制到 Assets\Icons\ 再改这一处，并同步 installer\CommandPark.iss -->
         <ApplicationIcon>Assets\Icons\black-line-full.ico</ApplicationIcon>
     </PropertyGroup>
