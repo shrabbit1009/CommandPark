@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_图层_1" data-name="图层 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #fff;
+        stroke-miterlimit: 10;
+        stroke-width: 40px;
+      }
+    </style>
+  </defs>
+  <rect width="500" height="500"/>
+  <polyline class="cls-1" points="250 250 330.5638054 330.5638054 411.12761079 250 330.5638054 169.4361946 250 250 169.4361946 330.5638054 88.87238921 250 169.4361946 169.4361946"/>
+</svg>
