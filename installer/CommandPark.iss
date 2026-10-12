@@ -58,7 +58,7 @@ LicenseFile=..\LICENSE
 
 OutputDir={#OutputDir}
 OutputBaseFilename={#MyAppName}-{#MyAppVersion}-setup
-SetupIconFile=..\src\CommandPark.Ui\Assets\avalonia-logo.ico
+SetupIconFile=..\src\CommandPark.Ui\Assets\Icons\black-line-full.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
 

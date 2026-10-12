@@ -14,6 +14,7 @@ public partial class ErrorWindow : Window
     public ErrorWindow()
     {
         InitializeComponent();
+        this.FollowThemeVariant();
 
         // 打开后把焦点放在“确定”上，回车/ESC 可以立即关闭
         Opened += (_, _) => this.FindControl<Button>("OkButton")?.Focus();

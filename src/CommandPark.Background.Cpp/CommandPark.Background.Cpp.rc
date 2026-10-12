@@ -1,0 +1,12 @@
+﻿// CommandPark.Background.Cpp.exe 的程序图标。
+//
+// 与主程序共用同一份 Logo：原图在仓库根目录 assets\logo\out\，
+// UI 工程里的 Assets\Icons\ 是构建用的副本（主程序的 ApplicationIcon 也用它），
+// 这里按相对路径引用，改图标时不用动本文件。
+//
+// 注释含中文，显式声明 UTF-8（rc.exe 默认按 ANSI / 本地代码页解析）。
+#pragma code_page(65001)
+
+#define IDI_COMMANDPARK 101
+
+IDI_COMMANDPARK ICON "..\\CommandPark.Ui\\Assets\\Icons\\black-line-full.ico"

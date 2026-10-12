@@ -4,8 +4,8 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-        <!-- 可执行文件图标（任务栏、开始菜单、卸载列表都用它）；换成正式图标时改这一处即可 -->
-        <ApplicationIcon>Assets\avalonia-logo.ico</ApplicationIcon>
+        <!-- 可执行文件图标（资源管理器、开始菜单、任务管理器、托盘、卸载列表都用它）。源文件在 assets\logo\out\，改图标时把新版复制到 Assets\Icons\ 再改这一处，并同步 installer\CommandPark.iss -->
+        <ApplicationIcon>Assets\Icons\black-line-full.ico</ApplicationIcon>
     </PropertyGroup>
 
     <!-- 后台程序（C++）由主程序在首次启动时拉起，构建时复制到主程序旁边。

@@ -18,5 +18,8 @@
     <ClCompile Include="CommandPark.Background.Cpp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ResourceCompile Include="CommandPark.Background.Cpp.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

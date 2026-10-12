@@ -29,6 +29,7 @@ public partial class AiChatWindow : Window
     public AiChatWindow()
     {
         InitializeComponent();
+        this.FollowThemeVariant();
 
         // 与主界面一致：使用与 quickSelect.modifier「相对」的另一个修饰键，
         // 避免与快速选择冲突，也避开 Alt+F1 与 NVIDIA 截图冲突。

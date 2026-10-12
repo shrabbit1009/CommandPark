@@ -10,6 +10,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        this.FollowThemeVariant();
 
         var parkViewModel = new ParkMainViewModel();
         var vm = new MainViewModel

@@ -11,6 +11,7 @@ public partial class HintDetailsWindow : Window
     public HintDetailsWindow()
     {
         InitializeComponent();
+        this.FollowThemeVariant();
         Opened += (_, _) => this.FindControl<Button>("CloseButton")?.Focus();
     }
 
