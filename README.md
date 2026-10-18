@@ -485,7 +485,7 @@ pwsh installer/build.ps1 -Version 1.2.3
   - **默认勾选「开机自动启动」**：写 `HKCU\...\Run`，命令行是 `"...\CommandPark.Ui.exe" --no-display`，
     开机后静默拉起后台常驻、不弹提示；取消勾选会删掉该项，升级时沿用上次的选择。只对安装它的那个用户生效。
   - 默认配置与 Schema 释放到 `%APPDATA%\shRabbit\CommandPark`；配置文件已存在时不会覆盖，升级会保留用户修改。
-  - 卸载时若主程序或后台程序仍在运行，会提示先退出并支持重试；随后分别询问是否删除 `clicks.htt` 和配置文件，默认两项都删除。选择保留后，相关文件会继续留在
+  - 卸载时若主程序或后台程序仍在运行，会提示先退出并支持重试；随后显示“卸载选项”窗口，用两个默认勾选的复选框选择是否删除 `clicks.htt` 和配置文件。取消勾选后，相关文件会继续留在
     `%APPDATA%\shRabbit\CommandPark\`。
   - 安装向导支持简体中文与英文，跟随系统语言自动选择。
 - 常用参数：`-Mode Aot`（改用 Native AOT 发布）、`-SkipPublish`（复用已有 publish 目录，只重新打包）、

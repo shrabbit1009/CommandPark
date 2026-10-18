@@ -93,15 +93,25 @@ chinesesimplified.StartupTask=开机自动启动（后台常驻，用全局热�
 chinesesimplified.GitHubShortcut=访问 GitHub 仓库
 chinesesimplified.UninstallShortcut=卸载 CommandPark
 chinesesimplified.CloseBeforeUninstall=CommandPark 正在运行。请先关闭主程序，并从系统托盘退出后台程序，然后点击“重试”继续卸载。
-chinesesimplified.DeleteClicksPrompt=是否删除点击记录 clicks.htt？默认删除。
-chinesesimplified.DeleteConfigPrompt=是否删除配置文件 commandpark.json / config.json？默认删除。
+chinesesimplified.UninstallOptionsCaption=卸载选项
+chinesesimplified.UninstallOptionsTitle=选择要删除的本机数据
+chinesesimplified.UninstallOptionsDescription=取消勾选可以保留对应数据；默认两项都会删除。
+chinesesimplified.UninstallClicksOption=删除点击记录 clicks.htt
+chinesesimplified.UninstallConfigOption=删除配置文件 commandpark.json / config.json
+chinesesimplified.UninstallOptionsOk=继续卸载
+chinesesimplified.UninstallOptionsCancel=取消
 english.StartupGroup=Startup options
 english.StartupTask=Start automatically at sign-in (run in the background, open with the global hotkey)
 english.GitHubShortcut=Visit GitHub repository
 english.UninstallShortcut=Uninstall CommandPark
 english.CloseBeforeUninstall=CommandPark is running. Close the main program and exit the background program from the system tray, then click Retry to continue uninstalling.
-english.DeleteClicksPrompt=Delete click history (clicks.htt)? The default is Yes.
-english.DeleteConfigPrompt=Delete configuration files (commandpark.json / config.json)? The default is Yes.
+english.UninstallOptionsCaption=Uninstall options
+english.UninstallOptionsTitle=Choose local data to delete
+english.UninstallOptionsDescription=Clear a checkbox to keep the corresponding data. Both are deleted by default.
+english.UninstallClicksOption=Delete click history (clicks.htt)
+english.UninstallConfigOption=Delete configuration files (commandpark.json / config.json)
+english.UninstallOptionsOk=Uninstall
+english.UninstallOptionsCancel=Cancel
 
 [Tasks]
 ; 开机自启动：默认勾选，用户可以取消。升级时沿用上次的选择（UsePreviousTasks 默认 yes）。
@@ -173,6 +183,94 @@ begin
   DeleteFile(TempFile);
 end;
 
+function ShowUninstallOptions(): Boolean;
+var
+  Form: TSetupForm;
+  TitleLabel, DescriptionLabel: TNewStaticText;
+  ClicksCheckBox, ConfigCheckBox: TNewCheckBox;
+  OKButton, CancelButton: TNewButton;
+  ButtonWidth: Integer;
+begin
+  Result := False;
+  Form := CreateCustomForm(ScaleX(520), ScaleY(250), False, False);
+  try
+    Form.Caption := ExpandConstant('{cm:UninstallOptionsCaption}');
+    Form.BorderStyle := bsDialog;
+    Form.Position := poScreenCenter;
+
+    TitleLabel := TNewStaticText.Create(Form);
+    TitleLabel.Parent := Form;
+    TitleLabel.Left := ScaleX(24);
+    TitleLabel.Top := ScaleY(20);
+    TitleLabel.Width := Form.ClientWidth - ScaleX(48);
+    TitleLabel.Height := ScaleY(24);
+    TitleLabel.AutoSize := False;
+    TitleLabel.Font.Style := [fsBold];
+    TitleLabel.Caption := ExpandConstant('{cm:UninstallOptionsTitle}');
+
+    DescriptionLabel := TNewStaticText.Create(Form);
+    DescriptionLabel.Parent := Form;
+    DescriptionLabel.Left := ScaleX(24);
+    DescriptionLabel.Top := ScaleY(52);
+    DescriptionLabel.Width := Form.ClientWidth - ScaleX(48);
+    DescriptionLabel.Height := ScaleY(42);
+    DescriptionLabel.AutoSize := False;
+    DescriptionLabel.WordWrap := True;
+    DescriptionLabel.Caption := ExpandConstant('{cm:UninstallOptionsDescription}');
+
+    ClicksCheckBox := TNewCheckBox.Create(Form);
+    ClicksCheckBox.Parent := Form;
+    ClicksCheckBox.Left := ScaleX(24);
+    ClicksCheckBox.Top := ScaleY(108);
+    ClicksCheckBox.Width := Form.ClientWidth - ScaleX(48);
+    ClicksCheckBox.Height := ScaleY(24);
+    ClicksCheckBox.Caption := ExpandConstant('{cm:UninstallClicksOption}');
+    ClicksCheckBox.Checked := True;
+
+    ConfigCheckBox := TNewCheckBox.Create(Form);
+    ConfigCheckBox.Parent := Form;
+    ConfigCheckBox.Left := ScaleX(24);
+    ConfigCheckBox.Top := ScaleY(142);
+    ConfigCheckBox.Width := Form.ClientWidth - ScaleX(48);
+    ConfigCheckBox.Height := ScaleY(24);
+    ConfigCheckBox.Caption := ExpandConstant('{cm:UninstallConfigOption}');
+    ConfigCheckBox.Checked := True;
+
+    OKButton := TNewButton.Create(Form);
+    OKButton.Parent := Form;
+    OKButton.Caption := ExpandConstant('{cm:UninstallOptionsOk}');
+    OKButton.Top := Form.ClientHeight - ScaleY(23 + 16);
+    OKButton.Height := ScaleY(23);
+    OKButton.ModalResult := mrOk;
+    OKButton.Default := True;
+
+    CancelButton := TNewButton.Create(Form);
+    CancelButton.Parent := Form;
+    CancelButton.Caption := ExpandConstant('{cm:UninstallOptionsCancel}');
+    CancelButton.Top := Form.ClientHeight - ScaleY(23 + 16);
+    CancelButton.Height := ScaleY(23);
+    CancelButton.ModalResult := mrCancel;
+    CancelButton.Cancel := True;
+
+    ButtonWidth := Form.CalculateButtonWidth([OKButton.Caption, CancelButton.Caption]);
+    OKButton.Width := ButtonWidth;
+    CancelButton.Width := ButtonWidth;
+    CancelButton.Left := Form.ClientWidth - ScaleX(24) - ButtonWidth;
+    OKButton.Left := CancelButton.Left - ScaleX(8) - ButtonWidth;
+
+    Form.ActiveControl := OKButton;
+
+    if Form.ShowModal() = mrOk then
+    begin
+      DeleteClickHistory := ClicksCheckBox.Checked;
+      DeleteConfigFiles := ConfigCheckBox.Checked;
+      Result := True;
+    end;
+  finally
+    Form.Free();
+  end;
+end;
+
 function InitializeUninstall(): Boolean;
 begin
   Result := True;
@@ -193,10 +291,11 @@ begin
   // 静默卸载保持默认行为：点击记录与配置文件都删除。
   if not UninstallSilent() then
   begin
-    DeleteClickHistory :=
-      MsgBox(ExpandConstant('{cm:DeleteClicksPrompt}'), mbConfirmation, MB_YESNO or MB_DEFBUTTON1) = IDYES;
-    DeleteConfigFiles :=
-      MsgBox(ExpandConstant('{cm:DeleteConfigPrompt}'), mbConfirmation, MB_YESNO or MB_DEFBUTTON1) = IDYES;
+    if not ShowUninstallOptions() then
+    begin
+      Result := False;
+      Exit;
+    end;
   end;
 end;
 
