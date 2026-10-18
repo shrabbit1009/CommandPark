@@ -263,13 +263,15 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 
 字段说明：
 
-- `name`：搜索和列表中显示的名称，是**唯一参与搜索匹配的字段**；`.cpc` 文件名、`execFile` 文件名和描述都不会作为搜索词。省略时使用本地化的回退名称。
+- `name`：搜索和列表中显示的名称，是**唯一参与搜索匹配的字段**，支持中文、连续拼音和拼音首字母；`.cpc` 文件名、`execFile` 文件名和描述都不会作为搜索词。省略时使用本地化的回退名称。
 - `description`：说明文字，仅用于展示，不参与搜索。
 - `icon`：普通图片图标路径，支持 `.png`、`.jpg`、`.jpeg`、`.bmp`、`.gif`、`.webp` 和 `.svg`。
 - `lucideIcon`：Lucide.Avalonia 的 `LucideIconKind` 枚举名字符串，例如 `SquareArrowOutUpRight`。同时填写 `icon` 和 `lucideIcon` 时，`lucideIcon` 优先。
 - `execFile`：要执行的 `.exe`、`.cmd`、`.bat` 或 `.ps1` 文件。
 - `args`：参数数组，每个元素作为一个独立参数传递。
 - `env`：启动进程时覆盖的环境变量。
+
+例如 `name` 为 `代理 开（系统代理）` 时，可以用 `代理`、`dailikai` 或 `dlk` 搜索到该命令。
 
 `execFile` 和 `icon` 的相对路径都相对于 `.cpc` 文件本身解析。`.cpc` 文件支持 JSON 注释与尾随逗号。使用 Lucide 图标时，例如：
 

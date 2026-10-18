@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using CommandPark.Strings;
 using CommandPark.Utils;
+using NPinyin;
 
 namespace CommandPark.Sources;
 
@@ -109,8 +111,20 @@ public class CustomExecSource : IHintSource, IHintWithPrefix, IConfigReader
         }
     }
 
-    private static float CalculateScore(CustomExecCommand command, string keyword) =>
-        ComputeSimilarityHelper.ComputeSimilarity(keyword, command.Name);
+    private static float CalculateScore(CustomExecCommand command, string keyword)
+    {
+        var normalizedQuery = Normalize(keyword);
+        if (normalizedQuery.Length == 0)
+        {
+            return 0f;
+        }
+
+        var directScore = ComputeSimilarityHelper.ComputeSimilarity(normalizedQuery, command.NormalizedName);
+        var pinyinScore = ComputeSimilarityHelper.ComputeSimilarity(normalizedQuery, command.NormalizedPinyin);
+        var initialsScore = ComputeSimilarityHelper.ComputeSimilarity(normalizedQuery, command.Initials);
+
+        return Math.Max(directScore, Math.Max(pinyinScore, initialsScore));
+    }
 
     private Task OnRun(CustomExecCommand command, CancellationToken cancellationToken)
     {
@@ -249,12 +263,16 @@ public class CustomExecSource : IHintSource, IHintWithPrefix, IConfigReader
         var description = string.IsNullOrWhiteSpace(dto.Description)
             ? Localization.Get("sources.customExec.fallback.description")
             : dto.Description.Trim();
+        var normalizedName = Normalize(name);
 
         return new CustomExecCommand(
             configPath,
             execFile,
             name,
             description,
+            normalizedName,
+            Normalize(Pinyin.GetPinyin(name)),
+            BuildInitials(name),
             CleanArguments(dto.Args),
             CleanEnvironment(dto.Env),
             CreateIcon(dto.LucideIcon, iconPath, execFile));
@@ -303,6 +321,65 @@ public class CustomExecSource : IHintSource, IHintWithPrefix, IConfigReader
         return IsExecutableIcon(Path.GetExtension(execFile))
             ? new ExecutableHintIcon(execFile)
             : new FileIconHintIcon(execFile);
+    }
+
+    private static string BuildInitials(string name)
+    {
+        var initials = new StringBuilder();
+        var atWordStart = true;
+        var previousWasLower = false;
+
+        foreach (var c in name)
+        {
+            if (!char.IsLetterOrDigit(c))
+            {
+                atWordStart = true;
+                previousWasLower = false;
+                continue;
+            }
+
+            if (IsCjk(c))
+            {
+                var syllable = Pinyin.GetPinyin(c);
+                if (syllable.Length > 0)
+                {
+                    initials.Append(char.ToLowerInvariant(syllable[0]));
+                }
+
+                atWordStart = true;
+                previousWasLower = false;
+                continue;
+            }
+
+            if (atWordStart || (char.IsUpper(c) && previousWasLower))
+            {
+                initials.Append(char.ToLowerInvariant(c));
+            }
+
+            previousWasLower = char.IsLower(c);
+            atWordStart = false;
+        }
+
+        return initials.ToString();
+    }
+
+    private static bool IsCjk(char c) => c is (>= '\u4e00' and <= '\u9fff') or (>= '\u3400' and <= '\u4dbf');
+
+    private static string Normalize(string value)
+    {
+        var builder = new StringBuilder(value.Length);
+
+        foreach (var c in value)
+        {
+            if (char.IsWhiteSpace(c) || c is '-' or '_' or '.' or '(' or ')' or '[' or ']' or ',' or '，' or '、' or '·')
+            {
+                continue;
+            }
+
+            builder.Append(char.ToLowerInvariant(c));
+        }
+
+        return builder.ToString();
     }
 
     private static bool IsExecutableIcon(string extension) => extension.ToLowerInvariant() is
@@ -413,6 +490,9 @@ public class CustomExecSource : IHintSource, IHintWithPrefix, IConfigReader
         string ExecFile,
         string Name,
         string Description,
+        string NormalizedName,
+        string NormalizedPinyin,
+        string Initials,
         IReadOnlyList<string> Args,
         IReadOnlyDictionary<string, string> Env,
         IHintIcon? Icon)

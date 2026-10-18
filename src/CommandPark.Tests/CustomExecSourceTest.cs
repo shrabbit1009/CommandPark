@@ -131,6 +131,21 @@ public class CustomExecSourceTest : IDisposable
         Assert.Empty(await source.SearchAsync("zzz").ToListAsync());
     }
 
+    [Theory]
+    [InlineData("代理")]
+    [InlineData("daili")]
+    [InlineData("dailikai")]
+    [InlineData("dlk")]
+    public async Task SearchAsync_MatchesChineseNameByPinyinAndInitials(string query)
+    {
+        CreateCommand("""{"name":"代理 开（系统代理）","execFile":"proxy-on.ps1"}""");
+        var source = new CustomExecSource(_root) { Paths = ["commands"] };
+
+        var hint = Assert.Single(await source.SearchAsync(query).ToListAsync());
+
+        Assert.Equal("代理 开（系统代理）", hint.Name);
+    }
+
     [Fact]
     public async Task SearchAsync_LucideIcon_TakesPrecedenceOverImageIcon()
     {
