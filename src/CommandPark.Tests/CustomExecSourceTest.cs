@@ -111,7 +111,7 @@ public class CustomExecSourceTest : IDisposable
     }
 
     [Fact]
-    public async Task SearchAsync_MatchesDescriptionAndExecutableName()
+    public async Task SearchAsync_MatchesNameOnly_NotDescriptionOrFileNames()
     {
         CreateCommand(
             """
@@ -121,13 +121,34 @@ public class CustomExecSourceTest : IDisposable
               "execFile": "pack-tool.exe"
             }
             """,
-            fileName: "release-tool.cpc");
+            fileName: "zzz.cpc");
         var source = new CustomExecSource(_root) { Paths = ["commands"] };
 
-        Assert.Single(await source.SearchAsync("production").ToListAsync());
-        Assert.Single(await source.SearchAsync("pack-tool.exe").ToListAsync());
-        Assert.Single(await source.SearchAsync("release-tool").ToListAsync());
-        Assert.Empty(await source.SearchAsync("unrelated").ToListAsync());
+        Assert.Single(await source.SearchAsync("release").ToListAsync());
+        Assert.Empty(await source.SearchAsync("production").ToListAsync());
+        Assert.Empty(await source.SearchAsync("pack-tool").ToListAsync());
+        Assert.Empty(await source.SearchAsync("pack-tool.exe").ToListAsync());
+        Assert.Empty(await source.SearchAsync("zzz").ToListAsync());
+    }
+
+    [Fact]
+    public async Task SearchAsync_LucideIcon_TakesPrecedenceOverImageIcon()
+    {
+        CreateCommand(
+            """
+            {
+              "name": "Deploy",
+              "icon": "deploy.png",
+              "lucideIcon": "SquareArrowOutUpRight",
+              "execFile": "deploy.exe"
+            }
+            """);
+        var source = new CustomExecSource(_root) { Paths = ["commands"] };
+
+        var hint = Assert.Single(await source.SearchAsync("deploy").ToListAsync());
+
+        var icon = Assert.IsType<LucideIdHintIcon>(hint.Icon);
+        Assert.Equal("SquareArrowOutUpRight", icon.Id);
     }
 
     [Fact]
@@ -172,10 +193,11 @@ public class CustomExecSourceTest : IDisposable
         CreateCommand("""{"execFile":"my-tool.exe"}""");
         var source = new CustomExecSource(_root) { Paths = ["commands"] };
 
-        var hint = Assert.Single(await source.SearchAsync("my-tool").ToListAsync());
+        var hint = Assert.Single(await source.SearchAsync("自定义命令").ToListAsync());
 
-        Assert.Equal("自定义命令 my-tool", hint.Name);
+        Assert.Equal("自定义命令", hint.Name);
         Assert.Equal("自定义命令", hint.Description);
+        Assert.Empty(await source.SearchAsync("my-tool").ToListAsync());
     }
 
     [Fact]

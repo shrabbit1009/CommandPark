@@ -151,7 +151,7 @@
         },
         "customExec": {
             "fallback": {
-                "name": "Commande personnalisée {0}",
+                "name": "Commande personnalisée",
                 "description": "Commande personnalisée"
             }
         },

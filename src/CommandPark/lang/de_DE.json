@@ -151,7 +151,7 @@
         },
         "customExec": {
             "fallback": {
-                "name": "Benutzerdefinierter Befehl {0}",
+                "name": "Benutzerdefinierter Befehl",
                 "description": "Benutzerdefinierter Befehl"
             }
         },

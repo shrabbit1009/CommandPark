@@ -109,24 +109,8 @@ public class CustomExecSource : IHintSource, IHintWithPrefix, IConfigReader
         }
     }
 
-    private static float CalculateScore(CustomExecCommand command, string keyword)
-    {
-        var nameScore = ComputeSimilarityHelper.ComputeSimilarity(keyword, command.Name);
-        var fileScore = Math.Max(
-            ComputeSimilarityHelper.ComputeSimilarity(keyword, Path.GetFileName(command.ExecFile)),
-            ComputeSimilarityHelper.ComputeSimilarity(
-                keyword,
-                Path.GetFileNameWithoutExtension(command.ExecFile))) * 0.95f;
-        var configScore = ComputeSimilarityHelper.ComputeSimilarity(
-            keyword,
-            Path.GetFileNameWithoutExtension(command.ConfigPath)) * 0.90f;
-
-        var descriptionScore = string.IsNullOrWhiteSpace(command.SearchDescription)
-            ? 0f
-            : ComputeSimilarityHelper.ComputeSimilarity(keyword, command.SearchDescription) * 0.85f;
-
-        return Math.Max(nameScore, Math.Max(fileScore, Math.Max(configScore, descriptionScore)));
-    }
+    private static float CalculateScore(CustomExecCommand command, string keyword) =>
+        ComputeSimilarityHelper.ComputeSimilarity(keyword, command.Name);
 
     private Task OnRun(CustomExecCommand command, CancellationToken cancellationToken)
     {
@@ -259,9 +243,8 @@ public class CustomExecSource : IHintSource, IHintWithPrefix, IConfigReader
         }
 
         var iconPath = ResolvePath(dto.Icon, directory);
-        var executableName = Path.GetFileNameWithoutExtension(execFile);
         var name = string.IsNullOrWhiteSpace(dto.Name)
-            ? Localization.Format("sources.customExec.fallback.name", executableName)
+            ? Localization.Get("sources.customExec.fallback.name")
             : dto.Name.Trim();
         var description = string.IsNullOrWhiteSpace(dto.Description)
             ? Localization.Get("sources.customExec.fallback.description")
@@ -272,10 +255,9 @@ public class CustomExecSource : IHintSource, IHintWithPrefix, IConfigReader
             execFile,
             name,
             description,
-            string.IsNullOrWhiteSpace(dto.Description) ? null : description,
             CleanArguments(dto.Args),
             CleanEnvironment(dto.Env),
-            CreateIcon(iconPath ?? execFile));
+            CreateIcon(dto.LucideIcon, iconPath, execFile));
     }
 
     private static IReadOnlyList<string> CleanArguments(string[]? args) =>
@@ -306,25 +288,22 @@ public class CustomExecSource : IHintSource, IHintWithPrefix, IConfigReader
         return result;
     }
 
-    private static IHintIcon? CreateIcon(string iconPath)
+    private static IHintIcon? CreateIcon(string? lucideIcon, string? iconPath, string execFile)
     {
-        var extension = Path.GetExtension(iconPath);
+        if (!string.IsNullOrWhiteSpace(lucideIcon))
+        {
+            return new LucideIdHintIcon(lucideIcon.Trim());
+        }
 
-        if (IsBitmapIcon(extension))
+        if (!string.IsNullOrWhiteSpace(iconPath))
         {
             return new LocalImageHintIcon(iconPath);
         }
 
-        if (IsExecutableIcon(extension))
-        {
-            return new ExecutableHintIcon(iconPath);
-        }
-
-        return new FileIconHintIcon(iconPath);
+        return IsExecutableIcon(Path.GetExtension(execFile))
+            ? new ExecutableHintIcon(execFile)
+            : new FileIconHintIcon(execFile);
     }
-
-    private static bool IsBitmapIcon(string extension) => extension.ToLowerInvariant() is
-        ".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif" or ".webp" or ".svg";
 
     private static bool IsExecutableIcon(string extension) => extension.ToLowerInvariant() is
         ".exe" or ".dll" or ".scr" or ".cpl" or ".ocx" or ".sys";
@@ -434,7 +413,6 @@ public class CustomExecSource : IHintSource, IHintWithPrefix, IConfigReader
         string ExecFile,
         string Name,
         string Description,
-        string? SearchDescription,
         IReadOnlyList<string> Args,
         IReadOnlyDictionary<string, string> Env,
         IHintIcon? Icon)
@@ -450,6 +428,9 @@ public class CustomExecSource : IHintSource, IHintWithPrefix, IConfigReader
 
         [JsonPropertyName("icon")]
         public string Icon { get; set; } = string.Empty;
+
+        [JsonPropertyName("lucideIcon")]
+        public string LucideIcon { get; set; } = string.Empty;
 
         [JsonPropertyName("description")]
         public string Description { get; set; } = string.Empty;

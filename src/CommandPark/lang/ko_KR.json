@@ -151,7 +151,7 @@
         },
         "customExec": {
             "fallback": {
-                "name": "사용자 지정 명령 {0}",
+                "name": "사용자 지정 명령",
                 "description": "사용자 지정 명령"
             }
         },

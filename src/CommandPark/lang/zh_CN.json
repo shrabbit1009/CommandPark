@@ -151,7 +151,7 @@
         },
         "customExec": {
             "fallback": {
-                "name": "自定义命令 {0}",
+                "name": "自定义命令",
                 "description": "自定义命令"
             }
         },

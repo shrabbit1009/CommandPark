@@ -151,7 +151,7 @@
         },
         "customExec": {
             "fallback": {
-                "name": "Custom command {0}",
+                "name": "Custom command",
                 "description": "Custom command"
             }
         },

@@ -263,14 +263,30 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 
 字段说明：
 
-- `name`：搜索和列表中显示的名称；省略时使用本地化的回退名称（包含可执行文件名）。
-- `description`：说明文字，也会参与搜索。
-- `icon`：图标路径，支持图片、可执行文件或系统文件图标；省略时使用 `execFile` 的图标。
+- `name`：搜索和列表中显示的名称，是**唯一参与搜索匹配的字段**；`.cpc` 文件名、`execFile` 文件名和描述都不会作为搜索词。省略时使用本地化的回退名称。
+- `description`：说明文字，仅用于展示，不参与搜索。
+- `icon`：普通图片图标路径，支持 `.png`、`.jpg`、`.jpeg`、`.bmp`、`.gif`、`.webp` 和 `.svg`。
+- `lucideIcon`：Lucide.Avalonia 的 `LucideIconKind` 枚举名字符串，例如 `SquareArrowOutUpRight`。同时填写 `icon` 和 `lucideIcon` 时，`lucideIcon` 优先。
 - `execFile`：要执行的 `.exe`、`.cmd`、`.bat` 或 `.ps1` 文件。
 - `args`：参数数组，每个元素作为一个独立参数传递。
 - `env`：启动进程时覆盖的环境变量。
 
-`execFile` 和 `icon` 的相对路径都相对于 `.cpc` 文件本身解析。`.cpc` 文件支持 JSON 注释与尾随逗号。
+`execFile` 和 `icon` 的相对路径都相对于 `.cpc` 文件本身解析。`.cpc` 文件支持 JSON 注释与尾随逗号。使用 Lucide 图标时，例如：
+
+```json
+{
+  "name": "Deploy",
+  "description": "发布当前项目",
+  "lucideIcon": "SquareArrowOutUpRight",
+  "execFile": "scripts/deploy.cmd"
+}
+```
+
+#### 获取 Lucide 图标
+
+1. 通过 [https://lucide.dev/icons/](https://lucide.dev/icons/) 获取所有图标。
+2. 找到你的图标，转换拼写。例如将 `square-arrow-out-up-right` 转为 `SquareArrowOutUpRight`，这就是 Lucide.Avalonia 使用的枚举名。
+3. 图标是否可用取决于依赖包版本。请反编译当前安装的 CommandPark 所依赖的 `Lucide.Avalonia` 包，检查该图标名是否出现在 `Lucide.Avalonia.LucideIconKind` 枚举中。
 
 ```text
 >deploy         带前缀搜索并加权
