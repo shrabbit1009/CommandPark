@@ -130,9 +130,10 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
   Flags: uninsdeletevalue; Tasks: startup
 
 [Run]
-; 装完可以顺手启动一次：第一次运行会拉起后台程序并提示热键，正是我们想让人看到的
+; 装完可以顺手启动一次：第一次运行会拉起后台程序并提示热键，正是我们想让人看到的。
+; 主程序清单要求管理员权限，postinstall 默认会退回原始用户令牌，所以必须显式用 runas 启动。
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
-  Flags: nowait postinstall skipifsilent
+  Verb: "runas"; Flags: nowait postinstall skipifsilent shellexec
 
 [UninstallDelete]
 ; 程序运行时留下的文件（后台程序 PID、点击权重缓存、临时文件）不是安装时写进去的，
