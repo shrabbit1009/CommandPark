@@ -113,6 +113,7 @@ $required = @(
     "CommandPark.Ui.exe",
     "CommandPark.Background.Cpp.exe",
     "commandpark.json",
+    "commandpark.schema.json",
     "lang\zh_CN.json",
     "LICENSE",
     "THIRD-PARTY-NOTICES.md"

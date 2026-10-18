@@ -33,7 +33,14 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
                 Localization.Get("sources.welcome.changeConfig.description"),
                 ct =>
                 {
-                    Process.Start("explorer.exe", Path.Join(AppDomain.CurrentDomain.BaseDirectory, "commandpark.json"));
+                    var configPath = ConfigFile.FindPath();
+                    if (configPath is null)
+                    {
+                        Directory.CreateDirectory(ConfigFile.UserDirectory);
+                        configPath = ConfigFile.UserDirectory;
+                    }
+
+                    Process.Start("explorer.exe", configPath);
                     return Task.CompletedTask;
                 })
             {

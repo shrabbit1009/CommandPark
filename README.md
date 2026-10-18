@@ -48,7 +48,7 @@ CommandPark 当前包含八个来源。除首屏欢迎项外，它们会并发�
 - `hotkey` 不填时使用默认值 `Ctrl+Alt+D`；显式写 `null` 时不拉起后台程序，双击直接运行主程序。
 - 后台不可用（后台程序缺失、`hotkey` 为 `null`、后台启动失败等）时，主程序照常显示输入窗口，并在首屏欢迎项**最后**追加一条提示。
 
-> “程序目录”指主程序与后台程序所在目录，`PID` 与 `commandpark.json` 都在这里查找。
+> “程序目录”指主程序与后台程序所在目录；`PID` 固定写在程序目录，`commandpark.json` 默认位于 `%APPDATA%\shRabbit\CommandPark`。
 
 ### 点击权重
 
@@ -228,7 +228,25 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 
 **7. 自定义命令（`>` / `cus:` / `cpc:` 前缀）**
 
-先在 `commandpark.json` 的 `sources.customExec.paths` 中填写存放 `.cpc` 文件的目录（相对路径以 `commandpark.json` 所在目录为基准），再在目录里创建命令文件：
+自定义命令由两类文件组成：
+
+1. 用户配置文件 `%APPDATA%\shRabbit\CommandPark\commandpark.json`：声明 `.cpc` 文件所在目录。
+2. `.cpc` 命令文件：每个文件定义一条命令，放在任意可访问的目录中。
+
+先在用户配置文件的 `sources.customExec.paths` 中填写命令目录：
+
+```json
+{
+  "sources": {
+    "customExec": {
+      "paths": ["%APPDATA%\\shRabbit\\CommandPark\\custom"],
+      "prefixMode": false
+    }
+  }
+}
+```
+
+`paths` 支持环境变量和相对路径；相对路径以当前生效的 `commandpark.json` 所在目录为基准，目录会递归扫描。随后在 `%APPDATA%\shRabbit\CommandPark\custom` 下新建一个 `.cpc` 文件，例如 `deploy.cpc`：
 
 ```json
 {
@@ -243,6 +261,17 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 }
 ```
 
+字段说明：
+
+- `name`：搜索和列表中显示的名称；省略时使用本地化的回退名称（包含可执行文件名）。
+- `description`：说明文字，也会参与搜索。
+- `icon`：图标路径，支持图片、可执行文件或系统文件图标；省略时使用 `execFile` 的图标。
+- `execFile`：要执行的 `.exe`、`.cmd`、`.bat` 或 `.ps1` 文件。
+- `args`：参数数组，每个元素作为一个独立参数传递。
+- `env`：启动进程时覆盖的环境变量。
+
+`execFile` 和 `icon` 的相对路径都相对于 `.cpc` 文件本身解析。`.cpc` 文件支持 JSON 注释与尾随逗号。
+
 ```text
 >deploy         带前缀搜索并加权
 cus:deploy      同上
@@ -250,12 +279,15 @@ cpc:deploy      同上
 deploy          默认也可直接按名称搜索
 ```
 
-`execFile` 与 `icon` 的相对路径都相对于 `.cpc` 文件本身解析；`args` 会原样作为独立参数传递，`env` 会覆盖启动进程的环境变量。`.cmd`、`.bat` 与 `.ps1` 会自动套用对应的命令解释器。
+`prefixMode` 设为 `true` 后，只有输入上述前缀才会运行自定义命令源；设为 `false` 时无前缀也参与搜索，带前缀只提升权重。
 
 ### 配置文件
 
-程序目录中的 `commandpark.json` 用于配置主题、热键、快速选择、AI 与搜索源；程序也会兼容读取同目录下的 `config.json`。
-`commandpark.schema.json` 是同一目录下的 JSON Schema，支持编辑器和 IDE 自动补全与校验。
+默认读取 `%APPDATA%\shRabbit\CommandPark\commandpark.json`，用于配置主题、热键、快速选择、AI 与搜索源；程序也会兼容读取同目录下的 `config.json`。安装程序会把默认配置和 `commandpark.schema.json` 一并释放到该目录。
+
+同时支持便携模式：如果程序目录本身存在 `commandpark.json` 或 `config.json`，则使用程序目录中的文件，并**完全忽略** `%APPDATA%` 下的用户配置。此时同目录的 `commandpark.schema.json` 也会随程序一起提供，编辑器和 IDE 仍可正常补全。
+
+`commandpark.schema.json` 与当前生效的配置文件位于同一目录，支持编辑器和 IDE 自动补全与校验。
 
 ```json
 {
@@ -452,9 +484,9 @@ pwsh installer/build.ps1 -Version 1.2.3
   - 开始菜单会创建 `CommandPark` 文件夹，内含主程序、访问 GitHub 仓库和卸载三个入口；桌面快捷方式默认不勾。
   - **默认勾选「开机自动启动」**：写 `HKCU\...\Run`，命令行是 `"...\CommandPark.Ui.exe" --no-display`，
     开机后静默拉起后台常驻、不弹提示；取消勾选会删掉该项，升级时沿用上次的选择。只对安装它的那个用户生效。
-  - `commandpark.json` 只在不存在时释放：升级不会覆盖你改过的配置。
-  - 卸载时若主程序或后台程序仍在运行，会提示先退出并支持重试；卸载会删除程序目录（含 `commandpark.json`）、开始菜单项与自启动项；`clicks.htt` 等自己的数据在
-    `%APPDATA%\shRabbit\CommandPark\`，不受影响。
+  - 默认配置与 Schema 释放到 `%APPDATA%\shRabbit\CommandPark`；配置文件已存在时不会覆盖，升级会保留用户修改。
+  - 卸载时若主程序或后台程序仍在运行，会提示先退出并支持重试；随后分别询问是否删除 `clicks.htt` 和配置文件，默认两项都删除。选择保留后，相关文件会继续留在
+    `%APPDATA%\shRabbit\CommandPark\`。
   - 安装向导支持简体中文与英文，跟随系统语言自动选择。
 - 常用参数：`-Mode Aot`（改用 Native AOT 发布）、`-SkipPublish`（复用已有 publish 目录，只重新打包）、
   `-SkipZip`（只要安装程序）、`-Iscc <路径>`（指定 ISCC.exe）。

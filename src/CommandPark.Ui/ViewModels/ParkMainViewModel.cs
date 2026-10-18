@@ -627,7 +627,7 @@ public partial class ParkMainViewModel : ViewModelBase
     private static IHintProvider CreateDefaultProvider()
     {
         // 配置文件和真实源都可能做 IO，因此只在第一次搜索时、在线程池上创建。
-        // 程序目录中的 commandpark.json 会决定哪些实现 IConfigReader 的源启用；
+        // 程序目录或用户 Roaming AppData 中的 commandpark.json 会决定哪些实现 IConfigReader 的源启用；
         // ClickHistory.Store 提供基于点击次数的附加排序权重。
         return ConfigurableHintProviderFactory.Create(weightProvider: ClickHistory.Store);
     }

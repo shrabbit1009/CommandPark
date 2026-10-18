@@ -12,7 +12,7 @@
 ;      任务页可以取消；取消后升级不会再自动勾选（UsePreviousTasks 记住上次的选择）。
 ;   2) 只对「安装它的那个用户」自启动（HKCU，而不是 HKLM）：
 ;      全局热键是每个会话各注册一份，多用户机器的其它用户登录时不会平白多出一个常驻进程。
-;   3) commandpark.json 只在不存在时释放：升级不会覆盖用户改过的配置。
+;   3) 默认配置释放到用户 Roaming AppData；已存在时不覆盖，程序目录配置仍作为便携模式优先。
 ;   4) 界面语言：简体中文 + 英文，跟随系统语言自动选择。
 
 #define MyAppName "CommandPark"
@@ -93,11 +93,15 @@ chinesesimplified.StartupTask=开机自动启动（后台常驻，用全局热�
 chinesesimplified.GitHubShortcut=访问 GitHub 仓库
 chinesesimplified.UninstallShortcut=卸载 CommandPark
 chinesesimplified.CloseBeforeUninstall=CommandPark 正在运行。请先关闭主程序，并从系统托盘退出后台程序，然后点击“重试”继续卸载。
+chinesesimplified.DeleteClicksPrompt=是否删除点击记录 clicks.htt？默认删除。
+chinesesimplified.DeleteConfigPrompt=是否删除配置文件 commandpark.json / config.json？默认删除。
 english.StartupGroup=Startup options
 english.StartupTask=Start automatically at sign-in (run in the background, open with the global hotkey)
 english.GitHubShortcut=Visit GitHub repository
 english.UninstallShortcut=Uninstall CommandPark
 english.CloseBeforeUninstall=CommandPark is running. Close the main program and exit the background program from the system tray, then click Retry to continue uninstalling.
+english.DeleteClicksPrompt=Delete click history (clicks.htt)? The default is Yes.
+english.DeleteConfigPrompt=Delete configuration files (commandpark.json / config.json)? The default is Yes.
 
 [Tasks]
 ; 开机自启动：默认勾选，用户可以取消。升级时沿用上次的选择（UsePreviousTasks 默认 yes）。
@@ -109,7 +113,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Excludes: "commandpark.json,*.pdb"; \
   Flags: ignoreversion recursesubdirs createallsubdirs
 ; 用户配置：已经存在就不覆盖，保留用户自己的设置（新装时才释放默认配置）
-Source: "{#PublishDir}\commandpark.json"; DestDir: "{app}"; Flags: onlyifdoesntexist
+Source: "{#PublishDir}\commandpark.json"; DestDir: "{userappdata}\{#MyAppPublisher}\{#MyAppName}"; Flags: onlyifdoesntexist
+Source: "{#PublishDir}\commandpark.schema.json"; DestDir: "{userappdata}\{#MyAppPublisher}\{#MyAppName}"; Flags: ignoreversion
 
 [InstallDelete]
 ; 旧版本把主程序快捷方式直接放在开始菜单根目录；新版改用 CommandPark 文件夹。
@@ -136,13 +141,16 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
   Verb: "runas"; Flags: nowait postinstall skipifsilent shellexec
 
 [UninstallDelete]
-; 程序运行时留下的文件（后台程序 PID、点击权重缓存、临时文件）不是安装时写进去的，
+; 程序运行时留下的文件（后台程序 PID、临时文件）不是安装时写进去的，
 ; 需要显式删除，否则卸载后 {app} 目录会残留
 Type: files; Name: "{app}\PID"
 Type: files; Name: "{app}\*.tmp"
-Type: files; Name: "{app}\*.htt"
 
 [Code]
+var
+  DeleteClickHistory: Boolean;
+  DeleteConfigFiles: Boolean;
+
 function IsCommandParkProcessRunning(const ImageName: String): Boolean;
 var
   Cmd: String;
@@ -168,6 +176,8 @@ end;
 function InitializeUninstall(): Boolean;
 begin
   Result := True;
+  DeleteClickHistory := True;
+  DeleteConfigFiles := True;
 
   // 主程序或后台程序还在运行时，先让用户正常退出，避免卸载文件被占用。
   while IsCommandParkProcessRunning('{#MyAppExeName}') or
@@ -178,6 +188,38 @@ begin
       Result := False;
       Exit;
     end;
+  end;
+
+  // 静默卸载保持默认行为：点击记录与配置文件都删除。
+  if not UninstallSilent() then
+  begin
+    DeleteClickHistory :=
+      MsgBox(ExpandConstant('{cm:DeleteClicksPrompt}'), mbConfirmation, MB_YESNO or MB_DEFBUTTON1) = IDYES;
+    DeleteConfigFiles :=
+      MsgBox(ExpandConstant('{cm:DeleteConfigPrompt}'), mbConfirmation, MB_YESNO or MB_DEFBUTTON1) = IDYES;
+  end;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep <> usPostUninstall then
+    Exit;
+
+  if DeleteClickHistory then
+  begin
+    DeleteFile(ExpandConstant('{app}\clicks.htt'));
+    DeleteFile(ExpandConstant('{userappdata}\shRabbit\CommandPark\clicks.htt'));
+  end;
+
+  if DeleteConfigFiles then
+  begin
+    DeleteFile(ExpandConstant('{app}\commandpark.json'));
+    DeleteFile(ExpandConstant('{app}\config.json'));
+    DeleteFile(ExpandConstant('{userappdata}\shRabbit\CommandPark\commandpark.json'));
+    DeleteFile(ExpandConstant('{userappdata}\shRabbit\CommandPark\config.json'));
+    DeleteFile(ExpandConstant('{userappdata}\shRabbit\CommandPark\commandpark.schema.json'));
+    RemoveDir(ExpandConstant('{userappdata}\shRabbit\CommandPark'));
+    RemoveDir(ExpandConstant('{userappdata}\shRabbit'));
   end;
 end;
 

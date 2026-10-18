@@ -1,8 +1,8 @@
-﻿// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // CommandPark.Background.Cpp
 //
 // CommandPark 的后台常驻程序（由主程序在首次启动时拉起）：
-//   * 从程序目录的 commandpark.json（兼容 config.json）读取全局快捷键 hotkey；
+//   * 从程序目录或用户 Roaming AppData 的 commandpark.json（兼容 config.json）读取全局快捷键 hotkey；
 //   * 常驻后台监听全局快捷键，按下一次唤起一次主程序；
 //   * 在托盘区创建图标，上下文菜单只有“修改配置”和“退出”；
 //   * 启动后把自身 PID 写入程序目录下的 PID 文件，供主程序判断后台是否已经在运行；
@@ -53,6 +53,8 @@ namespace CommandPark::Background
         static constexpr wchar_t WindowClassName[] = L"CommandPark.Background.Window";
         static constexpr wchar_t SingleInstanceMutexName[] = L"Local\\CommandPark.Background.SingleInstance";
 
+        static constexpr wchar_t VendorDirectoryName[] = L"shRabbit";
+        static constexpr wchar_t AppDirectoryName[] = L"CommandPark";
         static constexpr wchar_t ConfigFileName[] = L"commandpark.json";
         static constexpr wchar_t AlternateConfigFileName[] = L"config.json";
         static constexpr wchar_t PidFileName[] = L"PID";
@@ -210,6 +212,28 @@ namespace CommandPark::Background
 
             buffer.resize(written);
             return buffer;
+        }
+
+        static bool DirectoryExists(const std::wstring& path)
+        {
+            const DWORD attributes = path.empty() ? INVALID_FILE_ATTRIBUTES : GetFileAttributesW(path.c_str());
+            return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+        }
+
+        static bool EnsureDirectory(const std::wstring& path)
+        {
+            if (path.empty() || DirectoryExists(path))
+            {
+                return !path.empty();
+            }
+
+            const size_t slash = path.find_last_of(L"\\/");
+            if (slash != std::wstring::npos && slash > 2)
+            {
+                EnsureDirectory(path.substr(0, slash));
+            }
+
+            return CreateDirectoryW(path.c_str(), nullptr) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
         }
 
         static bool FileExists(const std::wstring& path)
@@ -852,12 +876,45 @@ namespace CommandPark::Background
         std::wstring Error;
     };
 
-    /// <summary>读取程序目录中的 commandpark.json（兼容 config.json）。</summary>
+    /// <summary>
+    /// 读取 commandpark.json（兼容 config.json）。
+    /// 程序目录存在任意配置文件时使用便携配置并忽略用户配置；否则使用 Roaming AppData 下的用户配置。
+    /// </summary>
     class ConfigReader
     {
     public:
-        static std::wstring ResolveConfigPath(const std::wstring& directory)
+        static std::wstring ResolveConfigPath(const std::wstring& appDirectory)
         {
+            const std::wstring portable = FindConfigIn(appDirectory);
+            if (!portable.empty())
+            {
+                return portable;
+            }
+
+            const std::wstring userDirectory = GetUserConfigDirectory();
+            if (!userDirectory.empty())
+            {
+                const std::wstring userConfig = FindConfigIn(userDirectory);
+                if (!userConfig.empty())
+                {
+                    return userConfig;
+                }
+
+                // 文件不存在时返回用户默认路径，方便“修改配置”打开目录或新建文件。
+                return PathHelper::Combine(userDirectory, Constants::ConfigFileName);
+            }
+
+            return PathHelper::Combine(appDirectory, Constants::ConfigFileName);
+        }
+
+    private:
+        static std::wstring FindConfigIn(const std::wstring& directory)
+        {
+            if (directory.empty())
+            {
+                return std::wstring();
+            }
+
             const std::wstring primary = PathHelper::Combine(directory, Constants::ConfigFileName);
             if (PathHelper::FileExists(primary))
             {
@@ -865,15 +922,31 @@ namespace CommandPark::Background
             }
 
             const std::wstring alternate = PathHelper::Combine(directory, Constants::AlternateConfigFileName);
-            if (PathHelper::FileExists(alternate))
-            {
-                return alternate;
-            }
-
-            // 文件都不存在时返回默认路径，方便“修改配置”直接打开它。
-            return primary;
+            return PathHelper::FileExists(alternate) ? alternate : std::wstring();
         }
 
+        static std::wstring GetUserConfigDirectory()
+        {
+            const DWORD required = GetEnvironmentVariableW(L"APPDATA", nullptr, 0);
+            if (required == 0)
+            {
+                return std::wstring();
+            }
+
+            std::wstring appData(static_cast<size_t>(required), L'\0');
+            const DWORD written = GetEnvironmentVariableW(L"APPDATA", appData.data(), required);
+            if (written == 0 || written >= required)
+            {
+                return std::wstring();
+            }
+
+            appData.resize(static_cast<size_t>(written));
+            return PathHelper::Combine(
+                PathHelper::Combine(appData, Constants::VendorDirectoryName),
+                Constants::AppDirectoryName);
+        }
+
+    public:
         static HotKeyConfigResult ReadHotKey(const std::wstring& configPath)
         {
             std::string json;
@@ -1682,10 +1755,9 @@ namespace CommandPark::Background
 
             if (!PathHelper::FileExists(path))
             {
-                // 文件不存在时打开程序目录，便于用户自行新建。
-                const std::wstring directory = PathHelper::GetDirectoryPath(
-                    ProcessHelper::GetCurrentExecutablePath());
-
+                // 文件不存在时打开实际配置目录（通常是用户 Roaming AppData），便于用户自行新建。
+                const std::wstring directory = PathHelper::GetDirectoryPath(path);
+                PathHelper::EnsureDirectory(directory);
                 ShellExecuteW(_window, L"open", directory.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
                 return;
             }

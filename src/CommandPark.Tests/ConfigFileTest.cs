@@ -52,6 +52,40 @@ public class ConfigFileTest
         Assert.ThrowsAny<JsonException>(() => ConfigFile.Load(directory));
     }
 
+    [Fact]
+    public void FindPathForDirectories_PrefersPortableConfigAndIgnoresUserConfig()
+    {
+        var appDirectory = CreateTempDirectory();
+        var userDirectory = CreateTempDirectory();
+        var portable = Path.Combine(appDirectory, ConfigFile.DefaultFileName);
+        File.WriteAllText(portable, "{}");
+        File.WriteAllText(Path.Combine(userDirectory, ConfigFile.DefaultFileName), "{}");
+
+        Assert.Equal(portable, ConfigFile.FindPathForDirectories(appDirectory, userDirectory));
+    }
+
+    [Fact]
+    public void FindPathForDirectories_UsesUserConfigWhenPortableConfigIsMissing()
+    {
+        var appDirectory = CreateTempDirectory();
+        var userDirectory = CreateTempDirectory();
+        var userConfig = Path.Combine(userDirectory, "config.json");
+        File.WriteAllText(userConfig, "{}");
+
+        Assert.Equal(userConfig, ConfigFile.FindPathForDirectories(appDirectory, userDirectory));
+    }
+
+    [Fact]
+    public void UserDirectory_IsUnderRoamingAppData()
+    {
+        Assert.Equal(
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                ConfigFile.VendorDirectoryName,
+                ConfigFile.AppDirectoryName),
+            ConfigFile.UserDirectory);
+    }
+
     private static string CreateTempDirectory()
     {
         var directory = Path.Combine(Path.GetTempPath(), "CommandPark.Tests", Guid.NewGuid().ToString("N"));
@@ -126,6 +160,7 @@ public class ConfigurableHintProviderFactoryTest
 
         Assert.False(source.ReadConfig(json));
     }
+
 
     private static string CreateTempDirectory()
     {
