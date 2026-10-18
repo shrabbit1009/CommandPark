@@ -149,6 +149,12 @@
                 "folder": "打开文件夹 {0}"
             }
         },
+        "customExec": {
+            "fallback": {
+                "name": "自定义命令 {0}",
+                "description": "自定义命令"
+            }
+        },
         "envProgram": {
             "name": "系统程序 {0}",
             "description": "位于环境变量的程序"

@@ -149,6 +149,12 @@
                 "folder": "Ouvrir le dossier {0}"
             }
         },
+        "customExec": {
+            "fallback": {
+                "name": "Commande personnalisée {0}",
+                "description": "Commande personnalisée"
+            }
+        },
         "envProgram": {
             "name": "Programme système {0}",
             "description": "Programme trouvé dans la variable PATH"

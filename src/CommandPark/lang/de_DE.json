@@ -149,6 +149,12 @@
                 "folder": "Ordner {0} öffnen"
             }
         },
+        "customExec": {
+            "fallback": {
+                "name": "Benutzerdefinierter Befehl {0}",
+                "description": "Benutzerdefinierter Befehl"
+            }
+        },
         "envProgram": {
             "name": "Systemprogramm {0}",
             "description": "Ein Programm aus der PATH-Umgebungsvariable"

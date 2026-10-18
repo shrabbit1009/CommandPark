@@ -149,6 +149,12 @@
                 "folder": "フォルダー {0} を開く"
             }
         },
+        "customExec": {
+            "fallback": {
+                "name": "カスタムコマンド {0}",
+                "description": "カスタムコマンド"
+            }
+        },
         "envProgram": {
             "name": "システムプログラム {0}",
             "description": "環境変数 PATH にあるプログラム"

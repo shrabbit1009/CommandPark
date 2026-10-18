@@ -8,12 +8,13 @@
 
 ### 搜索源
 
-CommandPark 当前包含七个来源。除首屏欢迎项外，它们会并发参与搜索，并按相关度排序。
+CommandPark 当前包含八个来源。除首屏欢迎项外，它们会并发参与搜索，并按相关度排序。
 
 | 来源 | 触发方式 | 说明 |
 | --- | --- | --- |
 | PATH 程序 | 直接输入 | 在 `PATH`、`System32` 和 `Windows` 中查找 `.exe`；每个程序名只取 PATH 中第一个。 |
 | 已安装程序 | 直接输入 | 搜索用户和所有用户的开始菜单快捷方式，支持名称、拼音、拼音首字母和目标程序名。 |
+| 自定义命令 | `>`、`cus:`、`cpc:` | 扫描配置目录中的 `.cpc` 命令文件；默认也可直接按名称搜索。 |
 | Everything | `#` 或 `et:` | 通过 Everything 搜索全盘文件、文件夹和驱动器，需要 Everything 正在运行。 |
 | 运行命令 | `@`、`run:`、`r:` | 运行输入的命令；默认使用 `runas` 启动，可能触发 UAC。 |
 | 计算 | `~`、`c:`、`calc:` | 使用 AngouriMath 计算表达式；推荐使用 `c:` 或 `calc:`。 |
@@ -22,6 +23,7 @@ CommandPark 当前包含七个来源。除首屏欢迎项外，它们会并发�
 
 - **PATH 程序搜索**只查目录本身，不递归子目录，避免扫描整个 `C:\Windows`。
 - **已安装程序**默认无前缀也会搜索；`ap:`、`app:`、`ia:` 会给本源结果加权。
+- **自定义命令**默认无前缀也会搜索；`>`、`cus:`、`cpc:` 会给本源结果加权，可在配置中开启 `customExec.prefixMode` 改为只用前缀触发。
 - **Everything** 默认只在带 `#` / `et:` 前缀时运行；可在配置中关闭 `everything.prefixMode`。
 - **运行命令**默认无前缀时作为低优先级兜底；可在配置中设置 `run.prefixMode`。
 - **计算**支持超时与取消；`c:` / `calc:` 在成功、错误和超时情况下都会保留 Desmos 跳转项。
@@ -223,6 +225,32 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
 
 ![Bing 搜索与建议](docs/images/bing.png)
 
+**7. 自定义命令（`>` / `cus:` / `cpc:` 前缀）**
+
+先在 `commandpark.json` 的 `sources.customExec.paths` 中填写存放 `.cpc` 文件的目录（相对路径以 `commandpark.json` 所在目录为基准），再在目录里创建命令文件：
+
+```json
+{
+  "name": "Deploy",
+  "description": "发布当前项目",
+  "icon": "deploy.png",
+  "execFile": "scripts/deploy.cmd",
+  "args": ["production"],
+  "env": {
+    "ASPNETCORE_ENVIRONMENT": "Production"
+  }
+}
+```
+
+```text
+>deploy         带前缀搜索并加权
+cus:deploy      同上
+cpc:deploy      同上
+deploy          默认也可直接按名称搜索
+```
+
+`execFile` 与 `icon` 的相对路径都相对于 `.cpc` 文件本身解析；`args` 会原样作为独立参数传递，`env` 会覆盖启动进程的环境变量。`.cmd`、`.bat` 与 `.ps1` 会自动套用对应的命令解释器。
+
 ### 配置文件
 
 程序目录中的 `commandpark.json` 用于配置主题、热键、快速选择、AI 与搜索源；程序也会兼容读取同目录下的 `config.json`。
@@ -278,6 +306,10 @@ Bing 源会先显示输入内容的精确搜索项，然后异步加载并显示
     },
     "bing": {
       "prefixMode": true
+    },
+    "customExec": {
+      "paths": [],
+      "prefixMode": false
     },
     "welcome": {
       "showEditConfig": true,
@@ -362,6 +394,8 @@ AI 快捷键使用与 `quickSelect.modifier` **相对**的另一个修饰键：`
 - `latexCalc.prefixMode`：为 `true` 时只有输入 `~`、`c:` 或 `calc:` 前缀才运行计算源。
 - `latexCalc.timeoutSeconds`：单次计算超时时间，范围 1..30 秒。
 - `bing.prefixMode`：`true` 时只有输入 `b:` 或 `bs:` 才运行 Bing 搜索源。
+- `customExec.paths`：包含 `.cpc` 命令文件的目录列表；递归扫描，相对路径以 `commandpark.json` 所在目录为基准。
+- `customExec.prefixMode`：`true` 时只有输入 `>`、`cus:` 或 `cpc:` 才运行自定义命令源；默认 `false`，无前缀也参与搜索，带前缀会加权。
 - `welcome.showEditConfig`：是否显示修改配置文件的欢迎项。
 - `welcome.showRepo`：是否显示项目仓库入口。
 - `welcome.showOfficial`：是否显示 shRabbit 官方网站入口。

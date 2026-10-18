@@ -48,6 +48,10 @@
     "bing": {
       "prefixMode": true
     },
+    "customExec": {
+      "paths": [],
+      "prefixMode": false
+    },
     "welcome": {
       "showEditConfig": true,
       "showRepo": true,

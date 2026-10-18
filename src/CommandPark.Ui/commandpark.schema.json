@@ -65,6 +65,9 @@
         "bing": {
           "$ref": "#/$defs/bing"
         },
+        "customExec": {
+          "$ref": "#/$defs/customExec"
+        },
         "welcome": {
           "$ref": "#/$defs/welcome"
         }
@@ -321,6 +324,27 @@
           "type": "boolean",
           "default": true,
           "description": "为 true 时只有输入 b: 或 bs: 前缀才运行该源。"
+        }
+      },
+      "additionalProperties": false
+    },
+    "customExec": {
+      "type": "object",
+      "description": "自定义命令源。扫描 paths 下所有 .cpc 文件；提供该节点即启用。",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [],
+          "description": "包含 .cpc 命令文件的目录；相对路径以 commandpark.json 所在目录为基准，并递归扫描子目录。"
+        },
+        "prefixMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "为 true 时只有输入 >、cus: 或 cpc: 前缀才运行；为 false 时无前缀也参与搜索，带前缀会加权。"
         }
       },
       "additionalProperties": false

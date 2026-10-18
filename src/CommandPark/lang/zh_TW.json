@@ -149,6 +149,12 @@
                 "folder": "開啟資料夾 {0}"
             }
         },
+        "customExec": {
+            "fallback": {
+                "name": "自訂命令 {0}",
+                "description": "自訂命令"
+            }
+        },
         "envProgram": {
             "name": "系統程式 {0}",
             "description": "位於環境變數的程式"

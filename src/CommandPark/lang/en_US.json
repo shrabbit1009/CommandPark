@@ -149,6 +149,12 @@
                 "folder": "Open folder {0}"
             }
         },
+        "customExec": {
+            "fallback": {
+                "name": "Custom command {0}",
+                "description": "Custom command"
+            }
+        },
         "envProgram": {
             "name": "System program {0}",
             "description": "A program found on the PATH"

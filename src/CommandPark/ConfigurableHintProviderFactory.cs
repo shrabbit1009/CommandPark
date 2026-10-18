@@ -26,7 +26,7 @@ public static class ConfigurableHintProviderFactory
             WeightProvider = weightProvider,
         };
 
-        foreach (var source in sources ?? CreateDefaultSources())
+        foreach (var source in sources ?? CreateDefaultSources(configDirectory))
         {
             if (config is not null && source is IConfigReader reader && !reader.ReadConfig(config))
             {
@@ -39,11 +39,12 @@ public static class ConfigurableHintProviderFactory
         return provider;
     }
 
-    private static IEnumerable<IHintSource> CreateDefaultSources()
+    private static IEnumerable<IHintSource> CreateDefaultSources(string? configDirectory)
     {
         yield return new EnvProgramSource();
         yield return new EverythingSource();
         yield return new InstalledApplicationSource();
+        yield return new CustomExecSource(configDirectory);
         yield return new RunSource();
         yield return new WelcomeSource();
         yield return new CalcSource();
