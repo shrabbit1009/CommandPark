@@ -49,7 +49,7 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
                 Localization.Get("sources.welcome.repo.description"),
                 ct =>
                 {
-                    Process.Start("explorer.exe", "https://shrabbit.com:4000/gitlab/shrabbit/commandpark");
+                    Process.Start("explorer.exe", "https://github.com/shrabbit1009/CommandPark");
                     return Task.CompletedTask;
                 })
             {
@@ -65,7 +65,7 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
                 Localization.Get("sources.welcome.official.description"),
                 ct =>
                 {
-                    Process.Start("explorer.exe", "https://shrabbit.com:4000/gitlab/shrabbit/commandpark");
+                    Process.Start("explorer.exe", "https://home.shrabbit.com/products/commandpark");
                     return Task.CompletedTask;
                 })
             {
@@ -107,8 +107,8 @@ public class WelcomeSource : IHintSource, IConfigReader, IHomeDisplayable
         }
 
         ShowEditConfig = section["showEditConfig"]?.GetValue<bool>() ?? true;
-        ShowRepo       = section["showRepo"]?.GetValue<bool>() ?? true;
-        ShowOfficial   = section["showOfficial"]?.GetValue<bool>() ?? true;
+        ShowRepo = section["showRepo"]?.GetValue<bool>() ?? true;
+        ShowOfficial = section["showOfficial"]?.GetValue<bool>() ?? true;
 
         return true;
     }

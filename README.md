@@ -38,6 +38,7 @@ CommandPark 当前包含八个来源。除首屏欢迎项外，它们会并发�
 - 主程序启动时读取程序目录下的 `PID` 判断后台是否已经在运行（进程是否还活着、是否是本后台程序）：
   - 后台**未运行** → 这次启动**只拉起后台程序**，弹一次「已在后台启动」提示，不显示输入窗口，然后直接退出（相当于“注册热键”）。
   - 后台**已在运行** → 正常显示输入窗口。
+- 主程序与后台程序都通过应用清单请求管理员权限，因此可以写入安装目录下的 PID；双击快捷方式或首次启动时会触发 UAC。
 - 之后按下快捷键（默认 `Ctrl+Alt+D`），或再次双击主程序，都会唤起搜索窗口。
 - 快捷键格式为「修饰符+按键」，例如 `Ctrl+Alt+Space`、`Win+Shift+S`、`Ctrl+F12`，至少需要一个修饰键。
 - 托盘图标右键菜单提供「修改配置」和「退出」；「修改配置」用默认程序打开 `commandpark.json`，资源管理器重启后会自动重建托盘图标。
@@ -447,12 +448,12 @@ pwsh installer/build.ps1 -Version 1.2.3
 - **`CommandPark-1.2.3-win-x64.zip`**：解压即用。含主程序、后台程序、`lang\` 翻译、`LICENSE`、
   `THIRD-PARTY-NOTICES.md` 与 `licenses\`；不含 `*.pdb`。
 - **`CommandPark-1.2.3-setup.exe`**：Inno Setup 安装程序（编译需要 Inno Setup 6.5+ / 7）。安装行为：
-  - 默认装到 `Program Files\CommandPark`；向导里也可以选择「只为我安装」（装到 `%LocalAppData%\Programs`，无需管理员）。
-  - 开始菜单快捷方式总是创建，桌面快捷方式默认不勾。
+  - 默认装到 `Program Files\shRabbit\CommandPark`；向导里也可以选择「只为我安装」（装到 `%LocalAppData%\Programs`，但仍会以管理员权限运行主程序与后台程序）。
+  - 开始菜单会创建 `CommandPark` 文件夹，内含主程序、访问 GitHub 仓库和卸载三个入口；桌面快捷方式默认不勾。
   - **默认勾选「开机自动启动」**：写 `HKCU\...\Run`，命令行是 `"...\CommandPark.Ui.exe" --no-display`，
     开机后静默拉起后台常驻、不弹提示；取消勾选会删掉该项，升级时沿用上次的选择。只对安装它的那个用户生效。
   - `commandpark.json` 只在不存在时释放：升级不会覆盖你改过的配置。
-  - 卸载会删除程序目录（含 `commandpark.json`）、开始菜单项与自启动项；`clicks.htt` 等自己的数据在
+  - 卸载时若主程序或后台程序仍在运行，会提示先退出并支持重试；卸载会删除程序目录（含 `commandpark.json`）、开始菜单项与自启动项；`clicks.htt` 等自己的数据在
     `%APPDATA%\shRabbit\CommandPark\`，不受影响。
   - 安装向导支持简体中文与英文，跟随系统语言自动选择。
 - 常用参数：`-Mode Aot`（改用 Native AOT 发布）、`-SkipPublish`（复用已有 publish 目录，只重新打包）、
@@ -589,7 +590,7 @@ XAML 里用标记扩展 `{loc:Loc chat.title}` 取值，加载窗口时解析一
   不一定等于文件里真实存在的最大尺寸；要精确需要解析 `RT_GROUP_ICON`。
 - 冷启动（首次运行、系统文件缓存未热）时 Avalonia 初始化明显变慢，与搜索逻辑无关。
 - **浅色主题对比度**：部分控件或状态下，浅色主题的文字与背景对比度仍然偏低，后续会逐项调整。
-- **快捷方式图标覆盖**：部分开始菜单快捷方式会通过 `IconLocation` 覆盖目标程序原始图标。当前优先显示快捷方式图标；后续需要增加检测或配置，让用户可以选择优先目标程序图标（[Issue #2](https://shrabbit.com:4000/gitlab/shrabbit/commandpark/-/work_items/2)）。
+- **快捷方式图标覆盖**：部分开始菜单快捷方式会通过 `IconLocation` 覆盖目标程序原始图标。当前优先显示快捷方式图标；后续需要增加检测或配置，让用户可以选择优先目标程序图标（[Issue #2](https://github.com/shrabbit1009/CommandPark/issues/2)）。
 
 ## 路线图
 
@@ -597,12 +598,12 @@ XAML 里用标记扩展 `{loc:Loc chat.title}` 取值，加载窗口时解析一
 - [ ] 更多搜索源（浏览器书签 / 历史、进程、窗口……）
 - [ ] `cp:` 前缀：查看与修改 CommandPark 自身配置
 - [ ] 执行失败写入本地日志，便于事后排查
-- [ ] 优化快捷方式图标覆盖策略（可选择优先目标程序图标，[Issue #2](https://shrabbit.com:4000/gitlab/shrabbit/commandpark/-/work_items/2)）
+- [ ] 优化快捷方式图标覆盖策略（可选择优先目标程序图标，[Issue #2](https://github.com/shrabbit1009/CommandPark/issues/2)）
 
 ## 参与开发
 
 ```bash
-git clone https://shrabbit.com:4000/gitlab/shrabbit/commandpark.git
+git clone https://github.com/shrabbit1009/CommandPark.git
 git lfs pull
 cd commandpark
 dotnet build

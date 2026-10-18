@@ -48,7 +48,7 @@ VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
 VersionInfoDescription={#MyAppName} {#MyAppVersion} Setup
 
-DefaultDirName={autopf}\{#MyAppName}
+DefaultDirName={autopf}\{#MyAppPublisher}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 AllowNoIcons=yes
@@ -90,8 +90,14 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [CustomMessages]
 chinesesimplified.StartupGroup=启动选项
 chinesesimplified.StartupTask=开机自动启动（后台常驻，用全局热键唤起）
+chinesesimplified.GitHubShortcut=访问 GitHub 仓库
+chinesesimplified.UninstallShortcut=卸载 CommandPark
+chinesesimplified.CloseBeforeUninstall=CommandPark 正在运行。请先关闭主程序，并从系统托盘退出后台程序，然后点击“重试”继续卸载。
 english.StartupGroup=Startup options
 english.StartupTask=Start automatically at sign-in (run in the background, open with the global hotkey)
+english.GitHubShortcut=Visit GitHub repository
+english.UninstallShortcut=Uninstall CommandPark
+english.CloseBeforeUninstall=CommandPark is running. Close the main program and exit the background program from the system tray, then click Retry to continue uninstalling.
 
 [Tasks]
 ; 开机自启动：默认勾选，用户可以取消。升级时沿用上次的选择（UsePreviousTasks 默认 yes）。
@@ -105,8 +111,15 @@ Source: "{#PublishDir}\*"; DestDir: "{app}"; Excludes: "commandpark.json,*.pdb";
 ; 用户配置：已经存在就不覆盖，保留用户自己的设置（新装时才释放默认配置）
 Source: "{#PublishDir}\commandpark.json"; DestDir: "{app}"; Flags: onlyifdoesntexist
 
+[InstallDelete]
+; 旧版本把主程序快捷方式直接放在开始菜单根目录；新版改用 CommandPark 文件夹。
+Type: files; Name: "{autoprograms}\{#MyAppName}.lnk"
+
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+; 开始菜单统一收进 CommandPark 文件夹：主程序、GitHub 仓库、卸载。
+Name: "{autoprograms}\{#MyAppName}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{autoprograms}\{#MyAppName}\{cm:GitHubShortcut}"; Filename: "{#MyAppSupportUrl}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{autoprograms}\{#MyAppName}\{cm:UninstallShortcut}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
@@ -129,6 +142,44 @@ Type: files; Name: "{app}\*.tmp"
 Type: files; Name: "{app}\*.htt"
 
 [Code]
+function IsCommandParkProcessRunning(const ImageName: String): Boolean;
+var
+  Cmd: String;
+  Output: AnsiString;
+  ResultCode: Integer;
+  TempFile: String;
+begin
+  Result := False;
+  TempFile := ExpandConstant('{tmp}\CommandPark-uninstall-tasklist.txt');
+  DeleteFile(TempFile);
+  Cmd := '/c tasklist /FI "IMAGENAME eq ' + ImageName + '" /FO CSV /NH > "' + TempFile + '"';
+
+  if Exec(ExpandConstant('{cmd}'), Cmd, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) and
+     (ResultCode = 0) and FileExists(TempFile) then
+  begin
+    if LoadStringFromFile(TempFile, Output) then
+      Result := Pos(LowerCase(ImageName), LowerCase(Output)) > 0;
+  end;
+
+  DeleteFile(TempFile);
+end;
+
+function InitializeUninstall(): Boolean;
+begin
+  Result := True;
+
+  // 主程序或后台程序还在运行时，先让用户正常退出，避免卸载文件被占用。
+  while IsCommandParkProcessRunning('{#MyAppExeName}') or
+        IsCommandParkProcessRunning('CommandPark.Background.Cpp.exe') do
+  begin
+    if MsgBox(ExpandConstant('{cm:CloseBeforeUninstall}'), mbConfirmation, MB_RETRYCANCEL) = IDCANCEL then
+    begin
+      Result := False;
+      Exit;
+    end;
+  end;
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   // 升级时如果用户把「开机自动启动」取消了，注册表里旧的自启动项要清掉：
